@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "lib": ["ES2022"],
+    "outDir": "./dist",
+    "rootDir": ".",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "strict": true,
+    "composite": true
+  },
+  "include": ["index.ts"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../../packages/database" }
+  ]
+}
