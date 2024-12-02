@@ -1,4 +1,4 @@
-import ImageUploadComponent from "@/app/components/imageUpload/page"
+import ImageUploadComponent from "../../components/imageUpload/Upload"
 
 const CreatePost = () => {
   return (

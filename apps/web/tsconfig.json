@@ -20,7 +20,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "app/facebooksdk-tsx"  ],
+, "app/facebooksdk-tsx", "app/services/cloundinary.js"  ],
   "exclude": ["node_modules"],
   "references": [
     { "path": "../../packages/database" }

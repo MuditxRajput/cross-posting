@@ -1,11 +1,13 @@
 "use client";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { IoIosTrendingUp } from "react-icons/io";
 import { MdAccountCircle } from "react-icons/md";
 const LeftPanel = () => {
   const session = useSession();
-  const [activeButton, setActiveButton] = useState<String>("New Post");
+  const router = useRouter();
+    const [activeButton, setActiveButton] = useState<String>("New Post");
 
   const handleActiveButton = (button: String) => {
     setActiveButton(button);
@@ -15,7 +17,7 @@ const LeftPanel = () => {
     <div className="bg-white shadow-lg rounded-lg p-6 h-[658px] flex flex-col">
       <h2 className="text-3xl font-bold text-gray-800 mb-4"> Panel</h2>
 
-      <button className="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold mt-4 transition-transform transform hover:scale-105 hover:shadow-lg">
+      <button onClick={()=>router.push("./upload")}  className="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold mt-4 transition-transform transform hover:scale-105 hover:shadow-lg">
         + Create Post
       </button>
 
