@@ -7,14 +7,14 @@ const mediaSchema = new mongoose.Schema({
     },
     url:{
         type:String,
-        required:true,
+        // required:true,
     },
     mediaType:{
         type: String,
-        enum:["Video","Image"],
-        required:true,
+        enum:["Video","Image","Text"],
+        // required:true,
     },
 
 },{timestamps:true})
 
-export const Media = mongoose.model("Media",mediaSchema)
+export const Media = mongoose.models.Media || mongoose.model("Media",mediaSchema)

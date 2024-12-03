@@ -8,8 +8,8 @@ const ImageUploadForm = ({image}:any) => {
   const[showSchedule,setShowSchedule] = useState(false);
     const allConnectedAccount = useSelector((state: RootState) => state.social);
     const [formData,setFormData] = useState({
-        title :"",
-        description :""
+       content : "",
+       dateTime : "",
     })
     const handleData=(e:any)=>{
         const name = e.target.name;
@@ -24,12 +24,25 @@ const ImageUploadForm = ({image}:any) => {
           body: JSON.stringify({image})
         })
         const data = await response.json();
+        //  console.log(data.url);
+         
         if(data.url)
         {
           setShowSchedule(true);
-        }
+          console.log(data.url);
+          const cloudinaryImage = data.url;
+          
          // we need to save the data.url in the database with timestamp
-        
+        const res =await fetch("http://localhost:3000/api/User/media",{
+          method : "POST",
+          headers:{
+            "Content-Type" : "Application/json"
+          },
+          body : JSON.stringify({data:formData , urlData:cloudinaryImage})
+        });
+        const val = await res.json();
+        console.log("final val",val);
+      }
       } catch (error) {
         console.log("Error",error);
         
@@ -39,14 +52,9 @@ const ImageUploadForm = ({image}:any) => {
     <div className="mt-2">
     <input
       type="text"
-      placeholder="Title"
+      name="content"
+      placeholder="Content"
       className="w-full p-2 border rounded mb-2"
-      onChange={(e)=>handleData(e)}
-    />
-    <textarea
-      rows={4}
-      placeholder="Description"
-      className="w-full p-2 border rounded"
       onChange={(e)=>handleData(e)}
     />
     {Object.keys(allConnectedAccount).map((platform)=>{
@@ -61,6 +69,8 @@ const ImageUploadForm = ({image}:any) => {
             })
         }
     })}
+    {/* <input type name="date" id="date" /> */}
+    <input type="datetime-local" name="dateTime" id="dateTime" onChange={(e)=>handleData(e)} />
     {showSchedule ?<button  className="bg-green-500 text-white p-2 rounded mt-2">
       Schedule
     </button>  :<button onClick={()=>saveToCloudinary(image)} className="bg-green-500 text-white p-2 rounded mt-2">
