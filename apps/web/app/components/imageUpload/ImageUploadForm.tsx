@@ -1,10 +1,12 @@
 // import Cloudinary from "@/app/services/cloudinary";
 // import { cloudinaryWorker } from "@/app/services/cloundinary";
 import { RootState, SocialState } from "@/store/store";
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 
 const ImageUploadForm = ({image}:any) => {
+  const session =  useSession()
   const[showSchedule,setShowSchedule] = useState(false);
     const allConnectedAccount = useSelector((state: RootState) => state.social);
     const [formData,setFormData] = useState({
@@ -29,16 +31,16 @@ const ImageUploadForm = ({image}:any) => {
         if(data.url)
         {
           setShowSchedule(true);
-          console.log(data.url);
           const cloudinaryImage = data.url;
-          
+         
+          const userEmail =   session.data?.user?.email
          // we need to save the data.url in the database with timestamp
         const res =await fetch("http://localhost:3000/api/User/media",{
           method : "POST",
           headers:{
             "Content-Type" : "Application/json"
           },
-          body : JSON.stringify({data:formData , urlData:cloudinaryImage})
+          body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail})
         });
         const val = await res.json();
         console.log("final val",val);

@@ -15,9 +15,10 @@ const postSchema = new mongoose.Schema({
     },
     scheduleTime:{
         type : Date,
+        required : true,
     }
 
 
 },{timestamps:true})
 
-export const Post = mongoose.models.Post ||mongoose.model("Post",postSchema);
+export const Post = mongoose.models.Post || mongoose.model("Post",postSchema);
