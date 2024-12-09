@@ -11,16 +11,13 @@ export async function POST(req : any,res:any)
     const val = await req.json();
     const {data,urlData,email} = val;
     const{platform,content,dateTime} = data;
+    
     if(!email) return NextResponse.json({msg:"Something went wrong",success:false})
     const UserId = await User.findOne({email:email});
-  console.log("UserId",UserId?._id);
   
     if(!dateTime || !urlData)
         { 
-            // await session.abortTransaction();
-            // session.endSession();
             return NextResponse.json({msg:"Incomplete info",success:false});
-
 }
     // add the data in the database;
     const post = new Post({
