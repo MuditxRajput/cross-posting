@@ -1,7 +1,6 @@
 // import Cloudinary from "@/app/services/cloudinary";
 // import { cloudinaryWorker } from "@/app/services/cloundinary";
 import { RootState, SocialState } from "@/store/store";
-import { format } from 'date-fns';
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { useSelector } from "react-redux";
@@ -36,11 +35,11 @@ const ImageUploadForm = ({image}:any) => {
             
             return {...pre,platform}
           }
-          else if(name==="dateTime")
-          {
-            const newDate =format(new Date(value),"dd-MM-yyyy HH:mm");
-            return {...pre,dateTime:newDate};
-          }
+          // else if(name==="dateTime")
+          // {
+          //   const newDate =format(new Date(value),"dd-MM-yyyy HH:mm");
+          //   return {...pre,dateTime:newDate};
+          // }
           return {...pre,[name]:value}  
         })
         
