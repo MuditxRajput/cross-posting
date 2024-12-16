@@ -5,8 +5,15 @@ import { NextResponse } from "next/server";
 export async function POST(req:any) {
   try {
     dbConnection();
-    const formData = await req.json();    
+    const val = await req.json();    
+    const {formData,email} = val;
+    console.log();
+    
     const dateTime = new Date(formData.dateTime);
+    const queueData = {
+      formData,
+      email
+    }
     
     if (isNaN(dateTime.getTime())) {
       return NextResponse.json({ message: "Invalid dateTime format", success: false });
@@ -19,11 +26,11 @@ export async function POST(req:any) {
     }
 
     // Add job to queue
-    await postQueue.add("schedulePost", formData, { delay });
+    await postQueue.add("schedulePost", queueData, { delay });
 
-    return NextResponse.json({ message: "Post scheduled successfully", success: true });
+    return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
   } catch (error) {
     console.error("Error scheduling post:", error);
-    return NextResponse.json({ message: "Failed to schedule post", success: false });
+    return NextResponse.json({ message: "Failed to schedule post", success: false ,error});
   }
 }

@@ -12,6 +12,7 @@ export async function POST(req : any,res:any)
     const {data,urlData,email} = val;
     const{platform,content,dateTime} = data;
     
+    
     if(!email) return NextResponse.json({msg:"Something went wrong",success:false})
     const UserId = await User.findOne({email:email});
   
@@ -22,7 +23,7 @@ export async function POST(req : any,res:any)
     // add the data in the database;
     const post = new Post({
       UserId : UserId?._id,
-      platform,
+      platform : platform.map((val: { name: any; })=>val.name),
       content,
       scheduleTime :dateTime,
     });
@@ -36,7 +37,7 @@ export async function POST(req : any,res:any)
     await media.save();
     //  await session.commitTransaction();
     //  session.endSession();
-    return NextResponse.json({msg:"Image is saved in database",success:true})
+    return NextResponse.json({msg:"Image is saved in database",success:true,image:urlData})
   } catch (error) {
     return NextResponse.json({msg:"error",error,success:false})
   }

@@ -7,7 +7,13 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+
+      "@components/*": ["./components/*"],
+      "@utils/*": ["./utils/*"], // If you have a utils directory
+      "@database/*": ["../../packages/database/*"] // Adjust based on your directory structure
+    }
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules"]

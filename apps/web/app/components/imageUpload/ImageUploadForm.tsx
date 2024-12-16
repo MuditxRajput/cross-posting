@@ -9,41 +9,59 @@ const ImageUploadForm = ({image}:any) => {
   const[showSchedule,setShowSchedule] = useState(false);
     const allConnectedAccount = useSelector((state: RootState) => state.social);
     // console.log("allConnectedAccount",allConnectedAccount);
+    interface Platform{
+      name:string,
+      account:string[],
+    }
     interface FormData{
       content :string;
       dateTime :string;
-      platform : string[];
+      platform : Platform[];
+      image : string,
     }
     const [formData,setFormData] = useState<FormData>({
        content : "",
        dateTime : "",
        platform :[],
+       image : "",
     })
-    const handleData=(e:any)=>{
-      
-        const{name,value,type,checked} = e.target;
-        setFormData((pre)=>{
-          if(type==="checkbox")
-          {
-            if(pre.platform.includes(value))
-            {
-              const platform =  pre.platform.filter((val)=>val!==value);
-              return {...pre,platform};
+    const handleData = (e: any) => {
+      const { name, value, type, checked } = e.target;
+    
+      setFormData((pre) => {
+        if (type === "checkbox") {
+          const platformName = name;
+          const platformIndex = pre.platform.findIndex((platform) => platform.name === platformName);
+    
+          if (platformIndex > -1) {
+            const updatedPlatform = [...pre.platform];
+    
+            if (checked  ) {
+              // Add the value only if it doesn't already exist
+              if(updatedPlatform[platformIndex])
+              if (!updatedPlatform[platformIndex].account.includes(value)) {
+                updatedPlatform[platformIndex].account.push(value);
+              }
+            } else {
+              // Remove the value when unchecked
+              if(updatedPlatform[platformIndex])
+               updatedPlatform[platformIndex].account = updatedPlatform[platformIndex].account.filter((acc) => acc !== value);
             }
-            const platform = [...pre.platform,value];
-            
-            
-            return {...pre,platform}
+    
+            return { ...pre, platform: updatedPlatform };
+          } else if (checked) {
+            // Add a new platform entry if it doesn't exist
+            return {
+              ...pre,
+              platform: [...pre.platform, { name: platformName, account: [value] }],
+            };
           }
-          // else if(name==="dateTime")
-          // {
-          //   const newDate =format(new Date(value),"dd-MM-yyyy HH:mm");
-          //   return {...pre,dateTime:newDate};
-          // }
-          return {...pre,[name]:value}  
-        })
-        
-    }
+        }
+        // For non-checkbox fields
+        return { ...pre, [name]: value };
+      });
+    };
+    
     const saveToCloudinary=async(image:any)=>{
       try {
         const response = await fetch("http://localhost:3000/api/cloudinary",{
@@ -58,7 +76,7 @@ const ImageUploadForm = ({image}:any) => {
         {
           setShowSchedule(true);
           const cloudinaryImage = data.url;
-         
+          formData.image = data.url;
           const userEmail =   session.data?.user?.email
          // we need to save the data.url in the database with timestamp
         const res =await fetch("http://localhost:3000/api/User/media",{
@@ -77,16 +95,21 @@ const ImageUploadForm = ({image}:any) => {
       }
     }
     const handleSchedule=async()=>{
+      const userEmail =   session.data?.user?.email
        try {
+        console.log("data before we send",formData);
         const res = await fetch('http://localhost:3000/api/User/schedule',{
           method:"POST",
           headers:{
             "Content-Type":"application/json",
           },
-          body:JSON.stringify(formData)
+          body:JSON.stringify({formData,email:userEmail})
         })
         const val = await res.json();
+        console.log("data after we send",formData);
         console.log("VAl after queue",val);
+        
+        
         
        } catch (error) {
         console.log("error in queue",error);
@@ -111,7 +134,7 @@ const ImageUploadForm = ({image}:any) => {
             return allConnectedAccount[key].map((val,index)=>{
               return(
                 <div className='flex gap-3'  >
-                <input type="checkbox" name="platform" id="" value={`${val}`}  onChange={(e)=>handleData(e)}/>
+                <input type="checkbox" name={`${key}`} id="" value={`${val}`}  onChange={(e)=>handleData(e)}/>
                 <label>{`${key} - ${val}`}</label>
                 </div>
               )
