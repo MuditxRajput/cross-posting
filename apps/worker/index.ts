@@ -1,10 +1,11 @@
 import { Worker } from 'bullmq';
+import { processJob } from './scheduling/processJob';
 
 const worker = new Worker(
   'postQueue',
   async (job) => {
     console.log("job",job.data.formData.platform);
-
+    processJob(job);
  
   },
   {

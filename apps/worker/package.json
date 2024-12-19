@@ -5,13 +5,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "bullmq": "^5.33.0",
-    "express": "^4.21.2",
-    "mongoose": "^8.9.0",
-    "redis": "^4.7.0"
+    "@database/database": "*",
+    "@testfile/test": "*",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0"
   }
 }

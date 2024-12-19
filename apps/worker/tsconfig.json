@@ -1,20 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2022",
     "module": "CommonJS",
-    "strict": true,
-    "esModuleInterop": true,
+    "lib": ["ES2022"],
     "outDir": "./dist",
-    "rootDir": "./src",
-    "resolveJsonModule": true,
+    "rootDir": ".",
     "skipLibCheck": true,
-    "paths": {
-
-      "@components/*": ["./components/*"],
-      "@utils/*": ["./utils/*"], // If you have a utils directory
-      "@database/*": ["../../packages/database/*"] // Adjust based on your directory structure
-    }
+    "esModuleInterop": true,
+    "strict": true,
+    "composite": true
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["index.ts","./scheduling/**/*"],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../../packages/database" }
+  ]
 }

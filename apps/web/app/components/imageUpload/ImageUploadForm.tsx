@@ -132,12 +132,16 @@ const ImageUploadForm = ({image}:any) => {
           {
         
             return allConnectedAccount[key].map((val,index)=>{
-              return(
-                <div className='flex gap-3'  >
-                <input type="checkbox" name={`${key}`} id="" value={`${val}`}  onChange={(e)=>handleData(e)}/>
-                <label>{`${key} - ${val}`}</label>
-                </div>
-              )
+              if(val!==null && val!=undefined)
+              {
+                return(
+                  <div className='flex gap-3'  >
+                  <input type="checkbox" name={`${key}`} id="" value={`${val}`}  onChange={(e)=>handleData(e)}/>
+                  <label>{`${key} - ${val}`}</label>
+                  </div>
+                )
+              }
+             
                 
             })
         }

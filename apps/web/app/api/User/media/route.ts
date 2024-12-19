@@ -1,7 +1,8 @@
 import { dbConnection } from "@database/database";
 import { Media } from '@database/models/media.model';
 import { Post } from '@database/models/post.model';
-import { User } from "@database/models/user.model";
+// import { User } from "@database/models/user.model";
+import { User } from '@database/database/models/user.model';
 import { NextResponse } from "next/server";
 
 export async function POST(req : any,res:any)
