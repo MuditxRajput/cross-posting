@@ -20,7 +20,7 @@ async function getIGAccountID(accessToken:any) {
     if (!igData.instagram_business_account) {
       throw new Error("Instagram business account not found. Please ensure the page is connected to an Instagram account.");
     }
-
+    console.log("Instagram bussiness account ID:", igData.instagram_business_account.id);
     return igData.instagram_business_account.id;
   } catch (error) {
     console.error("Error retrieving Instagram account ID:", error);
@@ -39,7 +39,8 @@ export async function POST(req:any) {
     // Step 2: Fetch Instagram account details using the user ID
     const igUserDetailsResponse = await fetch(`https://graph.facebook.com/v12.0/${igUserId}?fields=ig_id,name,username&access_token=${access_token}`);
     const igUserDetails = await igUserDetailsResponse.json();
-
+    console.log("Instagram user details:", igUserDetails);
+    
     if (!igUserDetails.ig_id || !igUserDetails.username) {
       return NextResponse.json({ message: "Invalid Instagram user details.", success: false }, { status: 400 });
     }
@@ -59,8 +60,11 @@ export async function POST(req:any) {
     if (user) {
       return NextResponse.json({ msg: "Instagram account is already connected.", success: false });
     }
-
-    // Step 5: Update the user in the database with Instagram details
+   const longlivedToken = await fetch(`https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=4196765553928348&client_secret=f1e86ae43a659bcec80deb92928a4717&fb_exchange_token=${access_token}`);
+   const val = await longlivedToken.json();
+   
+    
+   // Step 5: Update the user in the database with Instagram details
     const updatedUser = await User.findOneAndUpdate(
       { email: session.user.email },
       {
@@ -68,10 +72,10 @@ export async function POST(req:any) {
           connectedPlatform: "Instagram",
           socialAccounts: {
             socialName: "Instagram",
-            accessToken: access_token,
-            refreshToken: access_token,
+            accessToken:val.access_token,
+            refreshToken: val.access_token,
             accounts: igUserDetails.username,
-            accountsId: igUserDetails.ig_id,
+            accountsId: igUserId,
           },
         },
       },
