@@ -1,4 +1,5 @@
 import { User } from "@database/database";
+import { log } from "util";
 
 const getIgId = async (email: string, platform: any[]) => {
   try {
@@ -30,10 +31,11 @@ const getIgId = async (email: string, platform: any[]) => {
 const postInstagram = async (igId: any, token:any,formData: any) => {
     console.log("igId",igId);
     console.log("token",token);
-   const containerId =  await fetch(`https://graph.facebook.com/v21.0/${igId}/media?image_url=${formData.image}
-  &caption=#BronzFonz`,{
+    console.log("formData",formData);
+   const containerId =  await fetch(`https://graph.facebook.com/v21.0/${igId}/media?image_url=${formData.image}&caption=${formData.content}`,{
         method: 'POST',
         headers: {
+          "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`, 
         },
     });

@@ -11,6 +11,9 @@ export async function POST(req:any) {
     const { image } = await req.json(); 
     const uploadResult = await cloudinary.uploader.upload(image, {
       folder: 'uploads',
+      transformation:[
+        { aspect_ratio: "4:5", crop: "fill" },
+      ]
     });
     return new Response(JSON.stringify({ url: uploadResult.secure_url }), {
       status: 200,

@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-import ImagePreview from '../imageUpload/ImagePreview'
+import ImagePreview from '../imageUpload/ImagePreview';
 export default function Upload() {
   const [images, setImages] = useState<string[]>([]);
 
@@ -22,13 +22,13 @@ export default function Upload() {
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
   return (
-    <div>
+    <div className="w-full ">
       <div
         {...getRootProps()}
-        className="p-4 border-2 border-dashed rounded cursor-pointer"
+        className=" border-2 border-dashed border-black rounded cursor-pointer flex justify-center items-center shadow-lg h-20 "
       >
         <input {...getInputProps()} />
-        <p>Drag and drop files here, or click to select files</p>
+        <p className='  flex justify-center items-center hover:text-lg'>Drag and drop files here, or click to select files</p>
       </div>
       <ImagePreview images={images} />
     </div>

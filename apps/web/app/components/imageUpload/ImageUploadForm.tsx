@@ -3,10 +3,12 @@
 import { RootState, SocialState } from "@/store/store";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { ThreeDot } from "react-loading-indicators";
 import { useSelector } from "react-redux";
 const ImageUploadForm = ({image}:any) => {
   const session =  useSession()
   const[showSchedule,setShowSchedule] = useState(false);
+  const[loading,setLoading] = useState(false);
     const allConnectedAccount = useSelector((state: RootState) => state.social);
     // console.log("allConnectedAccount",allConnectedAccount);
     interface Platform{
@@ -63,6 +65,7 @@ const ImageUploadForm = ({image}:any) => {
     };
     
     const saveToCloudinary=async(image:any)=>{
+      setLoading(true);
       try {
         const response = await fetch("http://localhost:3000/api/cloudinary",{
           method : "POST",
@@ -70,14 +73,13 @@ const ImageUploadForm = ({image}:any) => {
           body: JSON.stringify({image})
         })
         const data = await response.json();
-        //  console.log(data.url);
-         
         if(data.url)
         {
-          setShowSchedule(true);
+          
           const cloudinaryImage = data.url;
           formData.image = data.url;
           const userEmail =   session.data?.user?.email
+          
          // we need to save the data.url in the database with timestamp
         const res =await fetch("http://localhost:3000/api/User/media",{
           method : "POST",
@@ -87,12 +89,17 @@ const ImageUploadForm = ({image}:any) => {
           body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail})
         });
         const val = await res.json();
-        console.log("final val",val);
+        if(val.success)
+        {
+          setShowSchedule(true);
+          setLoading(false);
+        }
       }
-      } catch (error) {
+      } 
+      catch (error) {
         console.log("Error",error);
-        
       }
+     
     }
     const handleSchedule=async()=>{
       const userEmail =   session.data?.user?.email
@@ -106,56 +113,89 @@ const ImageUploadForm = ({image}:any) => {
           body:JSON.stringify({formData,email:userEmail})
         })
         const val = await res.json();
-        console.log("data after we send",formData);
-        console.log("VAl after queue",val);
-        
-        
-        
        } catch (error) {
         console.log("error in queue",error);
         
        }
     }
   return (
-    <div className="mt-2">
+    <div className="mt-1 bg-white shadow-md rounded-lg p-2 max-w-md mx-auto">
     <input
       type="text"
       name="content"
-      placeholder="Content"
-      className="w-full p-2 border rounded mb-2"
-      onChange={(e)=>handleData(e)}
+      placeholder="Enter your content here..."
+      className="w-full p-3 border border-green-500 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+      onChange={(e) => handleData(e)}
     />
-    {Object.keys(allConnectedAccount).map((platform)=>{
+    <div className="mb-2">
+      <h3 className="text-lg  mb-2">Select Platforms</h3>
+      {Object.keys(allConnectedAccount).map((platform) => {
         const key = platform as keyof SocialState;
-        
-        if(Array.isArray(allConnectedAccount[key]))
-          {
-        
-            return allConnectedAccount[key].map((val,index)=>{
-              if(val!==null && val!=undefined)
-              {
-                return(
-                  <div className='flex gap-3'  >
-                  <input type="checkbox" name={`${key}`} id="" value={`${val}`}  onChange={(e)=>handleData(e)}/>
-                  <label>{`${key} - ${val}`}</label>
-                  </div>
-                )
-              }
-             
-                
-            })
+  
+        if (Array.isArray(allConnectedAccount[key])) {
+          return allConnectedAccount[key].map((val, index) => {
+            if (val !== null && val !== undefined) {
+              return (
+                <div key={index} className="flex items-center gap-3 mb-2">
+                  <input
+                    type="checkbox"
+                    name={`${key}`}
+                    id={`${key}-${index}`}
+                    value={`${val}`}
+                    className="accent-green-500"
+                    onChange={(e) => handleData(e)}
+                  />
+                  <label
+                    htmlFor={`${key}-${index}`}
+                    className=""
+                  >
+                    {`${key} - ${val}`}
+                  </label>
+                </div>
+              );
+            }
+          });
         }
-    })}
-
-    {/* <input type name="date" id="date" /> */}
-    <input type="datetime-local" name="dateTime" id="dateTime" onChange={(e)=>handleData(e)} />
-    {showSchedule ?<button onClick={()=>handleSchedule()}  className="bg-green-500 text-white p-2 rounded mt-2">
-      Schedule
-    </button>  :<button onClick={()=>saveToCloudinary(image)} className="bg-green-500 text-white p-2 rounded mt-2">
-      Saved
-    </button> }
-    
+      })}
+    </div>
+  
+    <div className="mb-4">
+      <label
+        htmlFor="dateTime"
+        className="block text-gray-700 font-medium mb-2"
+      >
+        Schedule Date and Time
+      </label>
+      <input
+        type="datetime-local"
+        name="dateTime"
+        id="dateTime"
+        className="w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400"
+        onChange={(e) => handleData(e)}
+      />
+    </div>
+    {
+      (!loading && showSchedule)? null : (loading && !showSchedule) ? null :   <button
+      className={`w-full bg-green-500 text-white p-3 rounded-lg font-semibold `}
+      onClick={() => saveToCloudinary(image)}
+    >
+      Save
+    </button>
+    }
+  
+   {
+    loading ? <button className="w-full bg-green-500 text-white p-3 rounded-lg font-semibold mt-2"> <ThreeDot color="#ffffff" size="small" text="" textColor="" /> </button>  :null
+   }
+    {showSchedule && (
+      <button
+        className="w-full bg-green-500 text-white p-3 rounded-lg font-semibold mt-2"
+        onClick={handleSchedule}
+      >
+        Schedule
+      </button>
+    )}
   </div>
+  
   )
 }
 
