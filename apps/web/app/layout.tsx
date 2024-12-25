@@ -1,11 +1,11 @@
+import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
-import { Toaster } from "@/components/ui/toaster"
 import localFont from "next/font/local";
+import FacebookSDK from "./facebooksdk";
 import "./globals.css";
 import { Providers } from "./provider";
 import Header from "./ui/header/page";
-import FacebookSDK from "./facebooksdk";
-
+// import { Toaster } from "@/components/ui/toaster"
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -35,7 +35,7 @@ export default    function RootLayout({
           {children}
           <Toaster />
           </Providers>
-         
+          <Toaster />
 
       </body>
     </html>

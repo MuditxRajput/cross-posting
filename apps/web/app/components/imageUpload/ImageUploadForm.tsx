@@ -1,14 +1,18 @@
 // import Cloudinary from "@/app/services/cloudinary";
 // import { cloudinaryWorker } from "@/app/services/cloundinary";
+import { useToast } from "@/hooks/use-toast";
 import { RootState, SocialState } from "@/store/store";
 import { useSession } from "next-auth/react";
 import { useState } from "react";
 import { ThreeDot } from "react-loading-indicators";
 import { useSelector } from "react-redux";
+
 const ImageUploadForm = ({image}:any) => {
+  const { toast } = useToast()
   const session =  useSession()
   const[showSchedule,setShowSchedule] = useState(false);
   const[loading,setLoading] = useState(false);
+
     const allConnectedAccount = useSelector((state: RootState) => state.social);
     // console.log("allConnectedAccount",allConnectedAccount);
     interface Platform{
@@ -102,9 +106,10 @@ const ImageUploadForm = ({image}:any) => {
      
     }
     const handleSchedule=async()=>{
+      setLoading(true);
+      setShowSchedule(false);
       const userEmail =   session.data?.user?.email
        try {
-        console.log("data before we send",formData);
         const res = await fetch('http://localhost:3000/api/User/schedule',{
           method:"POST",
           headers:{
@@ -113,9 +118,24 @@ const ImageUploadForm = ({image}:any) => {
           body:JSON.stringify({formData,email:userEmail})
         })
         const val = await res.json();
+        if(val.success)
+        {
+          setLoading(false);
+          toast({  
+            title: " Post Published", });
+             setTimeout(() => {
+              window.location.href = "/";
+            },2000
+          );
+        }
+
+        else{
+          setLoading(false);
+          toast({ variant: "destructive",
+            title: "Uh oh! Something went wrong.", });
+        }
        } catch (error) {
         console.log("error in queue",error);
-        
        }
     }
   return (
@@ -194,6 +214,7 @@ const ImageUploadForm = ({image}:any) => {
         Schedule
       </button>
     )}
+    
   </div>
   
   )

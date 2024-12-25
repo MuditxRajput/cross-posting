@@ -1,5 +1,4 @@
 import { User } from "@database/database";
-import { log } from "util";
 
 const getIgId = async (email: string, platform: any[]) => {
   try {
@@ -29,9 +28,6 @@ const getIgId = async (email: string, platform: any[]) => {
   }
 };
 const postInstagram = async (igId: any, token:any,formData: any) => {
-    console.log("igId",igId);
-    console.log("token",token);
-    console.log("formData",formData);
    const containerId =  await fetch(`https://graph.facebook.com/v21.0/${igId}/media?image_url=${formData.image}&caption=${formData.content}`,{
         method: 'POST',
         headers: {
@@ -40,7 +36,6 @@ const postInstagram = async (igId: any, token:any,formData: any) => {
         },
     });
     const containerData = await containerId.json() as { id: string };
-    console.log("val",containerData.id);
     
     try {
 
@@ -53,38 +48,34 @@ const postInstagram = async (igId: any, token:any,formData: any) => {
             },
         });
         const postData = await post.json();
-        console.log("post",postData);
     } catch (error) {
         console.log("error",error);
         
     }
     
 }; 
-const getAccessToken = async (email: string, platform:any) =>{
-  const token = [{
-    platform : '',
-    access : '',
-  }];
-  try {
-      platform.map((element: any) => {
-        if (element.name.toLowerCase() === 'instagram') {
-          for (const account of element.account) {
+// const getAccessToken = async (email: string, platform:any) =>{
+//   const token = [{
+//     platform : '',
+//     access : '',
+//   }];
+//   try {
+//       platform.map((element: any) => {
+//         if (element.name.toLowerCase() === 'instagram') {
+//           for (const account of element.account) {
              
-          }
-        }
-      });
-    } catch (error) {
-      console.error('Error fetching access token:', error);
-    }
-  };
+//           }
+//         }
+//       });
+//     } catch (error) {
+//       console.error('Error fetching access token:', error);
+//     }
+//   };
 export const processJob = async (job: any) => {
-  console.log("inside processJob");
   
   const email = job.data.email;
-  console.log("email",email);
-  await getAccessToken(email,job.data.formData.platform);
+  // await getAccessToken(email,job.data.formData.platform);
   const igId = await getIgId(email, job.data.formData.platform);
   // console.log("gettingID",igId);
-  
   postInstagram(igId?.igId,igId?.token, job.data.formData);
 };

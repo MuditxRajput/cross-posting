@@ -7,8 +7,6 @@ export async function POST(req:any) {
     dbConnection();
     const val = await req.json();    
     const {formData,email} = val;
-    console.log();
-    
     const dateTime = new Date(formData.dateTime);
     const queueData = {
       formData,
@@ -24,7 +22,6 @@ export async function POST(req:any) {
     if (delay <= 0) {
       return NextResponse.json({ message: "DateTime must be in the future", success: false });
     }
-
     // Add job to queue
     await postQueue.add("schedulePost", queueData, { delay });
 
