@@ -21,7 +21,7 @@ const persistedSocialReducer = persistReducer(persistConfig, socialReducer);
 
 const store = configureStore({
   reducer: {
-    social: persistedSocialReducer, // Persisted reducer for the `social` slice
+    social: persistedSocialReducer, 
   },
 });
 

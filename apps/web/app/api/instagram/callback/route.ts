@@ -7,11 +7,9 @@ async function getIGAccountID(accessToken:any) {
   try {
     const response = await fetch(`https://graph.facebook.com/v12.0/me/accounts?access_token=${accessToken}`);
     const data = await response.json();
-    
     if (!data.data || data.data.length === 0) {
       throw new Error("Unable to retrieve page ID. Check if the access token has the necessary permissions.");
     }
-
     const pageId = data.data[0].id;
 
     const igAccountResponse = await fetch(`https://graph.facebook.com/v12.0/${pageId}?fields=instagram_business_account&access_token=${accessToken}`);
@@ -33,6 +31,7 @@ export async function POST(req:any) {
     const data = await req.json();
     const { access_token } = data;
 
+     
     // Step 1: Get Instagram User ID using the access token
     const igUserId = await getIGAccountID(access_token);
 
@@ -62,25 +61,27 @@ export async function POST(req:any) {
     }
    const longlivedToken = await fetch(`https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=4196765553928348&client_secret=f1e86ae43a659bcec80deb92928a4717&fb_exchange_token=${access_token}`);
    const val = await longlivedToken.json();
-   
-    
-   // Step 5: Update the user in the database with Instagram details
-    const updatedUser = await User.findOneAndUpdate(
-      { email: session.user.email },
-      {
-        $addToSet: {
-          connectedPlatform: "Instagram",
-          socialAccounts: {
-            socialName: "Instagram",
-            accessToken:val.access_token,
-            refreshToken: val.access_token,
-            accounts: igUserDetails.username,
-            accountsId: igUserId,
-          },
+   const updatedUser = await User.findOneAndUpdate(
+    {
+      email: session.user.email,
+      "socialAccounts.accountsId": { $ne: igUserId }, // Check if the Instagram ID is not already present
+    },
+    {
+      $addToSet: {
+        connectedPlatform: "Instagram",
+        socialAccounts: {
+          socialName: "Instagram",
+          accessToken: val.access_token,
+          refreshToken: val.access_token,
+          accounts: igUserDetails.username,
+          accountsId: igUserId,
+          expiresIn: val.expires_in,
         },
       },
-      { new: true }
-    );
+    },
+    { new: true }
+  );
+  
 
     if (!updatedUser) {
       return NextResponse.json({ message: "User update failed.", success: false }, { status: 500 });
@@ -88,9 +89,6 @@ export async function POST(req:any) {
 
     // Step 6: Safely access socialAccounts to get Instagram data
     const igData = updatedUser.socialAccounts?.find((val) => val.socialName === "Instagram")?.accounts || null;
-
-    
-
     return NextResponse.json({
       success: true,
       message: "Instagram authentication successful",
@@ -104,3 +102,4 @@ export async function POST(req:any) {
     });
   }
 }
+

@@ -6,6 +6,7 @@ interface SocialAccount {
   accounts: string;          // Now a single string
   accountsId: string;        // Now a single string
   socialName: string;
+  expiresIn?: Date;
 }
 
 interface UserDocument extends Document {
@@ -38,7 +39,8 @@ const userSchema = new mongoose.Schema<UserDocument>(
         accessToken: { type: String },
         refreshToken: { type: String },
         accounts: { type: String },      // Changed to a single string
-        accountsId: { type: String },    // Changed to a single string
+        accountsId: { type: String,unique:true },    // Changed to a single string
+        expiresIn: { type: Date },
       },
     ],
   },
@@ -47,3 +49,5 @@ const userSchema = new mongoose.Schema<UserDocument>(
 
 export const User: Model<UserDocument> = mongoose.models.User || mongoose.model<UserDocument>('User', userSchema);
 // export const User: Model<UserDocument> =  mongoose.model<UserDocument>('User', userSchema);
+// export const User: Model<UserDocument> = mongoose.model<UserDocument>('User', userSchema);
+

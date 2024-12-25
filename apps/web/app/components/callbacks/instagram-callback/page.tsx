@@ -3,39 +3,34 @@ import Dashboard from '@/app/(dashboard)/dashboard/page';
 import { setInstagram } from '@/store/slices/social-account';
 import 'dotenv/config';
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { useDispatch } from 'react-redux';
 
 const InstagramCallback = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-
-  useEffect(() => {
+  // const [expiresIn, setExpiresIn] = useState(null); // Store the expiration time of the token
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.replace("#", "?"));
-    const accessToken = params.get("access_token");
-    console.log("client", accessToken);
-    
-    if (accessToken) {
-      const sendtoken = async () => {
+    const access_token = params.get("access_token");  
+    if (access_token) {
+      const sendToken = async () => {
         try {
-          console.log("Calling Instagram API...");
-          
           const res = await fetch(`http://localhost:3000/api/instagram/callback`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ access_token: accessToken }),
+            body: JSON.stringify({ access_token: access_token }),
           });
 
           if (res.ok) {
             const val = await res.json();
-            console.log("Instagram data:", val);
 
-            // Dispatch Instagram user data to Redux
-            if(val.userData!==null)
-             dispatch(setInstagram(val.userData));
+  
+            if(val.userData !== null) {
+              dispatch(setInstagram(val.userData));
+              router.push("/dashboard");
+            }
           } else {
             console.error("Failed to fetch Instagram data");
           }
@@ -43,13 +38,10 @@ const InstagramCallback = () => {
           console.error("Error fetching access token", error);
         }
       };
-
-      sendtoken();
-      router.push("/dashboard");
+      sendToken();
     } else {
       console.log("Token is not found");
     }
-  }, [dispatch, router]);
 
   return <Dashboard />;
 };
