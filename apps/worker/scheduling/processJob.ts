@@ -73,7 +73,6 @@ const postInstagram = async (igId: any, token:any,formData: any) => {
 //   };
 export const processJob = async (job: any) => {
   const email = job.data.email;
-  // first we check access is expired or not..
   
   const igId = await getIgId(email, job.data.formData.platform);
   postInstagram(igId?.igId,igId?.token, job.data.formData);

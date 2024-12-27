@@ -38,7 +38,6 @@ export async function GET(request: NextRequest) {
 
     const tokenData = await tokenResponse.json();
     const { access_token } = tokenData;
-
     // Fetch LinkedIn profile data
     const profileResponse = await fetch(
       "https://api.linkedin.com/v2/userinfo",
@@ -55,8 +54,8 @@ export async function GET(request: NextRequest) {
     // Store LinkedIn data in the user's record
     await dbConnection();
     const existedUser = await User.findOne({ email: session?.user?.email });
-    const existedLinkedln = existedUser?.connectedPlatform?.includes("LinkedIn");
-    if (!existedLinkedln) {
+    // const existedLinkedln = existedUser?.connectedPlatform?.includes("LinkedIn");
+    // if (!existedLinkedln) {
       const user = await User.findOneAndUpdate(
         { email: session?.user?.email, "socialAccounts.accountsId": { $ne: profileData.sub } },
         {
@@ -68,6 +67,7 @@ export async function GET(request: NextRequest) {
               refreshToken: access_token,
               accounts: profileData.name,
               accountsId: profileData.sub,
+              expiresIn: tokenData.expires_in,
             },
           },
         },
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
       if (!user) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
-    }
+    // }
 
 
     // Close popup with success message

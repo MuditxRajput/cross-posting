@@ -30,7 +30,7 @@ const SocialConnection = () => {
       // router.push(`https://www.facebook.com/v21.0/dialog/oauth?...`);
      router.push(`https://www.facebook.com/v21.0/dialog/oauth?client_id=4196765553928348&display=page&redirect_uri=http://localhost:3000/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`);
     } else if (name === "LinkedIn") {
-     window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86ij8xunmbhjqh&redirect_uri=http://localhost:3000/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email%20r_liteprofile`);
+     window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86ij8xunmbhjqh&redirect_uri=http://localhost:3000/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
     } else {
       try {
         const res = await fetch(`http://localhost:3000/api/${name.toLowerCase()}/connect`);

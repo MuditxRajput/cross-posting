@@ -75,7 +75,7 @@ export async function POST(req:any) {
           refreshToken: val.access_token,
           accounts: igUserDetails.username,
           accountsId: igUserId,
-          expiresIn: val.expires_in,
+          expiresIn: Date.now()+ 60*60*24*60*1000,
         },
       },
     },
