@@ -1,18 +1,20 @@
 import Image from 'next/image'
-import ImageUploadForm from '../imageUpload/ImageUploadForm'
-const ImagePreview = ({images}:{images:string[]}) => {
-  return (
-    <div className="grid grid-cols-4 gap-4 mt-4">
-    {images.map((image, index) => (
-      <div key={index} className="p-2 border rounded bg-white ">
-        <div className='flex justify-center items-center'>
-          <Image src={image} width={180} height={100} alt={`Uploaded ${index}`} />
-        </div>
+import StepForm from '../stepForm'
 
-        <ImageUploadForm image ={image} />
-      </div>
-    ))}
-  </div>
+const ImagePreview = ({ images, single }: { images: string[], single?: boolean }) => {
+  return (
+    <div className=" mt-4 w-full">
+      {images.map((image, index) => (
+        <div key={index} className="p-2 border rounded bg-white w-full flex gap-6">
+          <div className="flex justify-center items-center">
+            <Image src={image} width={280} height={400} alt={`Uploaded ${index}`} />
+          </div>
+          <div className=' w-full flex-1'>
+          {single && <StepForm image={image} />}
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 

@@ -11,7 +11,16 @@ export async function POST(req : any,res:any)
      await dbConnection()
     const val = await req.json();
     const {data,urlData,email} = val;
-    const{platform,content,dateTime} = data;
+    const{platforms,description,dateTime} = data;
+    console.log("platform",platforms);
+    console.log("content",description);
+    console.log("dateTime",dateTime);
+    console.log("urlData",urlData);
+    console.log("email",email);
+    if(!data || !urlData || !email)
+    {
+      return NextResponse.json({msg:"Incomplete info",success:false});
+    }
     
     
     if(!email) return NextResponse.json({msg:"Something went wrong",success:false})
@@ -24,8 +33,8 @@ export async function POST(req : any,res:any)
     // add the data in the database;
     const post = new Post({
       UserId : UserId?._id,
-      platform : platform.map((val: { name: any; })=>val.name),
-      content,
+      platform : platforms.map((val: { name: any; })=>val.name),
+      content : description,
       scheduleTime :dateTime,
     });
     await post.save();

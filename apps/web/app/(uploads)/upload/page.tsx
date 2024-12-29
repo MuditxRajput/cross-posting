@@ -1,6 +1,6 @@
 "use client"
 import LeftPanel from "@/app/(dashboard)/leftpanel/page"
-import ImageUploadComponent from "../../components/imageUpload/Upload"
+import Upload from "../drop/page"
 
 const upload = () => {
   return (
@@ -9,11 +9,10 @@ const upload = () => {
         <LeftPanel/>
       </div>
       <div className=" w-full flex justify-center ">
-        {/* <div className="border-dashed border-2 w-full rounded-lg text-center p-20 border-black cursor-pointer "> */}
-          <ImageUploadComponent/>
-        {/* </div> */}
+         <Upload/>
+        </div>
       </div>
-    </div>
+    // </div>
   )
 }
 

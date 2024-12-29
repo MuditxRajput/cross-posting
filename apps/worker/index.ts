@@ -4,7 +4,7 @@ import { processJob } from './scheduling/processJob';
 const worker = new Worker(
   'postQueue',
   async (job) => {
-    console.log("job",job.data.formData.platform);
+    console.log("job",job.data.formData);
     processJob(job);
  
   },

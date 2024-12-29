@@ -1,14 +1,14 @@
 import { User } from "@database/database";
 
-const getIgId = async (email: string, platform: any[]) => {
+const getIgId = async (email: string, platforms: any[]) => {
   try {
-    console.log("platform",platform);
+    console.log("platforms",platforms);
     
     const user = await User.findOne({ email: email });
     if (!user) {
       throw new Error(`User with email ${email} not found`);
     }
-    for(const element of platform) {
+    for(const element of platforms) {
       if (element.name.toLowerCase() === 'instagram') {
         for(const account of element.account) {
             if(user.socialAccounts)
@@ -30,7 +30,7 @@ const getIgId = async (email: string, platform: any[]) => {
   }
 };
 const postInstagram = async (igId: any, token:any,formData: any) => {
-   const containerId =  await fetch(`https://graph.facebook.com/v21.0/${igId}/media?image_url=${formData.image}&caption=${formData.content}`,{
+   const containerId =  await fetch(`https://graph.facebook.com/v21.0/${igId}/media?image_url=${formData.image}&caption=${formData.description}`,{
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
@@ -56,12 +56,12 @@ const postInstagram = async (igId: any, token:any,formData: any) => {
     }
     
 }; 
-const getToken = async (existedUser:any,platform:string[]) => {
+const getToken = async (existedUser:any,platforms:string[]) => {
   // const existedUser = await User.findOne({email:email});
   if(!existedUser){
     return;
   }
-  for(const account of platform)
+  for(const account of platforms)
   {
     if(existedUser.socialAccounts)
     {
@@ -149,14 +149,14 @@ if(response)
       'specificContent': {
           'com.linkedin.ugc.ShareContent': {
               'shareCommentary': {
-                  'text': formData.content
+                  'text': formData.description
               },
               'shareMediaCategory': 'IMAGE',
               'media': [
                   {
                       'status': 'READY',
                       'description': {
-                          'text': formData.content
+                          'text': formData.description
                       },
                       'media': assets
                   }
@@ -188,17 +188,17 @@ if(response)
 export const processJob = async (job: any) => {
     // console.log('Processing job:', job);
    const existedUser = await User.findOne({email:job.data.email});
-    for(const platform of job.data.formData.platform)
+    for(const platforms of job.data.formData.platforms)
     {
-      if(platform.name.toLowerCase() === 'instagram')
+      if(platforms.name.toLowerCase() === 'instagram')
       {
-        const igId = await getIgId(job.data.email, job.data.formData.platform);
+        const igId = await getIgId(job.data.email, job.data.formData.platforms);
         postInstagram(igId?.igId,igId?.token, job.data.formData);
       }
-       else if(platform.name.toLowerCase() === 'linkedin')
+       else if(platforms.name.toLowerCase() === 'linkedin')
       {
         // code for linkedin
-        const data = await getToken(existedUser, platform.account);
+        const data = await getToken(existedUser, platforms.account);
         const step1Res =  await step1(data?.accountsId, data?.token);
         const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
 
