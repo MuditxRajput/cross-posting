@@ -34,7 +34,8 @@ interface FormData {
     image : string;
 }
 const StepForm = ({image}:any) => {
-
+  // console.log("images or video - > ",image);
+  
     const session = useSession();
     const { toast } = useToast()
     const allConnectedAccount = useSelector((state: RootState) => state.social);
@@ -125,10 +126,14 @@ const StepForm = ({image}:any) => {
   const saveToCloudinary=async(image:any)=>{
     // setLoading(true);
     try {
+      console.log("inside cloudinary",image);
+      const fileType = image.startsWith('data:image') ? 'image' :'video';
+      console.log("fileType",fileType);
+      
       const response = await fetch("http://localhost:3000/api/cloudinary",{
         method : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({image})
+        body: JSON.stringify({image,fileType})
       })
       const data = await response.json();
       if(data.url)

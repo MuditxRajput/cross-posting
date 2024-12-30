@@ -59,12 +59,13 @@ export default function Upload() {
             <ImagePreview images={[media[0].src]} single />
           ) : (
             <div className='flex flex-row gap-3'>
+              {/* {console.log(media[0].src)} */}
               <video
                 controls
                 src={media[0]?.src || " "}
                 className=" w-60 max-w-md rounded shadow"
               />
-              <StepForm />
+              <StepForm image={media[0]?.src} />
             </div>
           )}
         </div>
