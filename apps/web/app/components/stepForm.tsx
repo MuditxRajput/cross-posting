@@ -126,10 +126,7 @@ const StepForm = ({image}:any) => {
   const saveToCloudinary=async(image:any)=>{
     // setLoading(true);
     try {
-      console.log("inside cloudinary",image);
       const fileType = image.startsWith('data:image') ? 'image' :'video';
-      console.log("fileType",fileType);
-      
       const response = await fetch("http://localhost:3000/api/cloudinary",{
         method : "POST",
         headers: { "Content-Type": "application/json" },
@@ -141,14 +138,15 @@ const StepForm = ({image}:any) => {
         console.log("Data",data.url);
         const cloudinaryImage = data.url;
         formData.image = data.url;
-        const userEmail =   session.data?.user?.email
+        const userEmail =   session.data?.user?.email;
+        const mediaType = data.type
        // we need to save the data.url in the database with timestamp
       const res =await fetch("http://localhost:3000/api/User/media",{
         method : "POST",
         headers:{
           "Content-Type" : "Application/json"
         },
-        body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail})
+        body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail,mediaType})
       });
       console.log("Res while saving in media",res);
       const val = await res.json();
@@ -161,7 +159,7 @@ const StepForm = ({image}:any) => {
           headers:{
             "Content-Type":"application/json",
           },
-          body:JSON.stringify({formData,email:userEmail})
+          body:JSON.stringify({formData,email:userEmail,mediaType})
         })
         const val1 = await resp.json();
         console.log("data from the schedule",val1);

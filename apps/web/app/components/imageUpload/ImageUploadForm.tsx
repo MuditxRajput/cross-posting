@@ -79,18 +79,17 @@ const ImageUploadForm = ({image}:any) => {
         const data = await response.json();
         if(data.url)
         {
-          
           const cloudinaryImage = data.url;
           formData.image = data.url;
           const userEmail =   session.data?.user?.email
-          
+          const dataType = data.type;
          // we need to save the data.url in the database with timestamp
         const res =await fetch("http://localhost:3000/api/User/media",{
           method : "POST",
           headers:{
             "Content-Type" : "Application/json"
           },
-          body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail})
+          body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail,mediaType:dataType})
         });
         const val = await res.json();
         if(val.success)

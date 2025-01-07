@@ -11,10 +11,11 @@ const mediaSchema = new mongoose.Schema({
     },
     mediaType:{
         type: String,
-        enum:["Video","Image","Text"],
-        // required:true,
+        enum:["video","image","text"],
+        required:true,
     },
 
 },{timestamps:true})
 
 export const Media = mongoose.models.Media ||  mongoose.model("Media",mediaSchema)
+// export const Media =  mongoose.model("Media",mediaSchema)

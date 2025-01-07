@@ -29,33 +29,106 @@ const getIgId = async (email: string, platforms: any[]) => {
     console.error('Error fetching access token:', error);
   }
 };
-const postInstagram = async (igId: any, token:any,formData: any) => {
-   const containerId =  await fetch(`https://graph.facebook.com/v21.0/${igId}/media?image_url=${formData.image}&caption=${formData.description}`,{
+const postInstagram = async (
+  igId: string,
+  token: string,
+  formData: { image?: string; video?: string; description: string },
+  mediaType: 'image' | 'video'
+) => {
+  try {
+    let mediaUrl = '';
+    let mediaPayload = '';
+
+    // Handle Image or Video Media Type
+    if (mediaType === 'image') {
+      mediaUrl = formData.image || '';
+      mediaPayload = `image_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}`;
+    } else if (mediaType === 'video') {
+      mediaUrl = formData.image || ''; // Make sure formData.video is used for video
+      mediaPayload = `video_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}&media_type=REELS`;
+    } else {
+      throw new Error('Invalid mediaType. Use "image" or "video".');
+    }
+
+    console.log('Posting media to Instagram:', mediaType, mediaUrl);
+
+    // Step 1: Create Media Container
+    const containerResponse = await fetch(
+      `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+      {
         method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
-    });
-    const containerData = await containerId.json() as { id: string };
-    
-    try {
+      }
+    );
 
-        const post = await fetch(`https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${containerData.id}`,{
-            method: 'POST',
-            headers: {
-                // 'Content-Type': 'application/json',
-                "Authorization": `Bearer ${token}`,
-
-            },
-        });
-        const postData = await post.json();
-    } catch (error) {
-        console.log("error",error);
-        
+    const containerData = await containerResponse.json() as { id?: string };
+    if (!containerData.id) {
+      console.error('Failed to create media container:', containerData);
+      return;
     }
-    
-}; 
+
+    console.log('Container created with ID:', containerData.id);
+
+    // Step 2: Check Media Status and Publish when Ready
+    const checkMediaStatus = async (containerId: string) => {
+      let statusCode;
+      let attempts = 0;
+      const maxAttempts = 10; // Increased the number of attempts
+      const retryDelay = 10000; // 10 seconds between each retry
+
+      while (attempts < maxAttempts) {
+        const statusResponse = await fetch(
+          `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
+          {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const statusData = await statusResponse.json();
+        statusCode = (statusData as { status_code: string }).status_code;
+
+        if (statusCode === 'FINISHED') {
+          console.log('Media is ready to be published');
+          break; // Media is ready, break out of the loop
+        }
+
+        attempts++;
+        console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
+      }
+
+      if (statusCode !== 'FINISHED') {
+        throw new Error('Media not ready after multiple attempts');
+      }
+    };
+
+    // Wait for the media to be ready before publishing
+    await checkMediaStatus(containerData.id);
+
+    // Step 3: Publish the Media
+    const publishResponse = await fetch(
+      `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${containerData.id}`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const publishData = await publishResponse.json();
+    console.log('Media published:', publishData);
+  } catch (error) {
+    console.error('Error publishing media to Instagram:', error);
+  }
+};
+
+ 
 const getToken = async (existedUser:any,platforms:string[]) => {
   // const existedUser = await User.findOne({email:email});
   if(!existedUser){
@@ -193,7 +266,11 @@ export const processJob = async (job: any) => {
       if(platforms.name.toLowerCase() === 'instagram')
       {
         const igId = await getIgId(job.data.email, job.data.formData.platforms);
-        postInstagram(igId?.igId,igId?.token, job.data.formData);
+        if (igId?.igId && igId?.token) {
+          postInstagram(igId.igId, igId.token, job.data.formData, job.data.mediaType);
+        } else {
+          console.error('Instagram ID or token is undefined');
+        }
       }
        else if(platforms.name.toLowerCase() === 'linkedin')
       {

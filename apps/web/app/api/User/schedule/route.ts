@@ -6,11 +6,12 @@ export async function POST(req:any) {
   try {
     dbConnection();
     const val = await req.json();    
-    const {formData,email} = val;
+    const {formData,email,mediaType} = val;
     const dateTime = new Date(formData.dateTime);
     const queueData = {
       formData,
-      email
+      email,
+      mediaType
     }
     
     if (isNaN(dateTime.getTime())) {
