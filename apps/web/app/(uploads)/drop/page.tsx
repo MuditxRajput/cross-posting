@@ -28,8 +28,7 @@ export default function Upload() {
     })
   }, [])
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
-
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop }) 
   return (
     // (media.length==0 && )
     <div className="w-full max-w-6xl mx-auto px-4">

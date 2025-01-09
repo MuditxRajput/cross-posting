@@ -18,10 +18,11 @@ const steps = [
   { id: 4, title: 'Submit' },
 ]
 
-const platforms = [
-  { name: 'Instagram',account :[] },
-  { name: 'LinkedIn',account :[] },
-]
+// const platforms = [
+//   { name: 'Instagram',account :[] },
+//   { name: 'LinkedIn',account :[] },
+//   {name: 'Youtube',account :[]},
+// ]
 
 interface Platform {
   name: string;
@@ -54,8 +55,6 @@ const StepForm = ({image}:any) => {
 
   const handlePlatformChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
- 
-  
     setFormData((prev) => {
       const platformIndex = prev.platforms.findIndex(p => p.name === name);
   
@@ -107,7 +106,7 @@ const StepForm = ({image}:any) => {
            title: 'Success',
            description: 'Post Schedule is successfully!',
          })
-         window.location.href = '/';
+        //  window.location.href = '/';
        }
        else {
          toast({

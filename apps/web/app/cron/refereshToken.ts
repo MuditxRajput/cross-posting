@@ -1,61 +1,79 @@
-import { User } from '@database/database';
+import { dbConnection, User } from "@database/database";
 import { CronJob } from 'cron';
-import { useSession } from 'next-auth/react';
-const cronJob = new CronJob('0 0 0 * * *', async () => {
-    const session = useSession();
-    // we have to check which instgram account access token is expired in 2 days..
-    const existedUser = await User.findOne({
-        email: session.data?.user?.email,   
-        socialAccounts:{
-            $elemMatch:{
-                expiresIn: {
-                    $lte: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
-                }
-            }
-        }
+const cronJob = new CronJob(
+  '0 0 0 * * 0', // At midnight on Sunday every week
+  async () => {
+    try {
+      await dbConnection(); // Ensure DB connection
 
-    })
-    // if the user is not found then return
-    if(!existedUser){
-        return;
-    }
-    // if the user is found then we have to refresh the access token
-if(existedUser.socialAccounts)
-{
-  for(const platform of existedUser.socialAccounts)
-  {
-    if(platform.socialName === 'Instagram')
-    {
-      const longlivedToken = await fetch(`https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=4196765553928348&client_secret=f1e86ae43a659bcec80deb92928a4717&fb_exchange_token=${platform.accessToken}`);
-      const val = await longlivedToken.json();
-      const updatedUser = await User.findOneAndUpdate(
-        {
-          email: session.data?.user?.email,
-          "socialAccounts.accountsId": { $ne: platform.accountsId }, // Check if the Instagram ID is not already present
-        },
-        {
-          $addToSet: {
-            connectedPlatform: "Instagram",
-            socialAccounts: {
-              socialName: "Instagram",
-              accessToken: val.access_token,
-              refreshToken: val.access_token,
-              accounts: platform.accounts,
-              accountsId: platform.accountsId,
-              expiresIn: Date.now()+ 60*60*24*60*1000,
-            },
+      const users = await User.find({
+        socialAccounts: {
+          $elemMatch: {
+            expiresIn: { $lte: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) }, // Tokens expiring within 2 days
           },
         },
-        { new: true }
-      );
-  }
-  else if(platform.socialName === 'linkedin')
-  {
-    // code for linkedin
-    window.open('https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86ij8xunmbhjqh&redirect_uri=http://localhost:3000/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email')
+      });
 
+      for (const user of users) {
+        for (const platform of user.socialAccounts || []) {
+          if (platform.expiresIn && platform.expiresIn <= new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)) {
+            const refreshedToken = await refreshToken(
+              platform.socialName,
+              platform.accessToken!,
+              platform.refreshToken ?? undefined
+            );
+
+            if (refreshedToken) {
+              // Update the token in the database
+              platform.accessToken = refreshedToken.accessToken;
+              platform.expiresIn = new Date(refreshedToken.expiresIn);
+            }
+          }
+        }
+        await user.save(); // Save updated tokens for each user
+      }
+    } catch (error) {
+      console.error('Error running cron job:', error);
+    }
+  },
+  null,
+  true // Start the job right after defining it
+);
+async function refreshToken(platform: string, accessToken: string, refreshToken?: string) {
+  try {
+    if (platform === 'Instagram') {
+      const response = await fetch(
+        `https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&fb_exchange_token=${accessToken}`
+      );
+      const data = await response.json();
+      if (data.access_token) {
+        return {
+          accessToken: data.access_token,
+          expiresIn: Date.now() + 60 * 60 * 24 * 60 * 1000, // 60 days expiration
+        };
+      }
+    } else if (platform === 'YouTube') {
+      const response = await fetch('https://oauth2.googleapis.com/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          client_id: process.env.GOOGLE_CLIENT_ID,
+          client_secret: process.env.GOOGLE_CLIENT_SECRET,
+          refresh_token: refreshToken,
+          grant_type: 'refresh_token',
+        }),
+      });
+      const data = await response.json();
+      if (data.access_token) {
+        return {
+          accessToken: data.access_token,
+          expiresIn: Date.now() + data.expires_in * 1000, // Calculate expiration
+        };
+      }
+    }
+    // Add more platforms as needed
+  } catch (error) {
+    console.error(`Error refreshing token for ${platform}:`, error);
+    return null;
   }
 }
-   
-}
-}, null, true);
