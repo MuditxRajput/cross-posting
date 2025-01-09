@@ -54,7 +54,7 @@ const StepForm = ({image}:any) => {
 
   const handlePlatformChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
-    console.log('Platform Change:', { name, value, checked }); // Debug log
+ 
   
     setFormData((prev) => {
       const platformIndex = prev.platforms.findIndex(p => p.name === name);
@@ -66,7 +66,7 @@ const StepForm = ({image}:any) => {
           // Add account to existing platform
           if (updatedPlatforms[platformIndex] && !updatedPlatforms[platformIndex].account.includes(value)) {
             updatedPlatforms[platformIndex].account.push(value);
-            console.log('Added account to existing platform:', updatedPlatforms); // Debug log
+         
           }
         } else {
           // Remove account from platform
@@ -78,16 +78,16 @@ const StepForm = ({image}:any) => {
           if (updatedPlatforms[platformIndex] && updatedPlatforms[platformIndex].account.length === 0) {
             updatedPlatforms.splice(platformIndex, 1);
           }
-          console.log('Removed account from platform:', updatedPlatforms); // Debug log
+      
         }
       } else if (checked) {
         // Add new platform
         updatedPlatforms.push({ name, account: [value] });
-        console.log('Added new platform:', updatedPlatforms); // Debug log
+      
       }
   
       const newState = { ...prev, platforms: updatedPlatforms };
-      console.log('New Form State:', newState); // Debug log
+  
       return newState;
     });
   };
@@ -99,18 +99,15 @@ const StepForm = ({image}:any) => {
       setCurrentStep(currentStep + 1)
     } else {
       setLoading(true);
-      // Handle final submission
      const res = await saveToCloudinary(image);
-    //  console.log("final response",res);
-     
-    //    const val = await res.json();
+
        if(res.success)
        {
          toast({
            title: 'Success',
            description: 'Post Schedule is successfully!',
          })
-        //  window.location.href = '/';
+         window.location.href = '/';
        }
        else {
          toast({
@@ -120,7 +117,7 @@ const StepForm = ({image}:any) => {
          })
        }
       
-      alert('Form submitted successfully!')
+      // alert('Form submitted successfully!')
     }
   }
   const saveToCloudinary=async(image:any)=>{
@@ -135,7 +132,7 @@ const StepForm = ({image}:any) => {
       const data = await response.json();
       if(data.url)
       {
-        console.log("Data",data.url);
+        
         const cloudinaryImage = data.url;
         formData.image = data.url;
         const userEmail =   session.data?.user?.email;
@@ -148,7 +145,7 @@ const StepForm = ({image}:any) => {
         },
         body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail,mediaType})
       });
-      console.log("Res while saving in media",res);
+      
       const val = await res.json();
       console.log("media",val);
       if(val.success)
@@ -162,7 +159,6 @@ const StepForm = ({image}:any) => {
           body:JSON.stringify({formData,email:userEmail,mediaType})
         })
         const val1 = await resp.json();
-        console.log("data from the schedule",val1);
         if(val1.success) setLoading(false);
         return val1;
       }

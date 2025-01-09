@@ -25,15 +25,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ steps, currentStep }) => {
         {steps.map((step, index) => (
           <div key={step.id} className="relative flex flex-col items-center">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center border-2 bg-white z-10 transition-all duration-300 ${
-                index < currentStep
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : index === currentStep
-                  ? 'border-primary text-primary'
-                  : 'border-gray-300 text-gray-300'
+              className={`w-10 h-10 rounded-full flex items-center justify-center border-2 bg-green-400 z-10 transition-all duration-300 ${
+                index+1 < currentStep
+                  ? 'border-2 bg-black text-primary-foreground'
+                  : 'border-black text-black'
               }`}
             >
-              {index < currentStep ? (
+              {index+1 < currentStep ? (
                 <CheckIcon className="w-6 h-6" />
               ) : (
                 <span>{step.id}</span>
@@ -41,7 +39,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ steps, currentStep }) => {
             </div>
             <div
               className={`absolute top-12 text-sm whitespace-nowrap ${
-                index <= currentStep ? 'text-primary font-medium' : 'text-gray-500'
+                index <= currentStep ? 'text-primary font-medium' : 'text-black'
               }`}
             >
               {step.title}

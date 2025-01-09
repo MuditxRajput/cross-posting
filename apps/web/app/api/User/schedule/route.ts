@@ -25,7 +25,7 @@ export async function POST(req:any) {
     }
     // Add job to queue
     await postQueue.add("schedulePost", queueData, { delay });
-
+    // console.log("scheduleResponse-??>",scheduleResponse);
     return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
   } catch (error) {
     console.error("Error scheduling post:", error);

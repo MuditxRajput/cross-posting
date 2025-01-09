@@ -123,6 +123,7 @@ const postInstagram = async (
 
     const publishData = await publishResponse.json();
     console.log('Media published:', publishData);
+    return 
   } catch (error) {
     console.error('Error publishing media to Instagram:', error);
   }

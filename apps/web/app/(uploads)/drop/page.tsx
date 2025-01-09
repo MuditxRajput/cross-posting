@@ -31,8 +31,9 @@ export default function Upload() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop })
 
   return (
+    // (media.length==0 && )
     <div className="w-full max-w-6xl mx-auto px-4">
-      <Card
+      {media.length==0 && <Card
         {...getRootProps()}
         className={`p-8 text-center border-dashed border-2 ${
           isDragActive ? 'border-primary' : 'border-gray-300'
@@ -50,7 +51,8 @@ export default function Upload() {
             </>
           )}
         </div>
-      </Card>
+      </Card> }
+      
 
       {/* Conditional Rendering */}
       {media.length === 1 ? (
