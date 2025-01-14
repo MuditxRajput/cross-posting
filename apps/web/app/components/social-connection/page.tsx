@@ -2,7 +2,7 @@ import { removeFacebook, removeInstagram, removeLinkedIn, removeYoutube } from "
 import { RootState } from "@/store/store";
 import { Button } from "@repo/ui/button";
 import { useRouter } from "next/navigation";
-import { FaFacebook } from "react-icons/fa";
+import { FaFacebook, FaPinterest } from "react-icons/fa";
 import { ImLinkedin } from "react-icons/im";
 import { IoLogoYoutube } from "react-icons/io5";
 import { RiInstagramFill } from "react-icons/ri";
@@ -23,7 +23,9 @@ const SocialConnection = () => {
     { name: "Facebook", icon: <FaFacebook />, color: "bg-blue-600", account: facebook },
     { name: "YouTube", icon: <IoLogoYoutube />, color: "bg-red-600", account: youtube },
     { name: "LinkedIn", icon: <ImLinkedin />, color: "bg-blue-800", account: linkedln },
+    { name: "Pinterest", icon: <FaPinterest />, color: "bg-red-700", account: null }, // Provide an empty array for Pinterest
   ];
+  
 
   const apiHandler = async (name: string) => {
     if (name === "Instagram") {
@@ -69,23 +71,27 @@ const SocialConnection = () => {
                 <span className="ml-auto text-gray-400 text-xl hover:text-black font-bold">+</span>
               </div>
               <span className="text-gray-600">
-                {val.account && val.account.length > 0 ? (
+              {val.account && val.account.length > 0 ? (
                   val.account
-                  .filter((val)=>val!==null)
-                  .map((social, idx) => (
-                    <div key={idx} className="bg-gray-200 text-black rounded-full px-2 py-1 inline-flex items-center gap-1">
-                      {social}
-                      <span
-                        className="text-black hover:text-red-500 cursor-pointer text-md"
-                        onClick={() => removeAccount(social, val.name)}
-                      >
-                        x
-                      </span>
-                    </div>
-                  ))
-                ) : (
+                    .filter((val) => val !== null)
+                    .map((social, idx) => (
+                      <div key={idx} className="bg-gray-200 text-black rounded-full px-2 py-1 inline-flex items-center gap-1">
+                        {social}
+                        <span
+                          className="text-black hover:text-red-500 cursor-pointer text-md"
+                          onClick={() => removeAccount(social, val.name)}
+                        >
+                          x
+                        </span>
+                      </div>
+                    ))
+                ) :
+                (val.account===null ) ? "Comming soon..":
+                
+                (
                   "Not Connected"
                 )}
+
               </span>
             </div>
           ))}

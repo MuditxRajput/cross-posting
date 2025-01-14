@@ -258,107 +258,205 @@ if(response)
   
 }
 }
-const getYoutubeAccessToken =(account :any,existedUser :any)=>{
+// const getYoutubeAccessToken =async(account :any,existedUser :any)=>{
+//   try {
+//       const sameAccountDetail = await existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase()==="youtube");
+//       console.log("->>>>",sameAccountDetail);
+      
+//       return sameAccountDetail.accessToken;
+//   } catch (error) {
+//     return error;
+//   }
+// }
+// const youtubePosting = async (token: string, existedUser: any, formData: any) => {
+//   try {
+//     // Step 1: Download the video from Cloudinary using the video URL (formData.image)
+//     const cloudinaryVideoUrl = formData.image;  // Cloudinary video URL from formData
+//     const cloudinaryResponse = await fetch(cloudinaryVideoUrl);
+
+//     if (!cloudinaryResponse.ok) {
+//       throw new Error('Failed to download video from Cloudinary');
+//     }
+
+//     const videoBlob = await cloudinaryResponse.blob(); // Get video as Blob
+
+//     // Step 2: Initiate Resumable Upload on YouTube
+//     const initResponse = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable', {
+//       method: 'POST',
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         snippet: {
+         
+//           description: formData.description,
+//         },
+//         status: {
+//           privacyStatus:  'public',  // Can be 'public', 'private', or 'unlisted'
+//         },
+//       }),
+//     });
+
+//     if (!initResponse.ok) {
+//       throw new Error('Failed to initiate upload');
+//     }
+
+//     const initData = await initResponse.json() as { uploadUrl: string, id: string };
+//     const uploadUrl = initData.uploadUrl; // The URL for uploading the video file
+
+//     // Step 3: Upload Video Data to YouTube
+//     const chunkSize = 256 * 1024; // 256KB chunk size for video upload (adjust as needed)
+//     let offset = 0;
+
+//     // Upload in chunks
+//     while (offset < videoBlob.size) {
+//       const chunk = videoBlob.slice(offset, offset + chunkSize);
+//       const chunkResponse = await fetch(uploadUrl, {
+//         method: 'PUT',
+//         headers: {
+//           'Content-Length': chunk.size.toString(),
+//           'Content-Range': `bytes ${offset}-${offset + chunk.size - 1}/${videoBlob.size}`,
+//         },
+//         body: chunk,
+//       });
+
+//       if (!chunkResponse.ok) {
+//         throw new Error('Failed to upload video chunk');
+//       }
+
+//       offset += chunk.size; // Increment the offset for the next chunk
+//     }
+
+//     // Step 4: Publish the Video (if needed)
+//     const publishResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,status&id=${initData.id}`, {
+//       method: 'PUT',
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({
+//         snippet: {
+//           description: formData.description,
+//         },
+//         status: {
+//           privacyStatus:  'public',  // Could be 'public', 'private', 'unlisted'
+//         },
+//       }),
+//     });
+
+//     if (!publishResponse.ok) {
+//       throw new Error('Failed to publish video');
+//     }
+
+//     const videoData = await publishResponse.json();
+//     console.log('Video Published:', videoData);
+//     return videoData;
+
+//   } catch (error) {
+//     console.error('Error uploading video:', error);
+//   }
+// };
+const getYoutubeAccessToken = async (account:any, existedUser:any) => {
   try {
-      const sameAccountDetail = existedUser.socialAccounts.find((acc:any)=>acc.toLowerCase()==="YouTube");
-      return sameAccountDetail.accessToken;
+    const sameAccountDetail = existedUser.socialAccounts.find(
+      (acc:any) => acc.socialName.toLowerCase() === "youtube"
+    );
+
+    if (!sameAccountDetail || !sameAccountDetail.accessToken) {
+      throw new Error("YouTube access token not found for this user.");
+    }
+
+    return sameAccountDetail.accessToken;
   } catch (error) {
-    return error;
+    console.error("Error fetching YouTube access token:", error);
+    throw error;
   }
-}
-const youtubePosting = async (token: string, existedUser: any, formData: any) => {
+};
+
+const youtubePosting = async (token:any, existedUser:any, formData:any) => {
   try {
-    // Step 1: Download the video from Cloudinary using the video URL (formData.image)
-    const cloudinaryVideoUrl = formData.image;  // Cloudinary video URL from formData
+    // Step 1: Download the video from Cloudinary
+    const cloudinaryVideoUrl = formData.image;
     const cloudinaryResponse = await fetch(cloudinaryVideoUrl);
 
     if (!cloudinaryResponse.ok) {
-      throw new Error('Failed to download video from Cloudinary');
+      throw new Error("Failed to download video from Cloudinary.");
     }
 
-    const videoBlob = await cloudinaryResponse.blob(); // Get video as Blob
+    const videoBlob = await cloudinaryResponse.blob();
 
     // Step 2: Initiate Resumable Upload on YouTube
-    const initResponse = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        snippet: {
-         
-          description: formData.description,
+    const initResponse = await fetch(
+      "https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        status: {
-          privacyStatus:  'public',  // Can be 'public', 'private', or 'unlisted'
-        },
-      }),
-    });
+        body: JSON.stringify({
+          snippet: {
+            title: formData.title || "Untitled Video",
+            description: formData.description || "No description provided",
+          },
+          status: {
+            privacyStatus: formData.privacyStatus || "public", // 'public', 'private', or 'unlisted'
+          },
+        }),
+      }
+    );
 
     if (!initResponse.ok) {
-      throw new Error('Failed to initiate upload');
+      const errorDetails = await initResponse.text();
+      console.error("Initiate Upload Error Details:", errorDetails);
+      throw new Error("Failed to initiate video upload.");
     }
 
-    const initData = await initResponse.json() as { uploadUrl: string, id: string };
-    const uploadUrl = initData.uploadUrl; // The URL for uploading the video file
+    const uploadUrl = initResponse.headers.get("location");
+    if (!uploadUrl) {
+      throw new Error("Upload URL not found in initiation response.");
+    }
 
     // Step 3: Upload Video Data to YouTube
-    const chunkSize = 256 * 1024; // 256KB chunk size for video upload (adjust as needed)
+    const chunkSize = 256 * 1024; // 256KB chunk size
     let offset = 0;
 
-    // Upload in chunks
     while (offset < videoBlob.size) {
       const chunk = videoBlob.slice(offset, offset + chunkSize);
       const chunkResponse = await fetch(uploadUrl, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Length': chunk.size.toString(),
-          'Content-Range': `bytes ${offset}-${offset + chunk.size - 1}/${videoBlob.size}`,
+          "Content-Length": chunk.size.toString(),
+          "Content-Range": `bytes ${offset}-${
+            offset + chunk.size - 1
+          }/${videoBlob.size}`,
         },
         body: chunk,
       });
 
       if (!chunkResponse.ok) {
-        throw new Error('Failed to upload video chunk');
+        const errorDetails = await chunkResponse.text();
+        console.error("Chunk Upload Error Details:", errorDetails);
+        throw new Error("Failed to upload video chunk.");
       }
 
-      offset += chunk.size; // Increment the offset for the next chunk
+      offset += chunk.size;
     }
 
-    // Step 4: Publish the Video (if needed)
-    const publishResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,status&id=${initData.id}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        snippet: {
-          description: formData.description,
-        },
-        status: {
-          privacyStatus:  'public',  // Could be 'public', 'private', 'unlisted'
-        },
-      }),
-    });
-
-    if (!publishResponse.ok) {
-      throw new Error('Failed to publish video');
-    }
-
-    const videoData = await publishResponse.json();
-    console.log('Video Published:', videoData);
-    return videoData;
-
+    console.log("Video uploaded successfully.");
+    return { message: "Video uploaded successfully", uploadUrl };
   } catch (error) {
-    console.error('Error uploading video:', error);
+    console.error("Error during video upload:", error);
+    throw error;
   }
 };
 
 export const processJob = async (job: any) => {
     // console.log('Processing job:', job);
    const existedUser = await User.findOne({email:job.data.email});
+   console.log("existedUser",existedUser);
+   
     for(const platforms of job.data.formData.platforms)
     {
       if(platforms.name.toLowerCase() === 'instagram')
@@ -383,8 +481,10 @@ export const processJob = async (job: any) => {
         // get the access token from the google
         console.log(job.data.formData.platforms);
         
-        const token = getYoutubeAccessToken(platforms.account,existedUser);
-        const responseAfterPost  = youtubePosting(token,existedUser,job.data.formData);
+        const token = await getYoutubeAccessToken(platforms.account,existedUser);
+        console.log("youtube",token);
+        
+        const responseAfterPost  = await youtubePosting(token,existedUser,job.data.formData);
         console.log("after posting in youtube->>",responseAfterPost);
         
       }
