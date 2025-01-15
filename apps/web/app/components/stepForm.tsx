@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from "@/hooks/use-toast"
+import { setCycle } from '@/store/slices/social-account'
 import { RootState, SocialState } from '@/store/store'
 import { format, parseISO } from 'date-fns'
 import { useSession } from 'next-auth/react'
 import { useState } from 'react'
 import { ThreeDot } from "react-loading-indicators"
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import ProgressBar from './progressBar'
 const steps = [
   { id: 1, title: 'Enter Description' },
@@ -18,11 +19,6 @@ const steps = [
   { id: 4, title: 'Submit' },
 ]
 
-// const platforms = [
-//   { name: 'Instagram',account :[] },
-//   { name: 'LinkedIn',account :[] },
-//   {name: 'Youtube',account :[]},
-// ]
 
 interface Platform {
   name: string;
@@ -34,9 +30,11 @@ interface FormData {
     dateTime: string;
     image : string;
 }
+
+
 const StepForm = ({image}:any) => {
-  // console.log("images or video - > ",image);
-  
+
+  const dispatch = useDispatch();
     const session = useSession();
     const { toast } = useToast()
     const allConnectedAccount = useSelector((state: RootState) => state.social);
@@ -52,7 +50,7 @@ const StepForm = ({image}:any) => {
     const { name, value } = e.target
     setFormData({ ...formData, [name]: value })
   }
-
+ 
   const handlePlatformChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;
     setFormData((prev) => {
@@ -99,7 +97,6 @@ const StepForm = ({image}:any) => {
     } else {
       setLoading(true);
      const res = await saveToCloudinary(image);
-
        if(res.success)
        {
          toast({
@@ -109,13 +106,16 @@ const StepForm = ({image}:any) => {
         //  window.location.href = '/';
        }
        else {
-         toast({
-           title: 'Error',
-           description: 'Error in submitting the form!',
-           
-         })
+         if(res.error)
+         {
+           toast({
+            title :"Something went wrong",
+           })
+         }
+         else if(!res.success){
+          dispatch(setCycle(true));
+         }
        }
-      
       // alert('Form submitted successfully!')
     }
   }
@@ -159,6 +159,7 @@ const StepForm = ({image}:any) => {
         })
         const val1 = await resp.json();
         if(val1.success) setLoading(false);
+         console.log("response from schedule",val1);
         return val1;
       }
       else return val;

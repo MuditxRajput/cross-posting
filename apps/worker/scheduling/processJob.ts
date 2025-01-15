@@ -453,10 +453,7 @@ const youtubePosting = async (token:any, existedUser:any, formData:any) => {
 };
 
 export const processJob = async (job: any) => {
-    // console.log('Processing job:', job);
    const existedUser = await User.findOne({email:job.data.email});
-   console.log("existedUser",existedUser);
-   
     for(const platforms of job.data.formData.platforms)
     {
       if(platforms.name.toLowerCase() === 'instagram')
@@ -470,22 +467,16 @@ export const processJob = async (job: any) => {
       }
        else if(platforms.name.toLowerCase() === 'linkedin')
       {
-        // code for linkedin
+
         const data = await getToken(existedUser, platforms.account);
         const step1Res =  await step1(data?.accountsId, data?.token);
         const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
-
       }
       else if(platforms.name.toLowerCase()==='youtube')
       {
-        // get the access token from the google
-        console.log(job.data.formData.platforms);
-        
         const token = await getYoutubeAccessToken(platforms.account,existedUser);
-        console.log("youtube",token);
-        
         const responseAfterPost  = await youtubePosting(token,existedUser,job.data.formData);
-        console.log("after posting in youtube->>",responseAfterPost);
+
         
       }
     }

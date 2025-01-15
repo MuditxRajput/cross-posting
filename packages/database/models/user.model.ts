@@ -15,6 +15,7 @@ interface UserDocument extends Document {
   password: string;
   connectedPlatform?: string[];
   socialAccounts?: SocialAccount[];
+  cycle :Number
 }
 
 const userSchema = new mongoose.Schema<UserDocument>(
@@ -33,6 +34,10 @@ const userSchema = new mongoose.Schema<UserDocument>(
     connectedPlatform: {
       type: [String],
     },
+    cycle:{
+      type : Number,
+      default :5,
+    },
     socialAccounts: [
       {
         socialName: { type: String },
@@ -43,6 +48,7 @@ const userSchema = new mongoose.Schema<UserDocument>(
         expiresIn: { type: Date },
       },
     ],
+   
   },
   { timestamps: true }
 );

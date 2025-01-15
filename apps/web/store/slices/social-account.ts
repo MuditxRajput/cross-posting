@@ -6,7 +6,8 @@ const socialSlice = createSlice({
     youtube: [] as string[],
     facebook: [] as string[],
     linkedIn: [] as string[],
-    instagram: [] as string[]
+    instagram: [] as string[],
+    cycle : false
   },
   reducers: {
     setYoutube: (state, action) => {
@@ -40,9 +41,12 @@ const socialSlice = createSlice({
     },
     removeFacebook : (state,action)=>{
         state.facebook = state.facebook.filter((item)=>item!==action.payload);
+    },
+    setCycle : (state,action)=>{
+      state.cycle = action.payload
     }
   }
 });
 
-export const { setYoutube, setFacebook, setLinkedIn, setInstagram,removeYoutube,removeInstagram ,removeLinkedIn,removeFacebook} = socialSlice.actions;
+export const {setCycle, setYoutube, setFacebook, setLinkedIn, setInstagram,removeYoutube,removeInstagram ,removeLinkedIn,removeFacebook} = socialSlice.actions;
 export default socialSlice.reducer;

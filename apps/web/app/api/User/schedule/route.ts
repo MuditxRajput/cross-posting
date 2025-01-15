@@ -1,5 +1,5 @@
 import { postQueue } from "@/app/services/queue";
-import { dbConnection } from "@database/database";
+import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(req:any) {
@@ -23,10 +23,14 @@ export async function POST(req:any) {
     if (delay <= 0) {
       return NextResponse.json({ message: "DateTime must be in the future", success: false });
     }
-    // Add job to queue
-    await postQueue.add("schedulePost", queueData, { delay });
-    // console.log("scheduleResponse-??>",scheduleResponse);
-    return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
+    const existedUser = await User.findOne({email:email});
+    if (existedUser && typeof existedUser.cycle === 'number' && existedUser.cycle > 0) {
+      existedUser.cycle = existedUser.cycle - 1;
+      await existedUser.save();
+      await postQueue.add("schedulePost", queueData, { delay });
+      return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
+    }
+    else return NextResponse.json({msg:"cycle complete",success:false});
   } catch (error) {
     console.error("Error scheduling post:", error);
     return NextResponse.json({ message: "Failed to schedule post", success: false ,error});
