@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useToast } from "@/hooks/use-toast"
-import { setCycle } from '@/store/slices/social-account'
+import { reduceCycle } from '@/store/slices/social-account'
 import { RootState, SocialState } from '@/store/store'
 import { format, parseISO } from 'date-fns'
 import { useSession } from 'next-auth/react'
@@ -113,7 +113,7 @@ const StepForm = ({image}:any) => {
            })
          }
          else if(!res.success){
-          dispatch(setCycle(true));
+          dispatch(reduceCycle(1));
          }
        }
       // alert('Form submitted successfully!')

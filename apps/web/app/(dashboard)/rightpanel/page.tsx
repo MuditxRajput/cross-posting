@@ -7,7 +7,6 @@ const RightPanel = () => {
   return (
     <div className=" relative h-[660px] bg-white w-full rounded-xl">
       <SocialConnection/>
-     
     </div>
   );
 };

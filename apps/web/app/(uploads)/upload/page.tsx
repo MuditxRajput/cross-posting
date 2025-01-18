@@ -7,7 +7,7 @@ const upload = () => {
   const cycle = useSelector((state: { social: { cycle: any } }) => state.social.cycle);
   return (
     <div className= " relative bg-slate-100 flex gap-6 px-2 pt-2 ">
-         {cycle &&
+         {cycle <0 &&
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
       <div className="bg-white p-6 rounded-lg shadow-lg text-center">
         <h2 className="text-xl font-bold mb-4 ">Free Credit is over ❗</h2>

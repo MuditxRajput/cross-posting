@@ -1,4 +1,4 @@
-import { v2 as cloudinary } from 'cloudinary';
+import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -8,25 +8,18 @@ cloudinary.config({
 
 export async function POST(req: any) {
   try {
-    const { image, fileType } = await req.json();
+    const { image, fileType, aspectRatio } = await req.json();
     const resourceType = fileType === "video" ? "video" : "image";
 
-    // Determine aspect ratio and transformation dynamically
-    const transformations =
-      fileType === "video"
-        ? [
-            {
-              // Default to 16:9 if specific aspect ratio not provided
-              aspect_ratio: "9:16",
-              crop: "fill",
-            },
-          ]
-        : [
-            {
-              aspect_ratio: "4:5", // Default for images
-              crop: "fill",
-            },
-          ];
+    // Set default aspect ratios if not provided
+    const defaultAspectRatio = fileType === "video" ? "16:9" : "4:5";
+
+    const transformations = [
+      {
+        aspect_ratio: aspectRatio || defaultAspectRatio, // Use provided or default
+        crop: "fill", // Fill to match the aspect ratio
+      },
+    ];
 
     const uploadResult = await cloudinary.uploader.upload(image, {
       folder: "uploads",
@@ -38,13 +31,14 @@ export async function POST(req: any) {
       JSON.stringify({
         url: uploadResult.secure_url,
         type: fileType,
+        public_id: uploadResult.public_id,
       }),
       {
         status: 200,
       }
     );
   } catch (error) {
-    console.log("upload error", error);
+    console.error("Upload error:", error);
 
     return new Response(
       JSON.stringify({ msg: error || "Upload failed" }),
@@ -53,9 +47,8 @@ export async function POST(req: any) {
   }
 }
 
-
 export const GET = () => {
-  return new Response('Method GET not supported for this endpoint', {
+  return new Response("Method GET not supported for this endpoint", {
     status: 405,
   });
 };
