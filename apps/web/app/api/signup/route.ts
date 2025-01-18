@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     try {
         await dbConnection();
         const userData = await req.json();
-        console.log("Received user data:", userData); // Log received data
+
 
         const { email, password, name } = userData;
 

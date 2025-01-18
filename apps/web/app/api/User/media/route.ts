@@ -9,9 +9,6 @@ export async function POST(req:any, res:any) {
         const val = await req.json();
         const { data, urlData, email, mediaType } = val;
 
-        // Log the incoming request data
-        console.log("Request Data:", val);
-        console.log("<<<<<MediaType>>>--->",mediaType);
         
         // Check for missing fields
         if (!data || !urlData || !email || !mediaType) {

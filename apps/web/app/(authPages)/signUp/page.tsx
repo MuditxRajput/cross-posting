@@ -1,9 +1,9 @@
 "use client"
 import { useToast } from "@/hooks/use-toast";
 import { signIn } from "next-auth/react";
+import Link from 'next/link';
 import { useState } from "react";
 import { FaGoogle } from "react-icons/fa";
-
 
 const Signup = () => {
   const { toast } = useToast()
@@ -109,9 +109,9 @@ const Signup = () => {
                 </div>  
               <p className="text-sm font-light text-gray-500">
                 Already have an account?{" "}
-                <a href="#" className="font-medium text-blue-600 hover:underline">
+                <Link href="./login" className="font-medium text-blue-600 hover:underline">
                   Login here
-                </a>
+                </Link>
               </p>
             </form>
           </div>

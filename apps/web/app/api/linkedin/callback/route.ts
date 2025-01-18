@@ -53,9 +53,8 @@ export async function GET(request: NextRequest) {
 
     // Store LinkedIn data in the user's record
     await dbConnection();
-    const existedUser = await User.findOne({ email: session?.user?.email });
-    // const existedLinkedln = existedUser?.connectedPlatform?.includes("LinkedIn");
-    // if (!existedLinkedln) {
+
+    
       const user = await User.findOneAndUpdate(
         { email: session?.user?.email, "socialAccounts.accountsId": { $ne: profileData.sub } },
         {
