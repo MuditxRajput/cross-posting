@@ -28,12 +28,9 @@ interface FormData {
     description: string;
     platforms: Platform[];
     dateTime: string;
-    image : string;
+    image : string[];
 }
-
-
 const StepForm = ({image}:any) => {
-
   const dispatch = useDispatch();
     const session = useSession();
     const { toast } = useToast()
@@ -43,7 +40,7 @@ const StepForm = ({image}:any) => {
     description: '',
     platforms: [] as Platform[],
     dateTime: '',
-    image :''
+    image :[]
   })
   const [loading,setLoading]  = useState(false);
   const handleInputChange = (e: any) => {
@@ -122,34 +119,21 @@ const StepForm = ({image}:any) => {
   const saveToCloudinary=async(image:any)=>{
     // setLoading(true);
     try {
-      const fileType = image.startsWith('data:image') ? 'image' :'video';
+      console.log("image from cloudinary",image);
+      const fileType = image[0]?.src?.startsWith('data:image') ? 'image' :'video';
+      console.log("filetype",fileType);
       const response = await fetch("http://localhost:3000/api/cloudinary",{
         method : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({image,fileType})
       })
       const data = await response.json();
-      if(data.url)
+      if((data.uploadedImages).length>0)
       {
-        
-        const cloudinaryImage = data.url;
-        formData.image = data.url;
+        // const cloudinaryImage = data.url;
+        formData.image = data.uploadedImages;
         const userEmail =   session.data?.user?.email;
-        const mediaType = data.type
-       // we need to save the data.url in the database with timestamp
-      const res =await fetch("http://localhost:3000/api/User/media",{
-        method : "POST",
-        headers:{
-          "Content-Type" : "Application/json"
-        },
-        body : JSON.stringify({data:formData , urlData:cloudinaryImage,email:userEmail,mediaType})
-      });
-      
-      const val = await res.json();
-      console.log("media",val);
-      if(val.success)
-      {
-        
+        const mediaType = fileType
         const resp = await fetch('http://localhost:3000/api/User/schedule',{
           method:"POST",
           headers:{
@@ -161,8 +145,7 @@ const StepForm = ({image}:any) => {
         if(val1.success) setLoading(false);
          console.log("response from schedule",val1);
         return val1;
-      }
-      else return val;
+      
     }
     else {
         return {meg: "error"}

@@ -8,35 +8,51 @@ cloudinary.config({
 
 export async function POST(req: any) {
   try {
+ 
     const { image, fileType, aspectRatio } = await req.json();
     const resourceType = fileType === "video" ? "video" : "image";
-
-    // Set default aspect ratios if not provided
     const defaultAspectRatio = fileType === "video" ? "16:9" : "4:5";
+     console.log("image get in cloudinary",image);
+     
 
     const transformations = [
       {
-        aspect_ratio: aspectRatio || defaultAspectRatio, // Use provided or default
-        crop: "fill", // Fill to match the aspect ratio
+        aspect_ratio: aspectRatio || defaultAspectRatio,
+        crop: "fill",
       },
     ];
 
-    const uploadResult = await cloudinary.uploader.upload(image, {
-      folder: "uploads",
-      resource_type: resourceType,
-      transformation: transformations,
-    });
+    // Define the upload function inside POST request
+    const uploadCloudinary = async (image: any) => {
+      // Ensure the image is a valid URL or path, add validation here if needed
+      const uploadResult = await cloudinary.uploader.upload(image, {
+        folder: "uploads",
+        resource_type: resourceType,
+        transformation: transformations,
+      });
 
-    return new Response(
-      JSON.stringify({
-        url: uploadResult.secure_url,
-        type: fileType,
-        public_id: uploadResult.public_id,
-      }),
-      {
-        status: 200,
+   
+      return uploadResult;
+    };
+
+    // Check if `image` is an array (multiple images)
+    const uploadedImages = [];
+    if (image.length>1) {
+      for (const img of image) {
+        const uploadResult = await uploadCloudinary(img.src);
+        console.log(uploadResult);
+        uploadedImages.push( uploadResult.url);
       }
-    );
+    } else {
+      // Handle a single image
+      const uploadResult = await uploadCloudinary(image[0].src);
+      console.log(uploadResult);
+      uploadedImages.push(uploadResult.url );
+    }
+    console.log("Upo",uploadedImages);
+    return new Response(JSON.stringify({ status: 200, uploadedImages,success:true }), {
+      status: 200,
+    });
   } catch (error) {
     console.error("Upload error:", error);
 

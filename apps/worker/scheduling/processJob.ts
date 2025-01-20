@@ -31,37 +31,49 @@ const getIgId = async (email: string, platforms: any[]) => {
 const postInstagram = async (
   igId: string,
   token: string,
-  formData: { image?: string; video?: string; description: string },
+  formData: { image?: string[]; video?: string; description: string },
   mediaType: 'image' | 'video'
 ) => {
   try {
-    let mediaUrl = '';
+    let mediaUrl: string[] = [];
     let mediaPayload = '';
-
+    let containerResponse;
     // Handle Image or Video Media Type
     if (mediaType === 'image') {
-      mediaUrl = formData.image || '';
-      mediaPayload = `image_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}`;
+      // multiImage 
+        if(formData.image?.length==1)
+        {
+          //one image image is there
+          mediaUrl = [formData.image[0]];
+          mediaPayload = `image_url=${mediaUrl[0]}&caption=${encodeURIComponent(formData.description)}`;
+          const res = await fetch(
+            `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          containerResponse = res;
+
+        }
+        else{
+          // new api for more than 2 images...
+        }
     } else if (mediaType === 'video') {
-      mediaUrl = formData.image || ''; // Make sure formData.video is used for video
+      mediaUrl = formData.image || []; // Make sure formData.video is used for video
       mediaPayload = `video_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}&media_type=REELS`;
     } else {
       throw new Error('Invalid mediaType. Use "image" or "video".');
     }
 
-    console.log('Posting media to Instagram:', mediaType, mediaUrl);
-
     // Step 1: Create Media Container
-    const containerResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
 
+
+    if (!containerResponse) {
+      throw new Error('Failed to create media container');
+    }
     const containerData = await containerResponse.json() as { id?: string };
     if (!containerData.id) {
       console.error('Failed to create media container:', containerData);

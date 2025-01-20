@@ -7,7 +7,7 @@ const socialSlice = createSlice({
     facebook: [] as string[],
     linkedIn: [] as string[],
     instagram: [] as string[],
-    cycle : 5
+    cycle : 80
   },
   reducers: {
     setYoutube: (state, action) => {

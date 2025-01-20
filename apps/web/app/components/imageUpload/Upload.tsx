@@ -9,8 +9,10 @@ import AdvancedImageEditor from './AdvancedImageEditor'
 import ImagePreview from './ImagePreview'
 import ImageSlider from './imageSlider'
 
+type MediaItem = { type: 'image' | 'video'; src: string }
+
 export default function Upload() {
-  const [media, setMedia] = useState<{ type: 'image' | 'video'; src: string }[]>([])
+  const [media, setMedia] = useState<MediaItem[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -25,8 +27,7 @@ export default function Upload() {
         const aspectRatio = video.videoWidth / video.videoHeight
         
         // Instagram Reels aspect ratio is 9:16 (0.5625)
-        // Allow some small deviation (±0.02)
-        const targetRatio = 9/16 // 0.5625
+        const targetRatio = 9 / 16 // 0.5625
         const tolerance = 0.02
         const isValidRatio = Math.abs(aspectRatio - targetRatio) <= tolerance
 
@@ -40,10 +41,12 @@ export default function Upload() {
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setError(null) // Clear any previous errors
 
+    // Process each accepted file
     for (const file of acceptedFiles) {
       const reader = new FileReader()
       const isVideo = file.type.startsWith('video/')
 
+      // Validate video aspect ratio if it's a video file
       if (isVideo) {
         const isValidRatio = await validateVideoAspectRatio(file)
         
@@ -53,6 +56,7 @@ export default function Upload() {
         }
       }
 
+      // Read the file as data URL for preview
       reader.onload = () => {
         if (reader.result) {
           setMedia((prev) => [
@@ -94,7 +98,8 @@ export default function Upload() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
-      
+
+      {/* Render drop zone if no media is selected */}
       {media.length === 0 && (
         <Card
           {...getRootProps()}
@@ -119,22 +124,27 @@ export default function Upload() {
         </Card>
       )}
 
+      {/* Edit image */}
       {media.length > 0 && editingIndex !== null && (
         <AdvancedImageEditor
-          image={editingIndex !== null ? media[editingIndex].src : ''}
+          image={media[editingIndex].src}
           onSave={(editedImage) => handleSaveEdit(editedImage, editingIndex)}
           onCancel={handleCancelEdit}
         />
       )}
 
+      {/* Render single image or video */}
       {media.length === 1 && editingIndex === null ? (
         <div className="mt-4 flex">
           {media[0]?.type === 'image' ? (
+            <>
             <ImagePreview
               images={[media[0].src]}
               single
               onEdit={() => setEditingIndex(0)}
             />
+            <StepForm image = {media} />
+             </>
           ) : (
             <div className="flex flex-row gap-3">
               <video
@@ -142,7 +152,7 @@ export default function Upload() {
                 src={media[0]?.src || ''}
                 className="w-60 max-w-md rounded shadow"
               />
-              <StepForm image={media[0]?.src} />
+              <StepForm image={media} />
             </div>
           )}
         </div>
@@ -152,7 +162,7 @@ export default function Upload() {
             images={media.map((item) => item.src)}
             onEdit={(index) => setEditingIndex(index)}
           />
-          <StepForm />
+          <StepForm image={media} />
         </div>
       ) : null}
     </div>

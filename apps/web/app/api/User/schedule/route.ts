@@ -13,6 +13,7 @@ export async function POST(req:any) {
       email,
       mediaType
     }
+    console.log("queueData",queueData);
     
     if (isNaN(dateTime.getTime())) {
       return NextResponse.json({ message: "Invalid dateTime format", success: false });
