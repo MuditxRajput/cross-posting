@@ -3,11 +3,17 @@
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Edit } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
-const ImageSlider = ({ images }: { images: string[] }) => {
+const ImageSlider = ({ 
+  images, 
+  onEdit 
+}: { 
+  images: string[],
+  onEdit: (index: number) => void
+}) => {
   const [currentIndex, setCurrentIndex] = useState(0)
 
   const prevSlide = () => {
@@ -73,8 +79,17 @@ const ImageSlider = ({ images }: { images: string[] }) => {
           />
         ))}
       </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="absolute top-2 right-2 rounded-full bg-white/80 hover:bg-white"
+        onClick={() => onEdit(currentIndex)}
+      >
+        <Edit className="h-4 w-4" />
+      </Button>
     </Card>
   )
 }
 
 export default ImageSlider
+

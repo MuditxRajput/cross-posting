@@ -1,36 +1,160 @@
-import { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
+'use client'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Card } from '@/components/ui/card'
+import { UploadIcon } from 'lucide-react'
+import { useCallback, useState } from 'react'
+import { useDropzone } from 'react-dropzone'
+import StepForm from '../stepForm'
+import AdvancedImageEditor from './AdvancedImageEditor'
+import ImagePreview from './ImagePreview'
+import ImageSlider from './imageSlider'
 
-import ImagePreview from '../imageUpload/ImagePreview';
 export default function Upload() {
-  const [images, setImages] = useState<string[]>([]);
+  const [media, setMedia] = useState<{ type: 'image' | 'video'; src: string }[]>([])
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newImages: string[] = [];
-    acceptedFiles.forEach((file) => {
-      const reader = new FileReader();
+  // Function to validate video aspect ratio
+  const validateVideoAspectRatio = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const video = document.createElement('video')
+      video.preload = 'metadata'
+
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src)
+        const aspectRatio = video.videoWidth / video.videoHeight
+        
+        // Instagram Reels aspect ratio is 9:16 (0.5625)
+        // Allow some small deviation (±0.02)
+        const targetRatio = 9/16 // 0.5625
+        const tolerance = 0.02
+        const isValidRatio = Math.abs(aspectRatio - targetRatio) <= tolerance
+
+        resolve(isValidRatio)
+      }
+
+      video.src = URL.createObjectURL(file)
+    })
+  }
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+    setError(null) // Clear any previous errors
+
+    for (const file of acceptedFiles) {
+      const reader = new FileReader()
+      const isVideo = file.type.startsWith('video/')
+
+      if (isVideo) {
+        const isValidRatio = await validateVideoAspectRatio(file)
+        
+        if (!isValidRatio) {
+          setError('Video must have a 9:16 aspect ratio for Instagram Reels')
+          continue // Skip this file
+        }
+      }
+
       reader.onload = () => {
         if (reader.result) {
-          newImages.push(reader.result as string);
-          setImages((prev) => [...prev, reader.result as string]);
+          setMedia((prev) => [
+            ...prev,
+            {
+              type: isVideo ? 'video' : 'image',
+              src: reader.result as string,
+            },
+          ])
         }
-      };
-      reader.readAsDataURL(file);
-    });
-  }, []);
+      }
+      reader.readAsDataURL(file)
+    }
+  }, [])
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'image/*': [],
+      'video/*': []
+    }
+  })
+
+  const handleSaveEdit = (editedImage: string, index: number) => {
+    setMedia((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, src: editedImage } : item))
+    )
+    setEditingIndex(null)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null)
+  }
 
   return (
-    <div className="w-full ">
-      <div
-        {...getRootProps()}
-        className=" border-2 border-dashed border-black rounded cursor-pointer flex justify-center items-center shadow-lg h-20 "
-      >
-        <input {...getInputProps()} />
-        <p className='  flex justify-center items-center hover:text-lg'>Drag and drop files here, or click to select files</p>
-      </div>
-      <ImagePreview images={images} />
+    <div className="w-full max-w-6xl mx-auto px-4">
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {media.length === 0 && (
+        <Card
+          {...getRootProps()}
+          className={`p-8 text-center border-dashed border-2 ${
+            isDragActive ? 'border-primary' : 'border-gray-300'
+          } cursor-pointer transition-all duration-300 ease-in-out hover:bg-gray-50`}
+        >
+          <input {...getInputProps()} />
+          <div className="flex flex-col items-center">
+            <UploadIcon className="w-12 h-12 text-gray-400 mb-4" />
+            {isDragActive ? (
+              <p className="text-primary font-medium">Drop the files here ...</p>
+            ) : (
+              <>
+                <p className="text-lg font-medium mb-2">Drag and drop files here</p>
+                <p className="text-sm text-gray-500">
+                  or click to select files. Videos must be in 9:16 aspect ratio for Reels
+                </p>
+              </>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {media.length > 0 && editingIndex !== null && (
+        <AdvancedImageEditor
+          image={editingIndex !== null ? media[editingIndex].src : ''}
+          onSave={(editedImage) => handleSaveEdit(editedImage, editingIndex)}
+          onCancel={handleCancelEdit}
+        />
+      )}
+
+      {media.length === 1 && editingIndex === null ? (
+        <div className="mt-4 flex">
+          {media[0]?.type === 'image' ? (
+            <ImagePreview
+              images={[media[0].src]}
+              single
+              onEdit={() => setEditingIndex(0)}
+            />
+          ) : (
+            <div className="flex flex-row gap-3">
+              <video
+                controls
+                src={media[0]?.src || ''}
+                className="w-60 max-w-md rounded shadow"
+              />
+              <StepForm image={media[0]?.src} />
+            </div>
+          )}
+        </div>
+      ) : media.length > 1 && editingIndex === null ? (
+        <div className="mt-4 flex gap-3 p-2">
+          <ImageSlider
+            images={media.map((item) => item.src)}
+            onEdit={(index) => setEditingIndex(index)}
+          />
+          <StepForm />
+        </div>
+      ) : null}
     </div>
-  );
+  )
 }

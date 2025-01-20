@@ -1,7 +1,7 @@
 "use client"
 import LeftPanel from "@/app/(dashboard)/leftpanel/page";
 import { useSelector } from "react-redux";
-import Upload from "../drop/page";
+import Upload from "../../components/imageUpload/Upload";
 // import PaymentCards from '../../components/paymentCard'
 const upload = () => {
   const cycle = useSelector((state: { social: { cycle: any } }) => state.social.cycle);
