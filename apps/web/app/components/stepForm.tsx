@@ -128,7 +128,7 @@ const StepForm = ({image}:any) => {
         body: JSON.stringify({image,fileType})
       })
       const data = await response.json();
-      if((data.uploadedImages).length>0)
+      if((data.uploadedImages).length>0 )
       {
         // const cloudinaryImage = data.url;
         formData.image = data.uploadedImages;

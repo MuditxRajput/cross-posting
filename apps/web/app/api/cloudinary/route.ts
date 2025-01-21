@@ -40,13 +40,13 @@ export async function POST(req: any) {
     if (image.length>1) {
       for (const img of image) {
         const uploadResult = await uploadCloudinary(img.src);
-        console.log(uploadResult);
+       
         uploadedImages.push( uploadResult.url);
       }
     } else {
       // Handle a single image
       const uploadResult = await uploadCloudinary(image[0].src);
-      console.log(uploadResult);
+     
       uploadedImages.push(uploadResult.url );
     }
     console.log("Upo",uploadedImages);

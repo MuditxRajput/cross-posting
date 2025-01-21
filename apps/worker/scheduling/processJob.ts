@@ -37,13 +37,15 @@ const postInstagram = async (
   try {
     let mediaUrl: string[] = [];
     let mediaPayload = '';
-    let containerResponse;
+    let containerResponse =[] ;
     // Handle Image or Video Media Type
+
+    
     if (mediaType === 'image') {
       // multiImage 
         if(formData.image?.length==1)
         {
-          //one image image is there
+          //creater container
           mediaUrl = [formData.image[0]];
           mediaPayload = `image_url=${mediaUrl[0]}&caption=${encodeURIComponent(formData.description)}`;
           const res = await fetch(
@@ -55,11 +57,87 @@ const postInstagram = async (
               },
             }
           );
-          containerResponse = res;
-
+         
+        
+          const val = await res.json() as { id: string };
+          // step 2 publish container
+          
+          const publishContainer = await fetch(
+            `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${val.id}`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+    
+          const publishData = await publishContainer.json();
+          if((publishData as { id: string }).id)
+          {
+            console.log('Media published successfully');
+          } 
         }
         else{
           // new api for more than 2 images...
+    
+          
+          const mediaPayload = formData.image?.map((img) => {
+            return `image_url=${img}&caption=${encodeURIComponent(formData.description)}`;
+          });
+    
+          
+          if(mediaPayload)
+          {
+            for(const url of mediaPayload)
+            {
+              // posting for each image for coursal 
+              const res = await fetch(`https://graph.facebook.com/v21.0/${igId}/media?${url}&is_carousel_item=true`,
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              )
+              const val = await res.json() as { id: string };
+              containerResponse.push(val.id);
+            }
+            
+            // create carousel container...
+            const carouselContainer = await fetch(
+              `https://graph.facebook.com/v21.0/${igId}/media?media_type=CAROUSEL&children=${containerResponse.join(',')}`,
+              {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
+            const carouselData = await carouselContainer.json() as { id: string };
+            
+            if((carouselData as { id: string }).id)
+            {
+              // step 3 publish container
+              const publishContainer = await fetch(
+                `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${carouselData.id}`,
+                {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              );
+              const publishData = await publishContainer.json();
+              if((publishData as { id: string }).id)
+              {
+                console.log('Media published successfully');
+              }
+            }
+
+
+          }
+
         }
     } else if (mediaType === 'video') {
       mediaUrl = formData.image || []; // Make sure formData.video is used for video
@@ -68,73 +146,50 @@ const postInstagram = async (
       throw new Error('Invalid mediaType. Use "image" or "video".');
     }
 
-    // Step 1: Create Media Container
-
-
-    if (!containerResponse) {
-      throw new Error('Failed to create media container');
-    }
-    const containerData = await containerResponse.json() as { id?: string };
-    if (!containerData.id) {
-      console.error('Failed to create media container:', containerData);
-      return;
-    }
-
-    console.log('Container created with ID:', containerData.id);
 
     // Step 2: Check Media Status and Publish when Ready
-    const checkMediaStatus = async (containerId: string) => {
-      let statusCode;
-      let attempts = 0;
-      const maxAttempts = 10; // Increased the number of attempts
-      const retryDelay = 10000; // 10 seconds between each retry
+    // const checkMediaStatus = async (containerId: string) => {
+    //   let statusCode;
+    //   let attempts = 0;
+    //   const maxAttempts = 10; // Increased the number of attempts
+    //   const retryDelay = 10000; // 10 seconds between each retry
 
-      while (attempts < maxAttempts) {
-        const statusResponse = await fetch(
-          `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
-          {
-            method: 'GET',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+    //   while (attempts < maxAttempts) {
+    //     const statusResponse = await fetch(
+    //       `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
+    //       {
+    //         method: 'GET',
+    //         headers: {
+    //           Authorization: `Bearer ${token}`,
+    //         },
+    //       }
+    //     );
 
-        const statusData = await statusResponse.json();
-        statusCode = (statusData as { status_code: string }).status_code;
+    //     const statusData = await statusResponse.json();
+    //     statusCode = (statusData as { status_code: string }).status_code;
 
-        if (statusCode === 'FINISHED') {
-          console.log('Media is ready to be published');
-          break; // Media is ready, break out of the loop
-        }
+    //     if (statusCode === 'FINISHED') {
+    //       console.log('Media is ready to be published');
+    //       break; // Media is ready, break out of the loop
+    //     }
 
-        attempts++;
-        console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
-        await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
-      }
+    //     attempts++;
+    //     console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
+    //     await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
+    //   }
 
-      if (statusCode !== 'FINISHED') {
-        throw new Error('Media not ready after multiple attempts');
-      }
-    };
+    //   if (statusCode !== 'FINISHED') {
+    //     throw new Error('Media not ready after multiple attempts');
+    //   }
+    // };
 
     // Wait for the media to be ready before publishing
-    await checkMediaStatus(containerData.id);
+    // if (mediaType==='video' ) {
+    //   await checkMediaStatus(containerResponse[0]);
+    // } else {
+    //   throw new Error('Container ID is undefined');
+    // }
 
-    // Step 3: Publish the Media
-    const publishResponse = await fetch(
-      `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${containerData.id}`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const publishData = await publishResponse.json();
-    console.log('Media published:', publishData);
-    return 
   } catch (error) {
     console.error('Error publishing media to Instagram:', error);
   }
