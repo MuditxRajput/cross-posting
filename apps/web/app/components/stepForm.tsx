@@ -13,9 +13,9 @@ import { ThreeDot } from "react-loading-indicators"
 import { useDispatch, useSelector } from 'react-redux'
 import ProgressBar from './progressBar'
 const steps = [
-  { id: 1, title: 'Enter Description' },
-  { id: 2, title: 'Select Platform' },
-  { id: 3, title: 'Schedule Time' },
+  { id: 1, title: 'Description' },
+  { id: 2, title: 'Platform' },
+  { id: 3, title: 'Time & Date' },
   { id: 4, title: 'Submit' },
 ]
 
@@ -119,9 +119,7 @@ const StepForm = ({image}:any) => {
   const saveToCloudinary=async(image:any)=>{
     // setLoading(true);
     try {
-      console.log("image from cloudinary",image);
       const fileType = image[0]?.src?.startsWith('data:image') ? 'image' :'video';
-      console.log("filetype",fileType);
       const response = await fetch("http://localhost:3000/api/cloudinary",{
         method : "POST",
         headers: { "Content-Type": "application/json" },
@@ -143,7 +141,7 @@ const StepForm = ({image}:any) => {
         })
         const val1 = await resp.json();
         if(val1.success) setLoading(false);
-         console.log("response from schedule",val1);
+        
         return val1;
       
     }

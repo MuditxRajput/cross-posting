@@ -1,76 +1,63 @@
-'use client'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Card } from '@/components/ui/card'
-import { UploadIcon } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import StepForm from '../stepForm'
-import AdvancedImageEditor from './AdvancedImageEditor'
-import ImagePreview from './ImagePreview'
-import ImageSlider from './imageSlider'
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
+import { UploadIcon } from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import StepForm from '../stepForm';
+import AdvancedImageEditor from './AdvancedImageEditor';
+import { ImagePreview } from './ImagePreview';
+import ImageSlider from './imageSlider';
 
-type MediaItem = { type: 'image' | 'video'; src: string }
+// Type definition for media items
+type MediaItem = { type: 'image' | 'video'; src: string };
 
 export default function Upload() {
-  const [media, setMedia] = useState<MediaItem[]>([])
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Function to validate video aspect ratio
+  // Validate video aspect ratio for Instagram Reels
   const validateVideoAspectRatio = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
-      const video = document.createElement('video')
-      video.preload = 'metadata'
+      const video = document.createElement('video');
+      video.preload = 'metadata';
 
       video.onloadedmetadata = () => {
-        window.URL.revokeObjectURL(video.src)
-        const aspectRatio = video.videoWidth / video.videoHeight
-        
-        // Instagram Reels aspect ratio is 9:16 (0.5625)
-        const targetRatio = 9 / 16 // 0.5625
-        const tolerance = 0.02
-        const isValidRatio = Math.abs(aspectRatio - targetRatio) <= tolerance
+        window.URL.revokeObjectURL(video.src);
+        const aspectRatio = video.videoWidth / video.videoHeight;
+        const targetRatio = 9 / 16;
+        const tolerance = 0.02;
+        resolve(Math.abs(aspectRatio - targetRatio) <= tolerance);
+      };
 
-        resolve(isValidRatio)
-      }
-
-      video.src = URL.createObjectURL(file)
-    })
-  }
+      video.src = URL.createObjectURL(file);
+    });
+  };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    setError(null) // Clear any previous errors
+    setError(null);
 
-    // Process each accepted file
     for (const file of acceptedFiles) {
-      const reader = new FileReader()
-      const isVideo = file.type.startsWith('video/')
+      const reader = new FileReader();
+      const isVideo = file.type.startsWith('video/');
 
-      // Validate video aspect ratio if it's a video file
       if (isVideo) {
-        const isValidRatio = await validateVideoAspectRatio(file)
-        
+        const isValidRatio = await validateVideoAspectRatio(file);
         if (!isValidRatio) {
-          setError('Video must have a 9:16 aspect ratio for Instagram Reels')
-          continue // Skip this file
+          setError('Video must have a 9:16 aspect ratio for Instagram Reels.');
+          continue;
         }
       }
 
-      // Read the file as data URL for preview
       reader.onload = () => {
         if (reader.result) {
-          setMedia((prev) => [
-            ...prev,
-            {
-              type: isVideo ? 'video' : 'image',
-              src: reader.result as string,
-            },
-          ])
+          setMedia((prev) => [...prev, { type: isVideo ? 'video' : 'image', src: reader.result as string }]);
         }
-      }
-      reader.readAsDataURL(file)
+      };
+
+      reader.readAsDataURL(file);
     }
-  }, [])
+  }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -78,28 +65,25 @@ export default function Upload() {
       'image/*': [],
       'video/*': []
     }
-  })
+  });
 
   const handleSaveEdit = (editedImage: string, index: number) => {
-    setMedia((prev) =>
-      prev.map((item, i) => (i === index ? { ...item, src: editedImage } : item))
-    )
-    setEditingIndex(null)
-  }
+    setMedia((prev) => prev.map((item, i) => (i === index ? { ...item, src: editedImage } : item)));
+    setEditingIndex(null);
+  };
 
-  const handleCancelEdit = () => {
-    setEditingIndex(null)
-  }
+  const handleCancelEdit = () => setEditingIndex(null);
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4">
+      {/* Error Alert */}
       {error && (
         <Alert variant="destructive" className="mb-4">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       )}
 
-      {/* Render drop zone if no media is selected */}
+      {/* Dropzone */}
       {media.length === 0 && (
         <Card
           {...getRootProps()}
@@ -115,16 +99,14 @@ export default function Upload() {
             ) : (
               <>
                 <p className="text-lg font-medium mb-2">Drag and drop files here</p>
-                <p className="text-sm text-gray-500">
-                  or click to select files. Videos must be in 9:16 aspect ratio for Reels
-                </p>
+                <p className="text-sm text-gray-500">or click to select files. Videos must be in 9:16 aspect ratio for Reels.</p>
               </>
             )}
           </div>
         </Card>
       )}
 
-      {/* Edit image */}
+      {/* Image Editor */}
       {media.length > 0 && editingIndex !== null && (
         <AdvancedImageEditor
           image={media[editingIndex].src}
@@ -133,18 +115,20 @@ export default function Upload() {
         />
       )}
 
-      {/* Render single image or video */}
+      {/* Media Preview */}
       {media.length === 1 && editingIndex === null ? (
-        <div className="mt-4 flex">
+        <div className="mt-4 flex justify-center items-center">
           {media[0]?.type === 'image' ? (
-            <>
-            <ImagePreview
-              images={[media[0].src]}
-              single
-              onEdit={() => setEditingIndex(0)}
-            />
-            <StepForm image = {media} />
-             </>
+            <div className="flex w-full gap-4 justify-center items-center">
+              <div className="w-1/2">
+                <ImagePreview
+                  images={[media[0].src]}
+                  single
+                  onEdit={() => setEditingIndex(0)}
+                />
+              </div>
+              <StepForm image={media} />
+            </div>
           ) : (
             <div className="flex flex-row gap-3">
               <video
@@ -166,5 +150,5 @@ export default function Upload() {
         </div>
       ) : null}
     </div>
-  )
+  );
 }

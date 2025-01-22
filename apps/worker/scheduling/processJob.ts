@@ -140,49 +140,80 @@ const postInstagram = async (
 
         }
     } else if (mediaType === 'video') {
-      mediaUrl = formData.image || []; // Make sure formData.video is used for video
+      if (formData.image && formData.image.length > 0) {
+        mediaUrl = [formData.image[0]]; // Make sure formData.video is used for video
+      } else {
+        throw new Error('formData.image is undefined or empty');
+      }
       mediaPayload = `video_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}&media_type=REELS`;
+      const res = await fetch(
+        `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const val = await res.json() as { id: string };
+      containerResponse.push(val.id);
+      // step 2 publish container
+      const checkMediaStatus = async (containerId: string) => {
+        let statusCode;
+        let attempts = 0;
+        const maxAttempts = 10; // Increased the number of attempts
+        const retryDelay = 10000; // 10 seconds between each retry
+  
+        while (attempts < maxAttempts) {
+          const statusResponse = await fetch(
+            `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+  
+          const statusData = await statusResponse.json();
+          statusCode = (statusData as { status_code: string }).status_code;
+  
+          if (statusCode === 'FINISHED') {
+            console.log('Media is ready to be published');
+            break; // Media is ready, break out of the loop
+          }
+  
+          attempts++;
+          console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
+          await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
+        }
+  
+        if (statusCode !== 'FINISHED') {
+          throw new Error('Media not ready after multiple attempts');
+        }
+      };
+      await checkMediaStatus(val.id);
+      const publishContainer = await fetch(
+        `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${val.id}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const publishData = await publishContainer.json();
+      if((publishData as { id: string }).id)
+      {
+        console.log('Media published successfully');
+      }
     } else {
       throw new Error('Invalid mediaType. Use "image" or "video".');
     }
 
 
     // Step 2: Check Media Status and Publish when Ready
-    // const checkMediaStatus = async (containerId: string) => {
-    //   let statusCode;
-    //   let attempts = 0;
-    //   const maxAttempts = 10; // Increased the number of attempts
-    //   const retryDelay = 10000; // 10 seconds between each retry
-
-    //   while (attempts < maxAttempts) {
-    //     const statusResponse = await fetch(
-    //       `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
-    //       {
-    //         method: 'GET',
-    //         headers: {
-    //           Authorization: `Bearer ${token}`,
-    //         },
-    //       }
-    //     );
-
-    //     const statusData = await statusResponse.json();
-    //     statusCode = (statusData as { status_code: string }).status_code;
-
-    //     if (statusCode === 'FINISHED') {
-    //       console.log('Media is ready to be published');
-    //       break; // Media is ready, break out of the loop
-    //     }
-
-    //     attempts++;
-    //     console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
-    //     await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
-    //   }
-
-    //   if (statusCode !== 'FINISHED') {
-    //     throw new Error('Media not ready after multiple attempts');
-    //   }
-    // };
-
+    
     // Wait for the media to be ready before publishing
     // if (mediaType==='video' ) {
     //   await checkMediaStatus(containerResponse[0]);

@@ -11,7 +11,7 @@ export async function POST(req: any) {
  
     const { image, fileType, aspectRatio } = await req.json();
     const resourceType = fileType === "video" ? "video" : "image";
-    const defaultAspectRatio = fileType === "video" ? "16:9" : "4:5";
+    const defaultAspectRatio = fileType === "video" ? "16:9" : "1:1";
      console.log("image get in cloudinary",image);
      
 

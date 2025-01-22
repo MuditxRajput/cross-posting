@@ -1,168 +1,152 @@
-'use client'
-
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Slider } from '@/components/ui/slider'
-import { useCallback, useState } from 'react'
-import Cropper from 'react-easy-crop'
-import { Area, Point } from 'react-easy-crop/types'
+} from "@/components/ui/select";
+import { Slider } from '@/components/ui/slider';
+import { useCallback, useState } from 'react';
+import Cropper, { Area, Point } from 'react-easy-crop';
 
-interface AdvancedImageEditorProps {
-  image: string
-  onSave: (editedImage: string) => void
-  onCancel: () => void
+interface EnhancedImageEditorProps {
+  image: string;
+  onSave: (editedImage: string) => void;
+  onCancel: () => void;
 }
 
-type AspectRatio = {
-  value: number
-  label: string
+type Filter = 'none' | 'grayscale' | 'sepia' | 'vintage' | 'cold' | 'warm';
+
+interface FilterOption {
+  [key: string]: string;
 }
+
+interface AspectRatio {
+  value: number;
+  label: string;
+}
+
+const FILTERS: FilterOption = {
+  none: 'None',
+  grayscale: 'Grayscale',
+  sepia: 'Sepia',
+  vintage: 'Vintage',
+  cold: 'Cold',
+  warm: 'Warm',
+};
 
 const ASPECT_RATIOS: AspectRatio[] = [
   { value: 1 / 1, label: '1:1 (Square)' },
   { value: 4 / 5, label: '4:5 (Portrait)' },
   { value: 16 / 9, label: '16:9 (Landscape)' },
   { value: 9 / 16, label: '9:16 (Story)' },
-]
+];
 
-export default function AdvancedImageEditor({ 
-  image, 
-  onSave, 
-  onCancel 
-}: AdvancedImageEditorProps) {
-  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 })
-  const [zoom, setZoom] = useState(1)
-  const [rotation, setRotation] = useState(0)
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
-  const [brightness, setBrightness] = useState(100)
-  const [contrast, setContrast] = useState(100)
-  const [saturation, setSaturation] = useState(100)
-  const [aspect, setAspect] = useState<number>(1)
+export default function EnhancedImageEditor({ image, onSave, onCancel }: EnhancedImageEditorProps) {
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState<number>(1);
+  const [rotation, setRotation] = useState<number>(0);
+  const [brightness, setBrightness] = useState<number>(100);
+  const [contrast, setContrast] = useState<number>(100);
+  const [saturation, setSaturation] = useState<number>(100);
+  const [blur, setBlur] = useState<number>(0);
+  const [sharpen, setSharpen] = useState<number>(0);
+  const [currentFilter, setCurrentFilter] = useState<Filter>('none');
+  const [aspect, setAspect] = useState<number>(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
   const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
-    setCroppedAreaPixels(croppedAreaPixels)
-  }, [])
+    setCroppedAreaPixels(croppedAreaPixels);
+  }, []);
 
-  const createImage = (url: string): Promise<HTMLImageElement> =>
-    new Promise((resolve, reject) => {
-      const image = new Image()
-      image.addEventListener('load', () => resolve(image))
-      image.addEventListener('error', (error) => reject(error))
-      image.setAttribute('crossOrigin', 'anonymous')
-      image.src = url
-    })
+  const applyFilter = (ctx: CanvasRenderingContext2D, imageData: ImageData): ImageData => {
+    const data = imageData.data;
+    
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i] ?? 0;
+      const g = data[i + 1] ?? 0;
+      const b = data[i + 2] ?? 0;
 
-  const getCroppedImg = async (
-    imageSrc: string,
-    pixelCrop: Area,
-    rotation = 0,
-  ): Promise<string> => {
-    try {
-      const image = await createImage(imageSrc)
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
-
-      if (!ctx) {
-        throw new Error('No 2d context')
+      switch (currentFilter) {
+        case 'grayscale':
+          const gray = (r + g + b) / 3;
+          data[i] = data[i + 1] = data[i + 2] = gray;
+          break;
+        case 'sepia':
+          data[i] = Math.min(255, r * 0.393 + g * 0.769 + b * 0.189);
+          data[i + 1] = Math.min(255, r * 0.349 + g * 0.686 + b * 0.168);
+          data[i + 2] = Math.min(255, r * 0.272 + g * 0.534 + b * 0.131);
+          break;
+        case 'vintage':
+          data[i] = Math.min(255, r * 1.1 + g * 0.1 + b * 0.1);
+          data[i + 1] = Math.min(255, r * 0.1 + g * 0.9 + b * 0.1);
+          data[i + 2] = Math.min(255, r * 0.1 + g * 0.1 + b * 0.9);
+          break;
+        case 'cold':
+          data[i] = Math.min(255, r * 0.9);
+          data[i + 1] = g;
+          data[i + 2] = Math.min(255, b * 1.1);
+          break;
+        case 'warm':
+          data[i] = Math.min(255, r * 1.1);
+          data[i + 1] = g;
+          data[i + 2] = Math.min(255, b * 0.9);
+          break;
       }
+    }
+    return imageData;
+  };
 
-      const rotRad = getRadianAngle(rotation)
+  const handleSave = async () => {
+    if (!croppedAreaPixels) return;
 
-      const { width: bBoxWidth, height: bBoxHeight } = getRotatedRect({
-        width: image.width,
-        height: image.height,
-        rotation: rotRad
-      })
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.error('Could not get 2D context from canvas');
+      return;
+    }
 
-      canvas.width = bBoxWidth
-      canvas.height = bBoxHeight
+    const img = new Image();
 
-      ctx.translate(bBoxWidth / 2, bBoxHeight / 2)
-      ctx.rotate(rotRad)
-      ctx.translate(-image.width / 2, -image.height / 2)
-      ctx.drawImage(image, 0, 0)
+    img.onload = () => {
+      canvas.width = croppedAreaPixels.width;
+      canvas.height = croppedAreaPixels.height;
 
-      const croppedCanvas = document.createElement('canvas')
-      const croppedCtx = croppedCanvas.getContext('2d')
+      ctx.filter = `
+        brightness(${brightness}%)
+        contrast(${contrast}%)
+        saturate(${saturation}%)
+        blur(${blur}px)
+      `;
 
-      if (!croppedCtx) {
-        throw new Error('No 2d context')
-      }
-
-      croppedCanvas.width = pixelCrop.width
-      croppedCanvas.height = pixelCrop.height
-
-      croppedCtx.drawImage(
-        canvas,
-        pixelCrop.x,
-        pixelCrop.y,
-        pixelCrop.width,
-        pixelCrop.height,
+      ctx.drawImage(
+        img,
+        croppedAreaPixels.x,
+        croppedAreaPixels.y,
+        croppedAreaPixels.width,
+        croppedAreaPixels.height,
         0,
         0,
-        pixelCrop.width,
-        pixelCrop.height
-      )
+        croppedAreaPixels.width,
+        croppedAreaPixels.height
+      );
 
-      // Apply filters
-      const imageData = croppedCtx.getImageData(0, 0, croppedCanvas.width, croppedCanvas.height)
-      const data = imageData.data
-      
-      for (let i = 0; i < data.length; i += 4) {
-        // Apply brightness
-        const brightnessFloat = brightness / 100
-        data[i] = clamp(data[i] * brightnessFloat, 0, 255)
-        data[i + 1] = clamp(data[i + 1] * brightnessFloat, 0, 255)
-        data[i + 2] = clamp(data[i + 2] * brightnessFloat, 0, 255)
-
-        // Apply contrast
-        const contrastFloat = contrast / 100
-        for (let j = 0; j < 3; j++) {
-          data[i + j] = clamp(
-            ((data[i + j] / 255 - 0.5) * contrastFloat + 0.5) * 255,
-            0,
-            255
-          )
-        }
-
-        // Apply saturation
-        const saturationFloat = saturation / 100
-        const avg = (data[i] + data[i + 1] + data[i + 2]) / 3
-        data[i] = clamp(avg + (data[i] - avg) * saturationFloat, 0, 255)
-        data[i + 1] = clamp(avg + (data[i + 1] - avg) * saturationFloat, 0, 255)
-        data[i + 2] = clamp(avg + (data[i + 2] - avg) * saturationFloat, 0, 255)
+      if (currentFilter !== 'none') {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const filteredData = applyFilter(ctx, imageData);
+        ctx.putImageData(filteredData, 0, 0);
       }
 
-      croppedCtx.putImageData(imageData, 0, 0)
+      const editedImage = canvas.toDataURL('image/jpeg', 0.95);
+      onSave(editedImage);
+    };
 
-      return croppedCanvas.toDataURL('image/jpeg', 0.95)
-    } catch (error) {
-      console.error('Error during image processing:', error)
-      throw error
-    }
-  }
-
-  const handleSave = useCallback(async () => {
-    if (!croppedAreaPixels) return
-
-    try {
-      const croppedImage = await getCroppedImg(
-        image,
-        croppedAreaPixels,
-        rotation
-      )
-      onSave(croppedImage)
-    } catch (error) {
-      console.error('Error saving the cropped image:', error)
-    }
-  }, [croppedAreaPixels, rotation, image, onSave])
+    img.src = image;
+  };
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -182,12 +166,31 @@ export default function AdvancedImageEditor({
           }}
         />
       </div>
-      
+
       <div className="w-full max-w-sm space-y-4">
         <div className="space-y-2">
+          <Label>Preset Filters</Label>
+          <Select
+            value={currentFilter}
+            onValueChange={(value) => setCurrentFilter(value as Filter)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select filter" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(FILTERS).map(([value, label]) => (
+                <SelectItem key={value} value={value}>
+                  {label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
           <Label>Aspect Ratio</Label>
-          <Select 
-            value={aspect.toString()} 
+          <Select
+            value={aspect.toString()}
             onValueChange={(value) => setAspect(parseFloat(value))}
           >
             <SelectTrigger>
@@ -204,75 +207,87 @@ export default function AdvancedImageEditor({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="zoom">Zoom</Label>
+          <Label>Zoom</Label>
           <Slider
-            id="zoom"
             min={1}
             max={3}
             step={0.1}
             value={[zoom]}
             onValueChange={(value) => setZoom(value[0])}
-            className="mt-2"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="rotation">Rotation</Label>
+          <Label>Rotation</Label>
           <Slider
-            id="rotation"
             min={0}
             max={360}
             value={[rotation]}
             onValueChange={(value) => setRotation(value[0])}
-            className="mt-2"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="brightness">Brightness</Label>
+          <Label>Brightness</Label>
           <Slider
-            id="brightness"
             min={0}
             max={200}
             value={[brightness]}
             onValueChange={(value) => setBrightness(value[0])}
-            className="mt-2"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="contrast">Contrast</Label>
+          <Label>Contrast</Label>
           <Slider
-            id="contrast"
             min={0}
             max={200}
             value={[contrast]}
             onValueChange={(value) => setContrast(value[0])}
-            className="mt-2"
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="saturation">Saturation</Label>
+          <Label>Saturation</Label>
           <Slider
-            id="saturation"
             min={0}
             max={200}
             value={[saturation]}
             onValueChange={(value) => setSaturation(value[0])}
-            className="mt-2"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Blur</Label>
+          <Slider
+            min={0}
+            max={10}
+            step={0.1}
+            value={[blur]}
+            onValueChange={(value) => setBlur(value[0])}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Sharpen</Label>
+          <Slider
+            min={0}
+            max={10}
+            step={0.1}
+            value={[sharpen]}
+            onValueChange={(value) => setSharpen(value[0])}
           />
         </div>
 
         <div className="flex justify-between gap-4 pt-4">
           <Button 
-            onClick={onCancel} 
-            variant="outline" 
+            onClick={onCancel}
+            variant="outline"
             className="w-full"
           >
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSave}
             className="w-full"
           >
@@ -281,40 +296,5 @@ export default function AdvancedImageEditor({
         </div>
       </div>
     </div>
-  )
-}
-
-function getRadianAngle(degreeValue: number) {
-  return (degreeValue * Math.PI) / 180
-}
-
-function rotateSize(width: number, height: number, rotation: number) {
-  const rotRad = getRadianAngle(rotation)
-
-  return {
-    width:
-      Math.abs(Math.cos(rotRad) * width) + Math.abs(Math.sin(rotRad) * height),
-    height:
-      Math.abs(Math.sin(rotRad) * width) + Math.abs(Math.cos(rotRad) * height),
-  }
-}
-
-function getRotatedRect({
-  width,
-  height,
-  rotation
-}: {
-  width: number
-  height: number
-  rotation: number
-}) {
-  const { width: rotatedWidth, height: rotatedHeight } = rotateSize(width, height, rotation)
-  return {
-    width: rotatedWidth,
-    height: rotatedHeight,
-  }
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value))
+  );
 }
