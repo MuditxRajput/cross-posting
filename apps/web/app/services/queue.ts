@@ -11,8 +11,8 @@ redisClient.connect().catch((err) => {
 // Create the queue
 export const postQueue = new Queue('postQueue', {
   connection: {
-    host: 'localhost',
-    port: 6379,
+    host: process.env.HOST,
+    port: process.env.PORT ? parseInt(process.env.PORT, 10) : undefined,
   },
 });
 

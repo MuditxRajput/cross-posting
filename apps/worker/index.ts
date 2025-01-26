@@ -10,8 +10,8 @@ const worker = new Worker(
   },
   {
     connection: {
-      host: 'localhost',
-      port: 6379,
+      host: process.env.HOST || "localhost",
+      port: parseInt(process.env.PORT || "6379", 10),
     },
   }
 );
