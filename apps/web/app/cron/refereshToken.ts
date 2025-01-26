@@ -43,7 +43,7 @@ async function refreshToken(platform: string, accessToken: string, refreshToken?
   try {
     if (platform === 'Instagram') {
       const response = await fetch(
-        `https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&fb_exchange_token=${accessToken}`
+        `https://graph.facebook.com/v12.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${process.env.NEXT_PUBLIC_FB_CLIENT_ID}&client_secret=YOUR_CLIENT_SECRET&fb_exchange_token=${accessToken}`
       );
       const data = await response.json();
       if (data.access_token) {

@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Social Media",
-  description: "Autopost",
+  title: "Post Targets",
+  description: "Post Targets is a social media management tool that helps you manage your social media accounts.",
 };
 
 export default    function RootLayout({

@@ -1,13 +1,14 @@
+"use client"
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { UploadIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { Crop } from 'react-image-crop';
 import StepForm from '../stepForm';
 import ImageCropper from './ImageCropper';
 import ImagePreview from './ImagePreview';
 import ImageSlider from './imageSlider';
-import { Crop } from 'react-image-crop';
 
 // Type definition for media items
 type MediaItem = { type: 'image' | 'video'; src: string };
