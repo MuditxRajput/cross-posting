@@ -1,6 +1,6 @@
 "use client"
 import Signup from "@/app/(authPages)/signUp/page";
-import { setInstagram, setLinkedIn, setYoutube } from "@/store/slices/social-account";
+import { reduceCycle, setInstagram, setLinkedIn, setYoutube } from "@/store/slices/social-account";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
@@ -32,6 +32,8 @@ const Dashboard = () => {
         }
 
        })}
+       console.log(data.cycle);
+       dispatch(reduceCycle(data.cycle));
        
       }
       else {

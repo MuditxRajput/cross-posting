@@ -1,15 +1,51 @@
 "use client";
 import LeftPanel from "@/app/(dashboard)/leftpanel/page";
-import { useSelector } from "react-redux";
+import { reduceCycle, setInstagram, setLinkedIn, setYoutube } from "@/store/slices/social-account";
+import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import Upload from "../../components/imageUpload/Upload";
-
 const UploadPage = () => {
+  const dispatch = useDispatch();
+   useEffect(()=>{
+      const getaccounts = async()=>{
+        const res = await fetch(`http://localhost:3000/api/getaccount`,{
+          method: "GET"
+        });
+        const data = await res.json();
+        if(data.success)
+        {
+         {data.connectedaccount.slice(1).forEach((acc:any)=>{
+          switch(acc.socialName){
+            case "YouTube":
+              dispatch(setYoutube(acc.accounts));
+              break;
+            case "Instagram":
+              dispatch(setInstagram(acc.accounts));
+              break;
+            case "LinkedIn":
+              dispatch(setLinkedIn(acc.accounts));
+              break;
+            default : break;
+  
+          }
+  
+         })}
+         console.log(data.cycle);
+         dispatch(reduceCycle(data.cycle));
+         
+        }
+        else {
+        
+        }
+      }
+      getaccounts();
+    },[])
   const cycle = useSelector((state: { social: { cycle: any } }) => state.social.cycle);
 
   return (
     <div className="relative bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen flex gap-6 p-6">
       {/* Modal for Free Credit Over */}
-      {cycle < 0 && (
+      {cycle <= 0 && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
           <div className="bg-white p-8 rounded-xl shadow-2xl text-center max-w-md">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Free Credit is Over ❗</h2>

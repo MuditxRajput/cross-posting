@@ -11,7 +11,8 @@ export async function GET()
     try {
         const existedUser = await User.findOne({email:email});
         const connectedaccount = existedUser?.socialAccounts;
-         return NextResponse.json({connectedaccount,success:true});
+        const cycle = existedUser?.cycle;
+         return NextResponse.json({connectedaccount,success:true,cycle});
     } catch (error) {
         return NextResponse.json({success:false});
     }
