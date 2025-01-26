@@ -77,59 +77,67 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "User not found" }, { status: 404 });
       }
     // }
-
+    }
+    catch (error) {
+      console.error("LinkedIn OAuth callback error:", error);
+      return NextResponse.json(
+        { error: "Authentication failed" },
+        { status: 400 }
+      );
+    }
+  }
 
     // Close popup with success message
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage(
-                { 
-                  type: 'LINKEDIN_AUTH_SUCCESS',
-                  platform: 'Linkedin',
-                  accountName: '${(profileData.name)}'
+  //   return new NextResponse(
+  //     `
+  //     <html>
+  //       <body>
+  //         <script>
+  //           if (window.opener) {
+  //             window.opener.postMessage(
+  //               { 
+  //                 type: 'LINKEDIN_AUTH_SUCCESS',
+  //                 platform: 'Linkedin',
+  //                 accountName: '${(profileData.name)}'
                   
-                }, 
-                '*'
-              );
-              window.close();
-            } else {
-              window.location.href = '/dashboard';
-            }
-          </script>
-          <p>Authentication successful! You can close this window.</p>
-        </body>
-      </html>
-      `,
-      { headers: { "Content-Type": "text/html" } }
-    );
+  //               }, 
+  //               '*'
+  //             );
+  //             window.close();
+  //           } else {
+  //             window.location.href = '/dashboard';
+  //           }
+  //         </script>
+  //         <p>Authentication successful! You can close this window.</p>
+  //       </body>
+  //     </html>
+  //     `,
+  //     { headers: { "Content-Type": "text/html" } }
+  //   );
     
 
-  } catch (error) {
-    console.error("LinkedIn OAuth callback error:", error);
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage(
-                { type: 'LINKEDIN_AUTH_ERROR', error: 'Authentication failed' },
-                '*'
-              );
-              window.close();
-            } else {
-              window.location.href = '/error?message=Authentication failed';
-            }
-          </script>
-          <p>Authentication failed. You can close this window.</p>
-        </body>
-      </html>
-      `,
-      { headers: { "Content-Type": "text/html" } }
-    );
-  }
-}
+  // } catch (error) {
+  //   console.error("LinkedIn OAuth callback error:", error);
+  //   return new NextResponse(
+  //     `
+  //     <html>
+  //       <body>
+  //         <script>
+  //           if (window.opener) {
+  //             window.opener.postMessage(
+  //               { type: 'LINKEDIN_AUTH_ERROR', error: 'Authentication failed' },
+  //               '*'
+  //             );
+  //             window.close();
+  //           } else {
+  //             window.location.href = '/error?message=Authentication failed';
+  //           }
+  //         </script>
+  //         <p>Authentication failed. You can close this window.</p>
+  //       </body>
+  //     </html>
+  //     `,
+  //     { headers: { "Content-Type": "text/html" } }
+  //   );
+  // }
+// }

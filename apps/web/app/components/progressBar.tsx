@@ -1,3 +1,4 @@
+"use client";
 import { CheckIcon } from 'lucide-react'
 
 interface Step {

@@ -1,3 +1,4 @@
+"use client";
 import { useToast } from "@/hooks/use-toast";
 import { RootState, SocialState } from "@/store/store";
 import { useSession } from "next-auth/react";

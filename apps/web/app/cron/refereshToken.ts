@@ -1,3 +1,4 @@
+"use client";
 import { dbConnection, User } from "@database/database";
 import { CronJob } from 'cron';
 const cronJob = new CronJob(

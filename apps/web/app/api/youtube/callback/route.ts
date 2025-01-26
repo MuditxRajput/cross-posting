@@ -85,60 +85,10 @@ export async function GET(request: NextRequest) {
     console.log("User social accounts saved successfully");
 
     // Return HTML response to close popup and notify the parent window of success
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage(
-                { 
-                  type: 'YOUTUBE_AUTH_SUCCESS',
-                  platform: 'YouTube',
-                  accountName: '${channelData.snippet?.title}'
-                  
-                }, 
-                '*'
-              );
-              window.close();
-            } else {
-              window.location.href = '/dashboard';
-            }
-          </script>
-          <p>Authentication successful! You can close this window.</p>
-        </body>
-      </html>
-      `,
-      { headers: { "Content-Type": "text/html" } }
-    );
-
-  } catch (error) {
+    
+}
+catch (error) {
     console.error("YouTube OAuth callback error:", error);
-
-    // Return HTML response to close popup and notify the parent window of failure
-    return new NextResponse(
-      `
-      <html>
-        <body>
-          <script>
-            if (window.opener) {
-              window.opener.postMessage(
-                { 
-                  type: 'YOUTUBE_AUTH_ERROR',
-                  error: 'Authentication failed'
-                }, 
-                '*'
-              );
-              window.close();
-            } else {
-              window.location.href = '/error?message=Authentication failed';
-            }
-          </script>
-          <p>Authentication failed. You can close this window.</p>
-        </body>
-      </html>
-      `,
-      { headers: { "Content-Type": "text/html" } }
-    );
+    return NextResponse.json({ error: "Authentication failed" }, { status: 400 });
   }
 }
