@@ -1,19 +1,18 @@
-import { Queue } from 'bullmq';
 import { createClient } from 'redis';
 
-// Redis connection setup
-const redisUrl = 'redis://localhost:6379';
-const redisClient = createClient({ url: redisUrl });
-redisClient.connect().catch((err) => {
-  console.error('Error connecting to Redis:', err);
-});
-
-// Create the queue
-export const postQueue = new Queue('postQueue', {
-  connection: {
-    host: process.env.HOST,
-    port: process.env.PORT ? parseInt(process.env.PORT, 10) : undefined,
+const client = createClient({
+  username:  'default', // Use environment variable
+  password: process.env.REDIS_PASSWORD,  // Use environment variable
+  socket: {
+    host: process.env.REDIS_HOST || 'redis-16805.c277.us-east-1-3.ec2.redns.redis-cloud.com', // Use environment variable
+    port: parseInt(process.env.REDIS_PORT || '16805', 10), // Use environment variable
   },
 });
 
-console.log('Post queue initialized.');
+client.on('error', (err) => console.log('Redis Client Error', err));
+
+await client.connect();
+
+await client.set('foo', 'bar');
+const result = await client.get('foo');
+console.log(result); // >>> bar
