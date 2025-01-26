@@ -5,7 +5,7 @@ import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/route";
+import { authOptions } from "../../../lib/auth";
 
 // Initialize OAuth2 client with credentials and redirect URL
 const oauth2Client = new OAuth2Client(
