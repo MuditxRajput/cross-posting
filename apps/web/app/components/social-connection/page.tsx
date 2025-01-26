@@ -1,3 +1,4 @@
+"use client"
 import { removeFacebook, removeInstagram, removeLinkedIn, removeYoutube } from "@/store/slices/social-account";
 import { RootState } from "@/store/store";
 import { Button } from "@repo/ui/button";
