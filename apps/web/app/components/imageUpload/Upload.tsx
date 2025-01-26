@@ -4,8 +4,8 @@ import { UploadIcon } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import StepForm from '../stepForm';
-import AdvancedImageEditor from './AdvancedImageEditor';
-import { ImagePreview } from './ImagePreview';
+import ImageCropper from './ImageCropper';
+import ImagePreview from './ImagePreview';
 import ImageSlider from './imageSlider';
 
 // Type definition for media items
@@ -15,6 +15,7 @@ export default function Upload() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<string | null>(null); // State for aspect ratio
 
   // Validate video aspect ratio for Instagram Reels
   const validateVideoAspectRatio = (file: File): Promise<boolean> => {
@@ -34,6 +35,7 @@ export default function Upload() {
     });
   };
 
+  // Handle file drop or selection
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     setError(null);
 
@@ -51,7 +53,10 @@ export default function Upload() {
 
       reader.onload = () => {
         if (reader.result) {
-          setMedia((prev) => [...prev, { type: isVideo ? 'video' : 'image', src: reader.result as string }]);
+          setMedia((prev) => [
+            ...prev,
+            { type: isVideo ? 'video' : 'image', src: reader.result as string },
+          ]);
         }
       };
 
@@ -59,19 +64,30 @@ export default function Upload() {
     }
   }, []);
 
+  // Configure dropzone
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
       'image/*': [],
-      'video/*': []
-    }
+      'video/*': [],
+    },
   });
 
-  const handleSaveEdit = (editedImage: string, index: number) => {
-    setMedia((prev) => prev.map((item, i) => (i === index ? { ...item, src: editedImage } : item)));
+  // Save edited image and calculate aspect ratio
+  const handleSaveEdit = (editedImage: string, index: number, crop: Crop) => {
+    setMedia((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, src: editedImage } : item))
+    );
     setEditingIndex(null);
+
+    // Calculate aspect ratio from crop dimensions
+    if (crop.width && crop.height) {
+      const aspectRatioValue = crop.width / crop.height;
+      setAspectRatio(`${crop.width}:${crop.height}`); // Set aspect ratio dynamically
+    }
   };
 
+  // Cancel editing
   const handleCancelEdit = () => setEditingIndex(null);
 
   return (
@@ -99,7 +115,9 @@ export default function Upload() {
             ) : (
               <>
                 <p className="text-lg font-medium mb-2">Drag and drop files here</p>
-                <p className="text-sm text-gray-500">or click to select files. Videos must be in 9:16 aspect ratio for Reels.</p>
+                <p className="text-sm text-gray-500">
+                  or click to select files. Videos must be in 9:16 aspect ratio for Reels.
+                </p>
               </>
             )}
           </div>
@@ -107,10 +125,10 @@ export default function Upload() {
       )}
 
       {/* Image Editor */}
-      {media.length > 0 && editingIndex !== null && (
-        <AdvancedImageEditor
-          image={media[editingIndex].src}
-          onSave={(editedImage) => handleSaveEdit(editedImage, editingIndex)}
+      {editingIndex !== null && media[editingIndex]?.type === 'image' && (
+        <ImageCropper
+          src={media[editingIndex].src}
+          onCropComplete={(croppedImage, crop) => handleSaveEdit(croppedImage, editingIndex, crop)} // Pass crop data
           onCancel={handleCancelEdit}
         />
       )}
@@ -127,7 +145,7 @@ export default function Upload() {
                   onEdit={() => setEditingIndex(0)}
                 />
               </div>
-              <StepForm image={media} />
+              <StepForm image={media} aspectRatio={aspectRatio} /> {/* Pass aspect ratio */}
             </div>
           ) : (
             <div className="flex flex-row gap-3">
@@ -136,7 +154,7 @@ export default function Upload() {
                 src={media[0]?.src || ''}
                 className="w-60 max-w-md rounded shadow"
               />
-              <StepForm image={media} />
+              <StepForm image={media} aspectRatio={aspectRatio} /> {/* Pass aspect ratio */}
             </div>
           )}
         </div>
@@ -146,7 +164,7 @@ export default function Upload() {
             images={media.map((item) => item.src)}
             onEdit={(index) => setEditingIndex(index)}
           />
-          <StepForm image={media} />
+          <StepForm image={media} aspectRatio={aspectRatio} /> {/* Pass aspect ratio */}
         </div>
       ) : null}
     </div>
