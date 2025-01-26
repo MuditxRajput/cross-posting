@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
-    "@types/react-easy-crop": "^1.16.0"
+    "@types/react-easy-crop": "^1.16.0",
+    "typescript": "^5.7.3"
   }
 }
