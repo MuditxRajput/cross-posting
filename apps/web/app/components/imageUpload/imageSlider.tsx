@@ -7,10 +7,10 @@ import { ChevronLeft, ChevronRight, Edit } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
-const ImageSlider = ({ 
-  images, 
-  onEdit 
-}: { 
+const ImageSlider = ({
+  images,
+  onEdit
+}: {
   images: string[],
   onEdit: (index: number) => void
 }) => {
@@ -30,7 +30,7 @@ const ImageSlider = ({
   }, [])
 
   return (
-    <Card className="relative w-full max-w-sm mx-auto mt-2 overflow-hidden">
+    <Card className="relative w-full max-w-sm mx-auto mt-2 overflow-hidden shadow-lg">
       <div className="aspect-square">
         <AnimatePresence initial={false}>
           <motion.div
@@ -55,7 +55,7 @@ const ImageSlider = ({
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full bg-white/80 hover:bg-white"
+          className="rounded-full bg-white/80 hover:bg-white/90 transition-all duration-300 shadow-md"
           onClick={prevSlide}
         >
           <ChevronLeft className="h-4 w-4" />
@@ -63,7 +63,7 @@ const ImageSlider = ({
         <Button
           variant="outline"
           size="icon"
-          className="rounded-full bg-white/80 hover:bg-white"
+          className="rounded-full bg-white/80 hover:bg-white/90 transition-all duration-300 shadow-md"
           onClick={nextSlide}
         >
           <ChevronRight className="h-4 w-4" />
@@ -73,7 +73,7 @@ const ImageSlider = ({
         {images.map((_, index) => (
           <div
             key={index}
-            className={`w-2 h-1.5 rounded-full ${
+            className={`w-2 h-1.5 rounded-full transition-all duration-300 ${
               index === currentIndex ? 'bg-white' : 'bg-white/50'
             }`}
           />
@@ -82,7 +82,7 @@ const ImageSlider = ({
       <Button
         variant="outline"
         size="icon"
-        className="absolute top-2 right-2 rounded-full bg-white/80 hover:bg-white"
+        className="absolute top-2 right-2 rounded-full bg-white/80 hover:bg-white/90 transition-all duration-300 shadow-md"
         onClick={() => onEdit(currentIndex)}
       >
         <Edit className="h-4 w-4" />

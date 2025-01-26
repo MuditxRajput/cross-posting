@@ -6,24 +6,27 @@ cloudinary.config({
   api_secret: process.env.API_SECRET,
 });
 
-// Function to calculate the greatest common divisor (GCD)
-const gcd = (a: number, b: number): number => {
-  if (b === 0) return a;
-  return gcd(b, a % b);
-};
-
-// Function to normalize the aspect ratio (e.g., 1068:672.875 -> 16:9)
+// Function to normalize the aspect ratio (e.g., 1068:672 -> 16:9)
 const normalizeAspectRatio = (aspectRatio: string): string => {
-  if (!aspectRatio) return "16:9"; // Default aspect ratio
+  const supportedRatios = [
+    { width: 1, height: 1 }, // 1:1
+    { width: 4, height: 5 }, // 4:5
+    { width: 16, height: 9 },
+  ];
 
   const [width, height] = aspectRatio.split(":").map(Number);
-  if (isNaN(width) || isNaN(height)) return "16:9"; // Fallback to default if invalid
+  if (width === undefined || height === undefined || isNaN(width) || isNaN(height)) return "1:1"; // Default to square if invalid
 
-  const divisor = gcd(width, height);
-  const normalizedWidth = Math.round(width / divisor);
-  const normalizedHeight = Math.round(height / divisor);
+  const inputRatio = width / height;
 
-  return `${normalizedWidth}:${normalizedHeight}`;
+  // Find the closest supported aspect ratio
+  const closest = supportedRatios.reduce((prev, curr) => {
+    const prevDiff = Math.abs(inputRatio - prev.width / prev.height);
+    const currDiff = Math.abs(inputRatio - curr.width / curr.height);
+    return currDiff < prevDiff ? curr : prev;
+  });
+
+  return `${closest.width}:${closest.height}`;
 };
 
 export async function POST(req: any) {
@@ -36,33 +39,33 @@ export async function POST(req: any) {
     const normalizedAspectRatio = normalizeAspectRatio(aspectRatio || defaultAspectRatio);
     console.log("Normalized Aspect Ratio:", normalizedAspectRatio);
 
+    // Transformations to handle aspect ratio and resizing
     const transformations = [
       {
-        aspect_ratio: normalizedAspectRatio, // Use the normalized aspect ratio
-        crop: "fill",
+        aspect_ratio: normalizedAspectRatio,
+        crop: "fill", // Resize and crop to fill the aspect ratio
+        gravity: "auto", // Center the cropping on important content
       },
     ];
 
-    // Define the upload function inside POST request
+    // Upload function
     const uploadCloudinary = async (image: any) => {
-      const uploadResult = await cloudinary.uploader.upload(image, {
+      return await cloudinary.uploader.upload(image, {
         folder: "uploads",
         resource_type: resourceType,
         transformation: transformations,
       });
-      return uploadResult;
     };
 
-    // Check if `image` is an array (multiple images)
+    // Handle multiple or single image uploads
     const uploadedImages = [];
-    if (image.length > 1) {
+    if (Array.isArray(image)) {
       for (const img of image) {
         const uploadResult = await uploadCloudinary(img.src);
         uploadedImages.push(uploadResult.url);
       }
     } else {
-      // Handle a single image
-      const uploadResult = await uploadCloudinary(image[0].src);
+      const uploadResult = await uploadCloudinary(image);
       uploadedImages.push(uploadResult.url);
     }
 

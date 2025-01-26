@@ -7,6 +7,7 @@ import StepForm from '../stepForm';
 import ImageCropper from './ImageCropper';
 import ImagePreview from './ImagePreview';
 import ImageSlider from './imageSlider';
+import { Crop } from 'react-image-crop';
 
 // Type definition for media items
 type MediaItem = { type: 'image' | 'video'; src: string };
@@ -145,7 +146,7 @@ export default function Upload() {
                   onEdit={() => setEditingIndex(0)}
                 />
               </div>
-              <StepForm image={media} aspectRatio={aspectRatio} /> {/* Pass aspect ratio */}
+              <StepForm image={media} aspectRatio={aspectRatio || ''} /> {/* Pass aspect ratio */}
             </div>
           ) : (
             <div className="flex flex-row gap-3">
@@ -154,7 +155,7 @@ export default function Upload() {
                 src={media[0]?.src || ''}
                 className="w-60 max-w-md rounded shadow"
               />
-              <StepForm image={media} aspectRatio={aspectRatio} /> {/* Pass aspect ratio */}
+              <StepForm image={media} aspectRatio={aspectRatio || ''} /> {/* Pass aspect ratio */}
             </div>
           )}
         </div>
@@ -164,7 +165,7 @@ export default function Upload() {
             images={media.map((item) => item.src)}
             onEdit={(index) => setEditingIndex(index)}
           />
-          <StepForm image={media} aspectRatio={aspectRatio} /> {/* Pass aspect ratio */}
+          <StepForm image={media} aspectRatio={aspectRatio || ''} /> {/* Pass aspect ratio */}
         </div>
       ) : null}
     </div>

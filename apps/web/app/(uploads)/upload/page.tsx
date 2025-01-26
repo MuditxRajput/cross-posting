@@ -1,36 +1,44 @@
-"use client"
+"use client";
 import LeftPanel from "@/app/(dashboard)/leftpanel/page";
 import { useSelector } from "react-redux";
 import Upload from "../../components/imageUpload/Upload";
-// import PaymentCards from '../../components/paymentCard'
-const upload = () => {
+
+const UploadPage = () => {
   const cycle = useSelector((state: { social: { cycle: any } }) => state.social.cycle);
+
   return (
-    <div className= " relative bg-slate-100 flex gap-6 px-2 pt-2 ">
-         {cycle <0 &&
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-        <h2 className="text-xl font-bold mb-4 ">Free Credit is over ❗</h2>
-        <button
-          className="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-blue-600"
-          onClick={() => {
-            window.location.href = "../../components/paymentCard";
-          }}
-        >
-          Buy Credit
-        </button>
+    <div className="relative bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen flex gap-6 p-6">
+      {/* Modal for Free Credit Over */}
+      {cycle < 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white p-8 rounded-xl shadow-2xl text-center max-w-md">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">Free Credit is Over ❗</h2>
+            <p className="text-gray-600 mb-6">
+              You've used all your free credits. Please purchase additional credits to continue.
+            </p>
+            <button
+              className="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300"
+              onClick={() => {
+                window.location.href = "../../components/paymentCard";
+              }}
+            >
+              Buy Credit
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Left Panel */}
+      <div className=" w-60">
+        <LeftPanel />
+      </div>
+
+      {/* Upload Section */}
+      <div className="w-3/4 flex justify-center">
+        <Upload />
       </div>
     </div>
-        }
-      <div className="w-[260px] ">
-        <LeftPanel/>
-      </div>
-      <div className=" w-full flex justify-center ">
-         <Upload/>
-        </div>
-      </div>
-    // </div>
-  )
-}
+  );
+};
 
-export default upload
+export default UploadPage;

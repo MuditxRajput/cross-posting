@@ -19,20 +19,18 @@ const SocialConnection = () => {
   const facebook = useSelector((state: RootState) => state.social.facebook);
 
   const connectionDetails = [
-    { name: "Instagram", icon: <RiInstagramFill />, color: "bg-pink-500", account: instagram },
-    { name: "Facebook", icon: <FaFacebook />, color: "bg-blue-600", account: facebook },
-    { name: "YouTube", icon: <IoLogoYoutube />, color: "bg-red-600", account: youtube },
-    { name: "LinkedIn", icon: <ImLinkedin />, color: "bg-blue-800", account: linkedln },
-    { name: "Pinterest", icon: <FaPinterest />, color: "bg-red-700", account: null }, // Provide an empty array for Pinterest
+    { name: "Instagram", icon: <RiInstagramFill />, color: "bg-gradient-to-r from-pink-500 to-purple-500", account: instagram },
+    { name: "Facebook", icon: <FaFacebook />, color: "bg-gradient-to-r from-blue-600 to-blue-400", account: facebook },
+    { name: "YouTube", icon: <IoLogoYoutube />, color: "bg-gradient-to-r from-red-600 to-red-400", account: youtube },
+    { name: "LinkedIn", icon: <ImLinkedin />, color: "bg-gradient-to-r from-blue-800 to-blue-600", account: linkedln },
+    { name: "Pinterest", icon: <FaPinterest />, color: "bg-gradient-to-r from-red-700 to-red-500", account: null }, // Provide an empty array for Pinterest
   ];
-  
 
   const apiHandler = async (name: string) => {
     if (name === "Instagram") {
-      // router.push(`https://www.facebook.com/v21.0/dialog/oauth?...`);
-     router.push(`https://www.facebook.com/v21.0/dialog/oauth?client_id=4196765553928348&display=page&redirect_uri=http://localhost:3000/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`);
+      router.push(`https://www.facebook.com/v21.0/dialog/oauth?client_id=4196765553928348&display=page&redirect_uri=http://localhost:3000/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`);
     } else if (name === "LinkedIn") {
-     window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86ij8xunmbhjqh&redirect_uri=http://localhost:3000/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
+      window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=86ij8xunmbhjqh&redirect_uri=http://localhost:3000/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
     } else {
       try {
         const res = await fetch(`http://localhost:3000/api/${name.toLowerCase()}/connect`);
@@ -56,46 +54,42 @@ const SocialConnection = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg">
-      <p className="text-lg font-semibold text-gray-800 mb-5 text-center">Connect your handles</p>
-      <div className="flex gap-3">
-        <div className="flex flex-col gap-5">
-          {connectionDetails.map((val, index) => (
-            <div key={index} className="flex items-center gap-5">
-              <div
-                className="flex cursor-pointer items-center w-[200px] gap-4 bg-gray-50 rounded-lg p-3 shadow-sm hover:shadow-lg transition-all duration-200"
-                onClick={() => apiHandler(val.name)}
-              >
-                <div className={`text-white rounded-full p-2 ${val.color}`}>{val.icon}</div>
-                <Button children={val.name} className="text-gray-800 font-medium" appName={val.name} />
-                <span className="ml-auto text-gray-400 text-xl hover:text-black font-bold">+</span>
-              </div>
-              <span className="text-gray-600">
-              {val.account && val.account.length > 0 ? (
-                  val.account
-                    .filter((val) => val !== null)
-                    .map((social, idx) => (
-                      <div key={idx} className="bg-gray-200 text-black rounded-full px-2 py-1 inline-flex items-center gap-1">
-                        {social}
-                        <span
-                          className="text-black hover:text-red-500 cursor-pointer text-md"
-                          onClick={() => removeAccount(social, val.name)}
-                        >
-                          x
-                        </span>
-                      </div>
-                    ))
-                ) :
-                (val.account===null ) ? "Comming soon..":
-                
-                (
-                  "Not Connected"
-                )}
-
-              </span>
+    <div className="p-8 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl border border-gray-100">
+      <p className="text-2xl font-bold text-gray-800 mb-8 text-center">Connect Your Social Handles</p>
+      <div className="flex flex-col gap-6">
+        {connectionDetails.map((val, index) => (
+          <div key={index} className="flex items-center gap-6">
+            <div
+              className="flex cursor-pointer items-center w-[250px] gap-4 bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              onClick={() => apiHandler(val.name)}
+            >
+              <div className={`text-white rounded-xl p-3 ${val.color}`}>{val.icon}</div>
+              <Button children={val.name} className="text-gray-800 font-semibold text-lg" appName={val.name} />
+              <span className="ml-auto text-gray-400 text-2xl hover:text-black font-bold">+</span>
             </div>
-          ))}
-        </div>
+            <span className="text-gray-600">
+              {val.account && val.account.length > 0 ? (
+                val.account
+                  .filter((val) => val !== null)
+                  .map((social, idx) => (
+                    <div key={idx} className="bg-gray-200 text-black rounded-full px-3 py-1 inline-flex items-center gap-2">
+                      {social}
+                      <span
+                        className="text-black hover:text-red-500 cursor-pointer text-lg"
+                        onClick={() => removeAccount(social, val.name)}
+                      >
+                        ×
+                      </span>
+                    </div>
+                  ))
+              ) : val.account === null ? (
+                <span className="text-gray-500 italic">Coming soon...</span>
+              ) : (
+                <span className="text-gray-500">Not Connected</span>
+              )}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );

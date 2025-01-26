@@ -2,72 +2,91 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { IoIosTrendingUp } from "react-icons/io";
-import { MdAccountCircle } from "react-icons/md";
+import { MdAccountCircle, MdPostAdd, MdSchedule, MdSettings, MdTrendingUp } from "react-icons/md";
+
 const LeftPanel = () => {
   const session = useSession();
   const router = useRouter();
-    const [activeButton, setActiveButton] = useState<String>("New Post");
+  const [activeButton, setActiveButton] = useState<String>("New Post");
 
   const handleActiveButton = (button: String) => {
     setActiveButton(button);
+    window.location.href = `./upload`;
   };
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 h-[658px] flex flex-col">
-      <h2 className="text-3xl font-bold text-gray-800 mb-4"> Panel</h2>
+    <div className="bg-gradient-to-br from-green-50 to-blue-50 shadow-2xl rounded-xl p-6  flex flex-col border border-gray-100">
+      {/* Header */}
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Dashboard</h2>
 
-      <button onClick={()=>router.push("./upload")}  className="bg-green-500 text-white px-8 py-3 rounded-lg font-semibold mt-4 transition-transform transform hover:scale-105 hover:shadow-lg">
+      {/* Create Post Button */}
+      <button
+        onClick={() => router.push("./upload")}
+        className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-3 rounded-xl font-semibold mt-4 transition-transform transform hover:scale-105 hover:shadow-lg flex items-center justify-center gap-2"
+      >
+        <MdPostAdd className="text-xl" />
         + Create Post
       </button>
 
-      <hr className="my-4 border-gray-300" />
+      <hr className="my-6 border-gray-200" />
 
+      {/* Content Section */}
       <div className="flex-grow">
-        <p className="text-lg font-semibold text-gray-700 mb-2">Content</p>
-        <div className="flex flex-col gap-3 mb-4">
+        <p className="text-lg font-semibold text-gray-700 mb-4">Content</p>
+        <div className="flex flex-col gap-3 mb-6">
           <button
-            className={`px-4 py-2 rounded-lg text-left transition-colors duration-200 ${
-              activeButton === "New Post" ? "bg-slate-400 text-white" : "bg-slate-200 text-gray-800"
-            } hover:bg-slate-300`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+              activeButton === "New Post"
+                ? "bg-gradient-to-r from-green-400 to-blue-400 text-white shadow-md"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
             onClick={() => handleActiveButton("New Post")}
           >
+            <MdPostAdd className="text-xl" />
             New Post
           </button>
 
           <button
-            className={`px-4 py-2 rounded-lg text-left transition-colors duration-200 ${
-              activeButton === "Scheduled" ? "bg-slate-400 text-white" : "bg-slate-200 text-gray-800"
-            } hover:bg-slate-300`}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 ${
+              activeButton === "Scheduled"
+                ? "bg-gradient-to-r from-green-400 to-blue-400 text-white shadow-md"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            }`}
             onClick={() => handleActiveButton("Scheduled")}
           >
+            <MdSchedule className="text-xl" />
             Scheduled
           </button>
         </div>
-        <hr className="my-4 border-gray-300" />
-        
-        <p className="text-lg font-semibold text-gray-700 mt-4 mb-2">Configuration</p>
-        <button className="mt-2 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors shadow-md hover:shadow-lg">
+
+        <hr className="my-6 border-gray-200" />
+
+        {/* Configuration Section */}
+        <p className="text-lg font-semibold text-gray-700 mb-4">Configuration</p>
+        <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 w-full">
+          <MdSettings className="text-xl" />
           Connect Social Media
         </button>
-        
-        <hr className="my-4 border-gray-300" />
-        
-        <p className="text-lg font-semibold text-gray-700 mt-4 mb-2">Account</p>
-        <button className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 transition-colors w-full">
-          <MdAccountCircle className="text-green-500 text-3xl" />
+
+        <hr className="my-6 border-gray-200" />
+
+        {/* Account Section */}
+        <p className="text-lg font-semibold text-gray-700 mb-4">Account</p>
+        <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 w-full">
+          <MdAccountCircle className="text-2xl text-green-500" />
           {session?.status === "unauthenticated" ? (
-            <p className="text-gray-700">Create Account</p>
+            <p>Create Account</p>
           ) : (
-            <p className="text-gray-700">{(session?.data?.user?.name)?.split(" ")[0]}</p>
+            <p>{(session?.data?.user?.name)?.split(" ")[0]}</p>
           )}
         </button>
 
-        <hr className="my-4 border-gray-300" />
+        <hr className="my-6 border-gray-200" />
 
-        <p className="text-lg font-semibold text-gray-700 mt-4 mb-2">Plan</p>
-        <button className="flex items-center gap-2 p-2 rounded-lg bg-green-400 hover:bg-green-500 transition-colors w-full">
-        <IoIosTrendingUp className="text-xl"/>
+        {/* Plan Section */}
+        <p className="text-lg font-semibold text-gray-700 mb-4">Plan</p>
+        <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-green-400 to-blue-400 text-white hover:shadow-lg transition-all duration-200 w-full">
+          <MdTrendingUp className="text-xl" />
           Get Plan
         </button>
       </div>

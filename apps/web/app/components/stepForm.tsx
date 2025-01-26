@@ -103,6 +103,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
           title: 'Success',
           description: 'Post scheduled successfully!',
         });
+        // window.location.href = "/";
       } else {
         if (res.error) {
           toast({

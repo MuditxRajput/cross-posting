@@ -39,7 +39,8 @@ const postInstagram = async (
     let mediaPayload = '';
     let containerResponse =[] ;
     // Handle Image or Video Media Type
-
+    console.log(formData);
+    
     
     if (mediaType === 'image') {
       // multiImage 
@@ -61,6 +62,7 @@ const postInstagram = async (
         
           const val = await res.json() as { id: string };
           // step 2 publish container
+          console.log("val",val);
           
           const publishContainer = await fetch(
             `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${val.id}`,
