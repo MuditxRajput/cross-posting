@@ -1,12 +1,11 @@
-// [...nextauth].ts
 import { User } from "@database/models/user.model";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { dbConnection } from "../../../../../../packages/database";
-
 import { NextAuthOptions } from "next-auth";
 
-export const authOptions: NextAuthOptions = {
+// Define your authOptions
+const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
@@ -57,3 +56,9 @@ export const authOptions: NextAuthOptions = {
     },
   },
 };
+
+// Wrap authOptions in the NextAuth handler
+const handler = NextAuth(authOptions);
+
+// Export the handler for GET and POST requests
+export { handler as GET, handler as POST };
