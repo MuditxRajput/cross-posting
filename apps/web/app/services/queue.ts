@@ -1,18 +1,26 @@
-import { createClient } from 'redis';
+import { Queue } from 'bullmq';
+import IORedis from 'ioredis';
 
-const client = createClient({
-  username:  'default', // Use environment variable
-  password: process.env.REDIS_PASSWORD,  // Use environment variable
-  socket: {
-    host: process.env.REDIS_HOST || 'redis-16805.c277.us-east-1-3.ec2.redns.redis-cloud.com', // Use environment variable
-    port: parseInt(process.env.REDIS_PORT || '16805', 10), // Use environment variable
-  },
+// Create a Redis client
+const redisClient = new IORedis({
+  username: 'default', // Use environment variable
+  password: process.env.REDIS_PASSWORD, // Use environment variable
+  host: process.env.REDIS_HOST, // Use environment variable
+  port: parseInt(process.env.REDIS_PORT || '16805', 10), // Use environment variable
 });
 
-client.on('error', (err) => console.log('Redis Client Error', err));
+redisClient.on('error', (err) => console.log('Redis Client Error', err));
 
-await client.connect();
+// Initialize the queue with the Redis client
+export const postQueue = new Queue('postQueue', {
+  connection: redisClient,
+});
 
-await client.set('foo', 'bar');
-const result = await client.get('foo');
-console.log(result); // >>> bar
+// Connect to Redis and log the connection status
+(async () => {
+  try {
+    console.log('Connected to Redis');
+  } catch (error) {
+    console.error('Error connecting to Redis:', error);
+  }
+})();
