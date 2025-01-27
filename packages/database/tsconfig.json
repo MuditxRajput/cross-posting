@@ -11,6 +11,7 @@
   },
   "include": [
     "*.ts",
-     "models/*.ts",],
+    "models/*.ts" // Remove the trailing comma
+  ],
   "exclude": ["node_modules", "dist"]
 }
