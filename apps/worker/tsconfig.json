@@ -10,7 +10,7 @@
     "strict": true,
     "composite": true
   },
-  "include": ["index.ts","./scheduling/**/*"],
+  "include": ["index.ts", "./scheduling/**/*"],
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../packages/database" }
