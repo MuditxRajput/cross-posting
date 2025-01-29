@@ -129,6 +129,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         formData.image = data.uploadedImages;
         const userEmail = session.data?.user?.email;
         const mediaType = fileType;
+        console.log("image is uploaded", formData.image);
         const resp = await fetch('https://cross-posting-web.vercel.app/api/User/schedule', {
           method: 'POST',
           headers: {

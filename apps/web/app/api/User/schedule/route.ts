@@ -25,13 +25,23 @@ export async function POST(req:any) {
       return NextResponse.json({ message: "DateTime must be in the future", success: false });
     }
     const existedUser = await User.findOne({email:email});
-    if (existedUser && typeof existedUser.cycle === 'number' && existedUser.cycle > 0) {
-      existedUser.cycle = existedUser.cycle - 1;
-      await existedUser.save();
-      await postQueue.add("schedulePost", queueData, { delay });
-      return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
+    console.log("existedUser",existedUser);
+    try {
+      if (existedUser && typeof existedUser.cycle === 'number' && existedUser.cycle > 0) {
+        existedUser.cycle = existedUser.cycle - 1;
+        await existedUser.save();
+        await postQueue.add("schedulePost", queueData, { delay });
+        console.log("Post scheduled successfully");
+        
+        return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
+      }
+    } catch (error) {
+      console.log("error",error);
+       return NextResponse.json({msg:"cycle complete",success:false});
+      
     }
-    else return NextResponse.json({msg:"cycle complete",success:false});
+    
+   
   } catch (error) {
     console.error("Error scheduling post:", error);
     return NextResponse.json({ message: "Failed to schedule post", success: false ,error});
