@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
-          redirect_uri: "http://localhost:3000/api/linkedin/callback",
+          redirect_uri: "https://cross-posting-web.vercel.app/api/linkedin/callback",
           client_id: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID!,
           client_secret: process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_SECRET!,
         }),
