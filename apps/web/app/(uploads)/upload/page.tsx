@@ -8,10 +8,10 @@ const UploadPage = () => {
   const dispatch = useDispatch();
    useEffect(()=>{
       const getaccounts = async()=>{
-        const res = await fetch(`http://localhost:3000/api/getaccount`,{
+        const res = await fetch(`https://cross-posting-web.vercel.app/api/getaccount`,{
           method: "GET"
         });
-        const data = await res.json();
+        const data = await res.json();``
         if(data.success)
         {
          {data.connectedaccount.slice(1).forEach((acc:any)=>{
