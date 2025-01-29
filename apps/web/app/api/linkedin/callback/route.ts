@@ -1,4 +1,3 @@
-// src/app/api/linkedin/callback/route.ts
 import { dbConnection } from "@database/database";
 import { User } from "@database/models/user.model";
 import { getServerSession } from "next-auth";
@@ -8,9 +7,13 @@ import { authOptions } from "../../../lib/auth";
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    const { searchParams } = request.nextUrl;
+    const { searchParams } = new URL(request.url); // Use the request.url to create a new URL object
+
+    console.log("Request URL:", request.url); // Debugging: Log the request URL
+    console.log("Search Params:", searchParams.toString()); // Debugging: Log the search params
+
     const code = searchParams.get("code");
-    
+
     if (!code) {
       return NextResponse.json(
         { error: "No authorization code provided" },
@@ -38,6 +41,7 @@ export async function GET(request: NextRequest) {
 
     const tokenData = await tokenResponse.json();
     const { access_token } = tokenData;
+
     // Fetch LinkedIn profile data
     const profileResponse = await fetch(
       "https://api.linkedin.com/v2/userinfo",
@@ -48,96 +52,81 @@ export async function GET(request: NextRequest) {
       }
     );
     const profileData = await profileResponse.json();
- 
-
 
     // Store LinkedIn data in the user's record
     await dbConnection();
 
-    
-      const user = await User.findOneAndUpdate(
-        { email: session?.user?.email, "socialAccounts.accountsId": { $ne: profileData.sub } },
-        {
-          $addToSet: {
-            connectedPlatform: "LinkedIn",
-            socialAccounts: {
-              socialName: "LinkedIn",
-              accessToken: access_token,
-              refreshToken: access_token,
-              accounts: profileData.name,
-              accountsId: profileData.sub,
-              expiresIn: tokenData.expires_in,
-            },
+    const user = await User.findOneAndUpdate(
+      { email: session?.user?.email, "socialAccounts.accountsId": { $ne: profileData.sub } },
+      {
+        $addToSet: {
+          connectedPlatform: "LinkedIn",
+          socialAccounts: {
+            socialName: "LinkedIn",
+            accessToken: access_token,
+            refreshToken: access_token,
+            accounts: profileData.name,
+            accountsId: profileData.sub,
+            expiresIn: tokenData.expires_in,
           },
         },
-        { new: true }
-      );
+      },
+      { new: true }
+    );
 
-      if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-    // }
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    catch (error) {
-      console.error("LinkedIn OAuth callback error:", error);
-      return NextResponse.json(
-        { error: "Authentication failed" },
-        { status: 400 }
-      );
-    }
-  }
 
     // Close popup with success message
-  //   return new NextResponse(
-  //     `
-  //     <html>
-  //       <body>
-  //         <script>
-  //           if (window.opener) {
-  //             window.opener.postMessage(
-  //               { 
-  //                 type: 'LINKEDIN_AUTH_SUCCESS',
-  //                 platform: 'Linkedin',
-  //                 accountName: '${(profileData.name)}'
-                  
-  //               }, 
-  //               '*'
-  //             );
-  //             window.close();
-  //           } else {
-  //             window.location.href = '/dashboard';
-  //           }
-  //         </script>
-  //         <p>Authentication successful! You can close this window.</p>
-  //       </body>
-  //     </html>
-  //     `,
-  //     { headers: { "Content-Type": "text/html" } }
-  //   );
-    
+    return new NextResponse(
+      `
+      <html>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage(
+                { 
+                  type: 'LINKEDIN_AUTH_SUCCESS',
+                  platform: 'Linkedin',
+                  accountName: '${profileData.name}'
+                }, 
+                '*'
+              );
+              window.close();
+            } else {
+              window.location.href = '/dashboard';
+            }
+          </script>
+          <p>Authentication successful! You can close this window.</p>
+        </body>
+      </html>
+      `,
+      { headers: { "Content-Type": "text/html" } }
+    );
 
-  // } catch (error) {
-  //   console.error("LinkedIn OAuth callback error:", error);
-  //   return new NextResponse(
-  //     `
-  //     <html>
-  //       <body>
-  //         <script>
-  //           if (window.opener) {
-  //             window.opener.postMessage(
-  //               { type: 'LINKEDIN_AUTH_ERROR', error: 'Authentication failed' },
-  //               '*'
-  //             );
-  //             window.close();
-  //           } else {
-  //             window.location.href = '/error?message=Authentication failed';
-  //           }
-  //         </script>
-  //         <p>Authentication failed. You can close this window.</p>
-  //       </body>
-  //     </html>
-  //     `,
-  //     { headers: { "Content-Type": "text/html" } }
-  //   );
-  // }
-// }
+  } catch (error) {
+    console.error("LinkedIn OAuth callback error:", error);
+    return new NextResponse(
+      `
+      <html>
+        <body>
+          <script>
+            if (window.opener) {
+              window.opener.postMessage(
+                { type: 'LINKEDIN_AUTH_ERROR', error: 'Authentication failed' },
+                '*'
+              );
+              window.close();
+            } else {
+              window.location.href = '/error?message=Authentication failed';
+            }
+          </script>
+          <p>Authentication failed. You can close this window.</p>
+        </body>
+      </html>
+      `,
+      { headers: { "Content-Type": "text/html" } }
+    );
+  }
+}
