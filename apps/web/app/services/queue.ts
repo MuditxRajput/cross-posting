@@ -10,17 +10,12 @@ const redisClient = new IORedis({
 });
 
 redisClient.on('error', (err) => console.log('Redis Client Error', err));
-
 // Initialize the queue with the Redis client
 export const postQueue = new Queue('postQueue', {
   connection: redisClient,
 });
 
 // Connect to Redis and log the connection status
-(async () => {
-  try {
-    console.log('Connected to Redis');
-  } catch (error) {
-    console.error('Error connecting to Redis:', error);
-  }
-})();
+redisClient.connect().then(() => {
+  console.log('Connected to Redis');
+});
