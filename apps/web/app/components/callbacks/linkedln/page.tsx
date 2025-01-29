@@ -11,7 +11,7 @@ let code = url.get('code');
  useEffect(()=>{
   const getAccessToken=async()=>{
     try {
-      const res = await fetch(`https://cross-posting-web.vercel.app/api/linkedin/connect`,{
+      const res = await fetch(`https://cross-posting-web.vercel.app/api/linkedin/callback`,{
         method:"POST",
         headers:{
           "Content-Type":"application/json",
