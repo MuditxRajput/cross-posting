@@ -2,13 +2,13 @@ import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
 // Parse the Redis URL
-const redisUrl = new URL(process.env.REDIS_URL || 'redis://default:TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu@junction.proxy.rlwy.net:56489');
+const redisUrl = new URL('redis://default:TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu@junction.proxy.rlwy.net:56489');
 
 // Extract connection details
 const redisOptions = {
   host: redisUrl.hostname, // e.g., 'junction.proxy.rlwy.net'
   port: parseInt(redisUrl.port, 10), // e.g., 56489
-  password: redisUrl.username, // e.g., 'TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu'
+  password: redisUrl.password, // e.g., 'TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu'
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 };
