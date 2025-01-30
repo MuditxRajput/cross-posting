@@ -11,8 +11,6 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@database/database": "*",
-    "@testfile/test": "*",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^22.10.10",
     "bullmq": "^5.39.1",
