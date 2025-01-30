@@ -4,13 +4,13 @@
     "module": "CommonJS",
     "lib": ["ES2022", "DOM"],
     "outDir": "./dist",
-    "rootDir": ".",
+    "rootDir": "./", 
     "skipLibCheck": true,
     "esModuleInterop": true,
     "strict": true,
     "composite": true
   },
-  "include": ["index.ts", "./scheduling/**/*"],
+  "include": ["./**/*.ts"],
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../packages/database" }
