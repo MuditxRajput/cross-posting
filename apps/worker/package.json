@@ -11,9 +11,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@database/database": "*",
+    "@testfile/test": "*",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^22.10.10",
-    "bullmq": "^5.39.1",
+    "bullmq": "^5.37.0",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "mongoose": "^8.9.5"
