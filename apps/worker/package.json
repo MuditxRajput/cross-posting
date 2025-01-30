@@ -3,25 +3,19 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "Worker for processing background jobs",
   "dependencies": {
-    "@database/database": "*",
-    "@types/mongoose": "^5.11.96",
-    "@types/node": "^22.10.10",
-    "bullmq": "^5.37.0",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
-    "mongodb": "^6.12.0",
-    "mongoose": "^8.9.5"
+    "bullmq": "^4.0.0", 
+    "ioredis": "^5.3.2", 
+    "dotenv": "^16.0.3" 
   },
   "devDependencies": {
-    "@types/express": "^5.0.0",
-    "@types/react-easy-crop": "^1.16.0",
-    "typescript": "^5.7.3"
+    "nodemon": "^3.0.2" 
   }
 }
