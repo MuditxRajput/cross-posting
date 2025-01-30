@@ -15,6 +15,7 @@ redisClient.on('connect', () => console.log('Connected to Redis'));
 const worker = new Worker(
   'postQueue',
   async (job) => {
+    console.log(`Processing job ${job.id}`);
     await processJob(job);
   },
   {
