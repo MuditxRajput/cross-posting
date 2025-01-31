@@ -1,29 +1,20 @@
 import { Worker } from 'bullmq';
-import IORedis from 'ioredis';
 import { processJob } from './scheduling/processJob';
 
-// Create the Redis client with maxRetriesPerRequest set to null
-const redisClient = new IORedis(process.env.REDIS_URL || '', {
-  maxRetriesPerRequest: null, // Add this line
-});
+// Extract Redis connection details
+const redisUrl = new URL(process.env.REDIS_URL || '');
+const redisOptions = {
+  host: redisUrl.hostname, 
+  port: parseInt(redisUrl.port, 10), 
+  password: redisUrl.password,
+};
 
-// Handle Redis connection events
-redisClient.on('error', (err) => console.error('Redis Client Error:', err));
-redisClient.on('connect', () => console.log('Connected to Redis'));
+// ✅ Pass Redis options directly
+const worker = new Worker('postQueue', async (job) => {
+  console.log(`Processing job ${job.id}`);
+  await processJob(job);
+}, { connection: redisOptions });
 
-// Create and configure the worker
-const worker = new Worker(
-  'postQueue',
-  async (job) => {
-    console.log(`Processing job ${job.id}`);
-    await processJob(job);
-  },
-  {
-    connection: redisClient, 
-  }
-);
-
-// Worker event listeners
 worker.on('completed', (job) => {
   console.log(`Job ${job.id} completed successfully.`);
 });
