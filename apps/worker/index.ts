@@ -10,9 +10,10 @@ if (!process.env.REDIS_URL) {
 // Configure Redis client
 const redisClient = new IORedis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
-  enableTLSForSentinelMode: false, // Add this if Railway Redis doesn't use TLS
-  tls: {}, // Uncomment this if Railway Redis requires TLS (SSL)
-  family: 0,
+  family: 4, // Force IPv4 (Railway often resolves better with IPv4)
+  connectTimeout: 10000, // Increase timeout to 10 seconds
+  retryStrategy: (times) => Math.min(times * 100, 3000), // Retry faster
+  enableAutoPipelining: true, // Optimize for Railway's Redis
 });
 
 // Connection event handlers
