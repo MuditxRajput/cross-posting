@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req:any) {
   try {
-    dbConnection();
+    await dbConnection();
     const val = await req.json();    
     const {formData,email,mediaType} = val;
     const dateTime = new Date(formData.dateTime);
