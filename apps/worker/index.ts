@@ -10,7 +10,7 @@ if (!process.env.REDIS_URL) {
 // Configure Redis client
 const redisClient = new IORedis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
-  family: 4, // Force IPv4 (Railway often resolves better with IPv4)
+  family: 0, // Force IPv4 (Railway often resolves better with IPv4)
   connectTimeout: 10000, // Increase timeout to 10 seconds
   retryStrategy: (times) => Math.min(times * 100, 3000), // Retry faster
   enableAutoPipelining: true, // Optimize for Railway's Redis
