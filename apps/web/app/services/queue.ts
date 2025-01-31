@@ -9,7 +9,7 @@ const redisUrl = new URL(process.env.REDIS_URL);
 
 // Extract connection details
 const redisOptions = {
-  family: 0,
+ 
   host: redisUrl.hostname, // e.g., 'junction.proxy.rlwy.net'
   port: parseInt(redisUrl.port, 10), // e.g., 56489
   password: redisUrl.password, // e.g., 'TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu'
