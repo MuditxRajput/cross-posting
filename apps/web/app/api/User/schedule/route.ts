@@ -1,4 +1,4 @@
-import { postQueue } from "@/app/services/queue";
+// import { postQueue } from "@/app/services/queue";
 import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
@@ -30,7 +30,7 @@ export async function POST(req:any) {
       if (existedUser && typeof existedUser.cycle === 'number' && existedUser.cycle > 0) {
         existedUser.cycle = existedUser.cycle - 1;
         await existedUser.save();
-        await postQueue.add("schedulePost", queueData, { delay });
+        // await postQueue.add("schedulePost", queueData, { delay });
         console.log("Post scheduled successfully");
         
         return NextResponse.json({ message: "Post scheduled successfully", success: true,queueData });
