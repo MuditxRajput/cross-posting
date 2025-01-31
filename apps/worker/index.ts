@@ -2,25 +2,30 @@ import { Worker } from 'bullmq';
 import IORedis from 'ioredis';
 import { processJob } from './scheduling/processJob';
 
-// Create the Redis client with maxRetriesPerRequest set to null
-const redisClient = new IORedis(process.env.REDIS_URL || '', {
-  maxRetriesPerRequest: null, // Add this line
+// Validate REDIS_URL early
+if (!process.env.REDIS_URL) {
+  throw new Error("REDIS_URL environment variable is missing!");
+}
+
+// Configure Redis client
+const redisClient = new IORedis(process.env.REDIS_URL, {
+  maxRetriesPerRequest: null,
+  enableTLSForSentinelMode: false, // Add this if Railway Redis doesn't use TLS
+  tls: {}, // Uncomment this if Railway Redis requires TLS (SSL)
 });
 
-// Handle Redis connection events
+// Connection event handlers
 redisClient.on('error', (err) => console.error('Redis Client Error:', err));
-redisClient.on('connect', () => console.log('Connected to Redis'));
+redisClient.on('connect', () => console.log('Connected to Redis ✅'));
 
-// Create and configure the worker
+// Initialize worker
 const worker = new Worker(
   'postQueue',
   async (job) => {
     console.log(`Processing job ${job.id}`);
     await processJob(job);
   },
-  {
-    connection: redisClient, 
-  }
+  { connection: redisClient }
 );
 
 // Worker event listeners
