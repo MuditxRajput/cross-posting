@@ -1,33 +1,40 @@
+// apps/worker/src/scheduling/processJob.ts
 import { User } from "@database/database";
 
+// Helper function for Instagram processing
 const getIgId = async (email: string, platforms: any[]) => {
   try {
-    
-    const user = await User.findOne({ email: email });
-    if (!user) {
-      throw new Error(`User with email ${email} not found`);
-    }
-    for(const element of platforms) {
+    console.log(`Fetching Instagram ID for ${email}`);
+    const user = await User.findOne({ email });
+    if (!user) throw new Error(`User ${email} not found`);
+
+    for (const element of platforms) {
       if (element.name.toLowerCase() === 'instagram') {
-        for(const account of element.account) {
-            if(user.socialAccounts)
-            {
-                const instagramAccount = user.socialAccounts.find((acc: any) => acc.socialName.toLowerCase() === 'instagram' && acc.accounts === account);
-                if (instagramAccount) {
-                  console.log(`Access Token for ${account}: ${instagramAccount.accountsId}`);
-                  return {token : instagramAccount.accessToken, igId : instagramAccount.accountsId};
-                } else {
-                  console.log(`Instagram account ${account} not found for user ${email}`);
-                }
-            }
-        };
+        for (const account of element.account) {
+          const instagramAccount = user.socialAccounts?.find(
+            (acc: any) => 
+              acc.socialName.toLowerCase() === 'instagram' && 
+              acc.accounts === account
+          );
+          
+          if (instagramAccount) {
+            console.log(`Found Instagram account ${account} for ${email}`);
+            return {
+              token: instagramAccount.accessToken,
+              igId: instagramAccount.accountsId
+            };
+          }
+        }
       }
-    };
-    
+    }
+    throw new Error('No matching Instagram account found');
   } catch (error) {
-    console.error('Error fetching access token:', error);
+    console.error('Error in getIgId:', error);
+    throw error;
   }
 };
+
+// Instagram posting logic
 const postInstagram = async (
   igId: string,
   token: string,
@@ -35,550 +42,205 @@ const postInstagram = async (
   mediaType: 'image' | 'video'
 ) => {
   try {
-    let mediaUrl: string[] = [];
-    let mediaPayload = '';
-    let containerResponse =[] ;
-    // Handle Image or Video Media Type
-    console.log(formData);
-    
+    console.log(`Starting Instagram post for ${igId}`);
     
     if (mediaType === 'image') {
-      // multiImage 
-        if(formData.image?.length==1)
-        {
-          //creater container
-          mediaUrl = [formData.image[0]];
-          mediaPayload = `image_url=${mediaUrl[0]}&caption=${encodeURIComponent(formData.description)}`;
-          const res = await fetch(
-            `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-         
-        
-          const val = await res.json() as { id: string };
-          // step 2 publish container
-          console.log("val",val);
-          
-          const publishContainer = await fetch(
-            `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${val.id}`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-    
-          const publishData = await publishContainer.json();
-          if((publishData as { id: string }).id)
-          {
-            console.log('Media published successfully');
-          } 
-        }
-        else{
-          // new api for more than 2 images...
-    
-          
-          const mediaPayload = formData.image?.map((img) => {
-            return `image_url=${img}&caption=${encodeURIComponent(formData.description)}`;
-          });
-    
-          
-          if(mediaPayload)
-          {
-            for(const url of mediaPayload)
-            {
-              // posting for each image for coursal 
-              const res = await fetch(`https://graph.facebook.com/v21.0/${igId}/media?${url}&is_carousel_item=true`,
-                {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              )
-              const val = await res.json() as { id: string };
-              containerResponse.push(val.id);
-            }
-            
-            // create carousel container...
-            const carouselContainer = await fetch(
-              `https://graph.facebook.com/v21.0/${igId}/media?media_type=CAROUSEL&children=${containerResponse.join(',')}`,
-              {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            const carouselData = await carouselContainer.json() as { id: string };
-            
-            if((carouselData as { id: string }).id)
-            {
-              // step 3 publish container
-              const publishContainer = await fetch(
-                `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${carouselData.id}`,
-                {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-              const publishData = await publishContainer.json();
-              if((publishData as { id: string }).id)
-              {
-                console.log('Media published successfully');
-              }
-            }
-
-
-          }
-
-        }
-    } else if (mediaType === 'video') {
-      if (formData.image && formData.image.length > 0) {
-        mediaUrl = [formData.image[0]]; // Make sure formData.video is used for video
-      } else {
-        throw new Error('formData.image is undefined or empty');
-      }
-      mediaPayload = `video_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}&media_type=REELS`;
-      const res = await fetch(
-        `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const val = await res.json() as { id: string };
-      containerResponse.push(val.id);
-      // step 2 publish container
-      const checkMediaStatus = async (containerId: string) => {
-        let statusCode;
-        let attempts = 0;
-        const maxAttempts = 10; // Increased the number of attempts
-        const retryDelay = 10000; // 10 seconds between each retry
-  
-        while (attempts < maxAttempts) {
-          const statusResponse = await fetch(
-            `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
-            {
-              method: 'GET',
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-  
-          const statusData = await statusResponse.json();
-          statusCode = (statusData as { status_code: string }).status_code;
-  
-          if (statusCode === 'FINISHED') {
-            console.log('Media is ready to be published');
-            break; // Media is ready, break out of the loop
-          }
-  
-          attempts++;
-          console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
-          await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
-        }
-  
-        if (statusCode !== 'FINISHED') {
-          throw new Error('Media not ready after multiple attempts');
-        }
-      };
-      await checkMediaStatus(val.id);
-      const publishContainer = await fetch(
-        `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${val.id}`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const publishData = await publishContainer.json();
-      if((publishData as { id: string }).id)
-      {
-        console.log('Media published successfully');
-      }
-    } else {
-      throw new Error('Invalid mediaType. Use "image" or "video".');
+      return await handleImagePost(igId, token, formData);
     }
-
-
-    // Step 2: Check Media Status and Publish when Ready
-    
-    // Wait for the media to be ready before publishing
-    // if (mediaType==='video' ) {
-    //   await checkMediaStatus(containerResponse[0]);
-    // } else {
-    //   throw new Error('Container ID is undefined');
-    // }
-
-  } catch (error) {
-    console.error('Error publishing media to Instagram:', error);
-  }
-};
-
- 
-const getToken = async (existedUser:any,platforms:string[]) => {
-  // const existedUser = await User.findOne({email:email});
-  if(!existedUser){
-    return;
-  }
-  for(const account of platforms)
-  {
-    if(existedUser.socialAccounts)
-    {
-      const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account);
-      if(linkedinAccount)
-      {
-        
-        return {token : linkedinAccount.accessToken,userData :existedUser,accountsId:linkedinAccount.accountsId};
-      }
-      else
-      {
-        console.log(`Linkedin account ${account} not found for user `);
-        return null;
-      }
+    if (mediaType === 'video') {
+      return await handleVideoPost(igId, token, formData);
     }
-  }
-}
-const step1 = async (accountsId:any,token:any) => {
-
-  
-  
-    const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`,{
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      "registerUploadRequest": {
-          "owner": `urn:li:person:${accountsId}`,
-          "recipes": [
-              "urn:li:digitalmediaRecipe:feedshare-image"
-          ],
-          "serviceRelationships": [
-              {
-                  "relationshipType": "OWNER",
-                  "identifier": "urn:li:userGeneratedContent"
-              }
-          ]
-      }
-    })
-  });
-  const val = await response.json() as { value: { uploadMechanism: { "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest": { uploadUrl: string } } } };
-  console.log("This is the VAL",val);
-  
-  console.log("This is the VAL",val.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl);
-  return val;
-}
-const step2 = async (data:any,token:any,formData:any,accountsId:any) => {
-  const url = data.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl;
-  const assets = data.value.asset;
-  console.log("This is the url",url);
-  console.log("image",formData.image);
-  const imageResponse = await fetch(formData.image);
-  if (!imageResponse.ok) {
-    throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
-  }
-  const imageArrayBuffer = await imageResponse.arrayBuffer();
-const response = await fetch(url,{
-    method: 'PUT',
-    headers: {
-      'media-type-family': 'STILLIMAGE',
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'image/png'
-  },
-  body: imageArrayBuffer
-});
-// console.log("This is the VAL1",val1);
-console.log("asset",assets);
-console.log("urn",accountsId);
-
-// const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === 'linkedin');
-if(response)
-{
-  try {
-    const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`,{
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      'author': `urn:li:person:${accountsId}`,
-      'lifecycleState': 'PUBLISHED',
-      'specificContent': {
-          'com.linkedin.ugc.ShareContent': {
-              'shareCommentary': {
-                  'text': formData.description
-              },
-              'shareMediaCategory': 'IMAGE',
-              'media': [
-                  {
-                      'status': 'READY',
-                      'description': {
-                          'text': formData.description
-                      },
-                      'media': assets
-                  }
-              ]
-  
-          },
-          
-      },
-      "visibility": {
-            "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"  
-          }
-    })  
-    });
-    const postData = await post.json();
-    console.log("This is the post data",postData);  
-  if(postData)
-  {
-    console.log('Post created successfully');
-  }
+    throw new Error(`Invalid media type: ${mediaType}`);
   } catch (error) {
-    console.log(error);
-    
-  }
-  
- 
-  
-}
-}
-// const getYoutubeAccessToken =async(account :any,existedUser :any)=>{
-//   try {
-//       const sameAccountDetail = await existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase()==="youtube");
-//       console.log("->>>>",sameAccountDetail);
-      
-//       return sameAccountDetail.accessToken;
-//   } catch (error) {
-//     return error;
-//   }
-// }
-// const youtubePosting = async (token: string, existedUser: any, formData: any) => {
-//   try {
-//     // Step 1: Download the video from Cloudinary using the video URL (formData.image)
-//     const cloudinaryVideoUrl = formData.image;  // Cloudinary video URL from formData
-//     const cloudinaryResponse = await fetch(cloudinaryVideoUrl);
-
-//     if (!cloudinaryResponse.ok) {
-//       throw new Error('Failed to download video from Cloudinary');
-//     }
-
-//     const videoBlob = await cloudinaryResponse.blob(); // Get video as Blob
-
-//     // Step 2: Initiate Resumable Upload on YouTube
-//     const initResponse = await fetch('https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable', {
-//       method: 'POST',
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         snippet: {
-         
-//           description: formData.description,
-//         },
-//         status: {
-//           privacyStatus:  'public',  // Can be 'public', 'private', or 'unlisted'
-//         },
-//       }),
-//     });
-
-//     if (!initResponse.ok) {
-//       throw new Error('Failed to initiate upload');
-//     }
-
-//     const initData = await initResponse.json() as { uploadUrl: string, id: string };
-//     const uploadUrl = initData.uploadUrl; // The URL for uploading the video file
-
-//     // Step 3: Upload Video Data to YouTube
-//     const chunkSize = 256 * 1024; // 256KB chunk size for video upload (adjust as needed)
-//     let offset = 0;
-
-//     // Upload in chunks
-//     while (offset < videoBlob.size) {
-//       const chunk = videoBlob.slice(offset, offset + chunkSize);
-//       const chunkResponse = await fetch(uploadUrl, {
-//         method: 'PUT',
-//         headers: {
-//           'Content-Length': chunk.size.toString(),
-//           'Content-Range': `bytes ${offset}-${offset + chunk.size - 1}/${videoBlob.size}`,
-//         },
-//         body: chunk,
-//       });
-
-//       if (!chunkResponse.ok) {
-//         throw new Error('Failed to upload video chunk');
-//       }
-
-//       offset += chunk.size; // Increment the offset for the next chunk
-//     }
-
-//     // Step 4: Publish the Video (if needed)
-//     const publishResponse = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=snippet,status&id=${initData.id}`, {
-//       method: 'PUT',
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({
-//         snippet: {
-//           description: formData.description,
-//         },
-//         status: {
-//           privacyStatus:  'public',  // Could be 'public', 'private', 'unlisted'
-//         },
-//       }),
-//     });
-
-//     if (!publishResponse.ok) {
-//       throw new Error('Failed to publish video');
-//     }
-
-//     const videoData = await publishResponse.json();
-//     console.log('Video Published:', videoData);
-//     return videoData;
-
-//   } catch (error) {
-//     console.error('Error uploading video:', error);
-//   }
-// };
-const getYoutubeAccessToken = async (account:any, existedUser:any) => {
-  try {
-    const sameAccountDetail = existedUser.socialAccounts.find(
-      (acc:any) => acc.socialName.toLowerCase() === "youtube"
-    );
-
-    if (!sameAccountDetail || !sameAccountDetail.accessToken) {
-      throw new Error("YouTube access token not found for this user.");
-    }
-
-    return sameAccountDetail.accessToken;
-  } catch (error) {
-    console.error("Error fetching YouTube access token:", error);
+    console.error('Error in postInstagram:', error);
     throw error;
   }
 };
 
-const youtubePosting = async (token:any, existedUser:any, formData:any) => {
-  try {
-    // Step 1: Download the video from Cloudinary
-    const cloudinaryVideoUrl = formData.image;
-    const cloudinaryResponse = await fetch(cloudinaryVideoUrl);
-
-    if (!cloudinaryResponse.ok) {
-      throw new Error("Failed to download video from Cloudinary.");
-    }
-
-    const videoBlob = await cloudinaryResponse.blob();
-
-    // Step 2: Initiate Resumable Upload on YouTube
-    const initResponse = await fetch(
-      "https://www.googleapis.com/upload/youtube/v3/videos?part=snippet,status&uploadType=resumable",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          snippet: {
-            title: formData.title || "Untitled Video",
-            description: formData.description || "No description provided",
-          },
-          status: {
-            privacyStatus: formData.privacyStatus || "public", // 'public', 'private', or 'unlisted'
-          },
-        }),
-      }
-    );
-
-    if (!initResponse.ok) {
-      const errorDetails = await initResponse.text();
-      console.error("Initiate Upload Error Details:", errorDetails);
-      throw new Error("Failed to initiate video upload.");
-    }
-
-    const uploadUrl = initResponse.headers.get("location");
-    if (!uploadUrl) {
-      throw new Error("Upload URL not found in initiation response.");
-    }
-
-    // Step 3: Upload Video Data to YouTube
-    const chunkSize = 256 * 1024; // 256KB chunk size
-    let offset = 0;
-
-    while (offset < videoBlob.size) {
-      const chunk = videoBlob.slice(offset, offset + chunkSize);
-      const chunkResponse = await fetch(uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Length": chunk.size.toString(),
-          "Content-Range": `bytes ${offset}-${
-            offset + chunk.size - 1
-          }/${videoBlob.size}`,
-        },
-        body: chunk,
-      });
-
-      if (!chunkResponse.ok) {
-        const errorDetails = await chunkResponse.text();
-        console.error("Chunk Upload Error Details:", errorDetails);
-        throw new Error("Failed to upload video chunk.");
-      }
-
-      offset += chunk.size;
-    }
-
-    console.log("Video uploaded successfully.");
-    return { message: "Video uploaded successfully", uploadUrl };
-  } catch (error) {
-    console.error("Error during video upload:", error);
-    throw error;
+// Image handling
+const handleImagePost = async (igId: string, token: string, formData: any) => {
+  if (!formData.image?.length) throw new Error('No images provided');
+  
+  if (formData.image.length === 1) {
+    return await postSingleImage(igId, token, formData);
   }
+  return await postCarousel(igId, token, formData);
 };
 
+// Single image post
+const postSingleImage = async (igId: string, token: string, formData: any) => {
+  const mediaPayload = `image_url=${formData.image[0]}&caption=${encodeURIComponent(formData.description)}`;
+  
+  const createRes = await fetch(
+    `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+  );
+  
+  if (!createRes.ok) {
+    const error = await createRes.text();
+    throw new Error(`Instagram API error: ${error}`);
+  }
+
+  const { id } = await createRes.json();
+  console.log(`Created media container ${id}`);
+
+  const publishRes = await fetch(
+    `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${id}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  if (!publishRes.ok) {
+    const error = await publishRes.text();
+    throw new Error(`Publish error: ${error}`);
+  }
+
+  console.log(`Published media ${id}`);
+};
+
+// Carousel post
+const postCarousel = async (igId: string, token: string, formData: any) => {
+  const containerIds = [];
+  
+  for (const imageUrl of formData.image!) {
+    const mediaPayload = `image_url=${imageUrl}&is_carousel_item=true`;
+    const createRes = await fetch(
+      `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+      { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (!createRes.ok) {
+      const error = await createRes.text();
+      throw new Error(`Carousel item error: ${error}`);
+    }
+
+    const { id } = await createRes.json();
+    containerIds.push(id);
+    console.log(`Created carousel item ${id}`);
+  }
+
+  const carouselRes = await fetch(
+    `https://graph.facebook.com/v21.0/${igId}/media?media_type=CAROUSEL&children=${containerIds.join(',')}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  if (!carouselRes.ok) {
+    const error = await carouselRes.text();
+    throw new Error(`Carousel creation error: ${error}`);
+  }
+
+  const { id: carouselId } = await carouselRes.json();
+  console.log(`Created carousel ${carouselId}`);
+
+  const publishRes = await fetch(
+    `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${carouselId}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  if (!publishRes.ok) {
+    const error = await publishRes.text();
+    throw new Error(`Carousel publish error: ${error}`);
+  }
+
+  console.log(`Published carousel ${carouselId}`);
+};
+
+// Video handling
+const handleVideoPost = async (igId: string, token: string, formData: any) => {
+  if (!formData.image?.[0]) throw new Error('No video URL provided');
+  
+  const mediaPayload = `video_url=${formData.image[0]}&caption=${encodeURIComponent(formData.description)}`;
+  
+  const createRes = await fetch(
+    `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  if (!createRes.ok) {
+    const error = await createRes.text();
+    throw new Error(`Video creation error: ${error}`);
+  }
+
+  const { id } = await createRes.json();
+  console.log(`Created video container ${id}`);
+
+  // Wait for video processing
+  await waitForVideoProcessing(id, token);
+  
+  const publishRes = await fetch(
+    `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${id}`,
+    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  if (!publishRes.ok) {
+    const error = await publishRes.text();
+    throw new Error(`Video publish error: ${error}`);
+  }
+
+  console.log(`Published video ${id}`);
+};
+
+const waitForVideoProcessing = async (containerId: string, token: string) => {
+  const maxAttempts = 30;
+  const delay = 10000; // 10 seconds
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const statusRes = await fetch(
+      `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (!statusRes.ok) {
+      const error = await statusRes.text();
+      throw new Error(`Status check failed: ${error}`);
+    }
+
+    const { status_code } = await statusRes.json();
+    console.log(`Video status (attempt ${attempt}): ${status_code}`);
+
+    if (status_code === 'FINISHED') return;
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  throw new Error('Video processing timeout');
+};
+
+// Main job processor
 export const processJob = async (job: any) => {
-   const existedUser = await User.findOne({email:job.data.email});
-    for(const platforms of job.data.formData.platforms)
-    {
-      if(platforms.name.toLowerCase() === 'instagram')
-      {
-        const igId = await getIgId(job.data.email, job.data.formData.platforms);
-        if (igId?.igId && igId?.token) {
-          postInstagram(igId.igId, igId.token, job.data.formData, job.data.mediaType);
-        } else {
-          console.error('Instagram ID or token is undefined');
-        }
-      }
-       else if(platforms.name.toLowerCase() === 'linkedin')
-      {
+  console.log(`Starting job ${job.id}`, JSON.stringify(job.data, null, 2));
 
-        const data = await getToken(existedUser, platforms.account);
-        const step1Res =  await step1(data?.accountsId, data?.token);
-        const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
-      }
-      else if(platforms.name.toLowerCase()==='youtube')
-      {
-        const token = await getYoutubeAccessToken(platforms.account,existedUser);
-        const responseAfterPost  = await youtubePosting(token,existedUser,job.data.formData);
+  try {
+    const user = await User.findOne({ email: job.data.email });
+    if (!user) throw new Error(`User ${job.data.email} not found`);
 
-        
+    for (const platform of job.data.formData.platforms) {
+      console.log(`Processing ${platform.name} platform`);
+      
+      switch (platform.name.toLowerCase()) {
+        case 'instagram':
+          const igData = await getIgId(job.data.email, job.data.formData.platforms);
+          if (igData.igId && igData.token) {
+            await postInstagram(igData.igId, igData.token, job.data.formData, job.data.mediaType);
+          } else {
+            throw new Error('Invalid Instagram data');
+          }
+          break;
+
+        case 'linkedin':
+          // Implement LinkedIn logic
+          break;
+
+        case 'youtube':
+          // Implement YouTube logic
+          break;
+
+        default:
+          console.warn(`Unsupported platform: ${platform.name}`);
       }
     }
 
+    console.log(`Completed job ${job.id} successfully`);
+  } catch (error) {
+    console.error(`Job ${job.id} failed:`, error);
+    throw error; // Ensure failure is propagated to BullMQ
+  }
 };
