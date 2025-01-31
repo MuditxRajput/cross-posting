@@ -1,16 +1,55 @@
 import { Queue } from 'bullmq';
+import IORedis, { RedisOptions } from 'ioredis';
 
-// Parse the Redis URL
-const redisUrl = new URL('redis://default:TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu@junction.proxy.rlwy.net:56489');
+// Validate environment variable
+if (!process.env.REDIS_URL) {
+  throw new Error('REDIS_URL environment variable is not defined');
+}
 
-// Extract connection details
-const redisOptions = {
-  host: redisUrl.hostname, 
-  port: parseInt(redisUrl.port, 10), 
-  password: redisUrl.password,
+// Parse Redis URL from environment variable
+const redisUrl = new URL(process.env.REDIS_URL);
+
+// Configure Redis connection options
+const redisOptions: RedisOptions = {
+  host: redisUrl.hostname,
+  port: parseInt(redisUrl.port, 10),
+  username: redisUrl.username || 'default',
+  password: redisUrl.password ? decodeURIComponent(redisUrl.password) : undefined,
+  tls: redisUrl.protocol === 'rediss:' ? { 
+    rejectUnauthorized: false // Required for Railway's TLS setup
+  } : undefined,
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false
 };
 
-// ✅ Correct: Pass Redis options directly
+// Create shared Redis connection instance
+const redisConnection = new IORedis(redisOptions);
+
+// Add connection event listeners
+redisConnection.on('connect', () => {
+  console.log('🟡 Connecting to Redis from web...');
+});
+
+redisConnection.on('ready', () => {
+  console.log('✅ Web Redis connection established');
+});
+
+redisConnection.on('error', (err) => {
+  console.error('❌ Web Redis connection error:', err);
+});
+
+// Create Queue instance
 export const postQueue = new Queue('postQueue', {
-  connection: redisOptions,
+  connection: redisConnection,
+  defaultJobOptions: {
+    removeOnComplete: 1000,
+    removeOnFail: 5000
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('🛑 Closing web queue connection...');
+  await postQueue.close();
+  await redisConnection.quit();
 });
