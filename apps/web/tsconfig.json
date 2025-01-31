@@ -7,7 +7,8 @@
       }
     ],
     "baseUrl": ".", // Set the base directory for module resolution
-    "paths": {
+    "paths": 
+    {
       "@/*": ["./*"], // Alias for everything in the root
       "@components/*": ["./components/*"], // Adjust based on your project structure
       "@utils/*": ["./utils/*"], // If you have a utils directory
