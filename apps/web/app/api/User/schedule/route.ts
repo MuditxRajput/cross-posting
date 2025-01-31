@@ -1,5 +1,6 @@
 import { postQueue } from "@/app/services/queue";
-import { dbConnection, User } from "@database/database";
+import { dbConnection } from "@database/database";
+import { User } from "@database/database/models/user.model";
 import { NextResponse } from "next/server";
 
 export async function POST(req:any) {
