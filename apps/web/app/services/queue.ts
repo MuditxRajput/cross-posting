@@ -11,6 +11,7 @@ const redisOptions = {
   password: redisUrl.password, // e.g., 'TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu'
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  family: 0,
 };
 
 // Create Redis client
