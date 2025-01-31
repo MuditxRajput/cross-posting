@@ -1,81 +1,71 @@
-// apps/worker/src/index.ts
-import { Worker } from 'bullmq';
-import IORedis, { RedisOptions } from 'ioredis';
+import { dbConnection } from '@database/database';
+import { Worker, Queue } from 'bullmq';
+import express from 'express';
+import IORedis from 'ioredis';
 import { processJob } from './scheduling/processJob';
 
-// Validate environment variables
-if (!process.env.REDIS_URL) {
-  throw new Error('REDIS_URL environment variable is not defined');
-}
-if (!process.env.MONGO_URL) {
-  throw new Error('MONGO_URL environment variable is not defined');
-}
+// Config
+const app = express();
+const PORT = process.env.PORT || 3001;
 
-// Parse Redis URL
-const redisUrl = new URL(process.env.REDIS_URL);
-
-// Configure Redis connection
-const redisOptions: RedisOptions = {
+// Redis setup
+const redisUrl = new URL(process.env.REDIS_URL!);
+const redisConfig = {
   host: redisUrl.hostname,
-  port: parseInt(redisUrl.port, 10),
+  port: Number(redisUrl.port),
   username: redisUrl.username || 'default',
-  password: redisUrl.password ? decodeURIComponent(redisUrl.password) : undefined,
-  tls: redisUrl.protocol === 'rediss:' ? { 
-    rejectUnauthorized: false // Required for Railway's TLS
-  } : undefined,
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false
+  password: decodeURIComponent(redisUrl.password),
+  tls: redisUrl.protocol === 'rediss:' ? { rejectUnauthorized: false } : undefined
 };
 
-// Create Redis connection with health check
-const redisConnection = new IORedis(redisOptions);
+const redisConnection = new IORedis(redisConfig);
 
-// Connection event listeners
-redisConnection.on('connect', () => {
-  console.log('🟡 Connecting to Redis...');
+// BullMQ Worker
+const queue = new Queue('postQueue', {
+  connection: redisConnection
 });
 
-redisConnection.on('ready', () => {
-  console.log('✅ Redis connection established');
-});
-
-redisConnection.on('error', (err) => {
-  console.error('❌ Redis connection error:', err);
-});
-
-// Initialize BullMQ Worker
-const worker = new Worker('postQueue', processJob, { 
+const queueWorker = new Worker('postQueue', processJob, {
   connection: redisConnection,
-  concurrency: 5,
-  removeOnComplete: { count: 1000 },
-  removeOnFail: { count: 5000 }
+  concurrency: 5
 });
 
-// Worker event listeners
-worker.on('ready', () => {
-  console.log('🚀 Worker is ready to process jobs');
+// Express setup
+app.use(express.json());
+
+// Health check
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
 });
 
-worker.on('active', (job) => {
-  console.log(`🔵 Job ${job.id} started`);
+// Job endpoint
+app.post('/job', async (req, res) => {
+  try {
+    const { type, payload, delay } = req.body;
+    await queue.add(type, payload, { delay });
+    
+    // Removed invalid queueWorker.add line
+    
+    res.status(202).json({
+      status: 'scheduled',
+      delay: `${delay}ms`
+    });
+  } catch (error) {
+    console.error('Job submission failed:', error);
+    res.status(500).json({ error: 'Job scheduling failed' });
+  }
 });
 
-worker.on('completed', (job) => {
-  console.log(`🟢 Job ${job.id} completed`);
-});
-
-worker.on('failed', (job, err) => {
-  console.error(`🔴 Job ${job?.id} failed:`, err);
-});
-
-worker.on('error', (err) => {
-  console.error('🔥 Worker error:', err);
+// Start server
+app.listen(PORT, async () => {
+  await dbConnection();
+  console.log(`Worker running on port ${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-  console.log('🛑 Received SIGTERM. Closing worker...');
-  await worker.close();
+  console.log('Shutting down...');
+  await queueWorker.close();
   await redisConnection.quit();
   process.exit(0);
 });

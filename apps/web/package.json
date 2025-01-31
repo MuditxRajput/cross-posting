@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@database/database": "workspace:*",
     "@mui/material": "^6.4.0",
     "@pqina/pintura": "^8.91.5",
     "@radix-ui/react-alert-dialog": "^1.1.4",
