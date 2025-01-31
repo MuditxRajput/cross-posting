@@ -8,23 +8,23 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "strict": true,
-    "composite": true
+    "composite": true,
+    "traceResolution": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"],
+      "@components/*": ["./components/*"],
+      "@utils/*": ["./utils/*"],
+      "@database/*": ["../../packages/database/*"]
+    }
   },
-  "baseUrl": ".",
-  "paths": 
-    {
-      "@/*": ["./*"], // Alias for everything in the root
-      "@components/*": ["./components/*"], // Adjust based on your project structure
-      "@utils/*": ["./utils/*"], // If you have a utils directory
-      "@database/*": ["../../packages/database/*"] // Adjust based on your directory structure
-    },
   "include": [
     "./**/*.ts",
     "next-env.d.ts",
     "next.config.mjs",
     "**/*.ts",
-    "**/*.tsx",
-],
+    "**/*.tsx"
+  ],
   "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../packages/database" }
