@@ -2,14 +2,10 @@ import { Queue } from 'bullmq';
 import IORedis from 'ioredis';
 
 // Parse the Redis URL
-if (!process.env.REDIS_URL) {
-  throw new Error('REDIS_URL environment variable is not defined');
-}
-const redisUrl = new URL(process.env.REDIS_URL);
+const redisUrl = new URL('redis://default:TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu@junction.proxy.rlwy.net:56489');
 
 // Extract connection details
 const redisOptions = {
- 
   host: redisUrl.hostname, // e.g., 'junction.proxy.rlwy.net'
   port: parseInt(redisUrl.port, 10), // e.g., 56489
   password: redisUrl.password, // e.g., 'TYnGCAxQOuQcLKnoQpIZFLEwRxAlEAlu'
