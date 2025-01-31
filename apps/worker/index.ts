@@ -12,6 +12,7 @@ const redisClient = new IORedis(process.env.REDIS_URL, {
   maxRetriesPerRequest: null,
   enableTLSForSentinelMode: false, // Add this if Railway Redis doesn't use TLS
   tls: {}, // Uncomment this if Railway Redis requires TLS (SSL)
+  family: 0,
 });
 
 // Connection event handlers
