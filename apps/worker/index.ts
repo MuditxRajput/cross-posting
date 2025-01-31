@@ -2,7 +2,10 @@ import { Worker } from 'bullmq';
 import { processJob } from './scheduling/processJob';
 
 // Extract Redis connection details
-const redisUrl = new URL(process.env.REDIS_URL || '');
+if (!process.env.REDIS_URL) {
+  throw new Error('REDIS_URL environment variable is not defined');
+}
+const redisUrl = new URL(process.env.REDIS_URL);
 const redisOptions = {
   host: redisUrl.hostname, 
   port: parseInt(redisUrl.port, 10), 
