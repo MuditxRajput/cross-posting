@@ -8,25 +8,14 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "strict": true,
-    "composite": true,
-    "traceResolution": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"],
-      "@components/*": ["./components/*"],
-      "@utils/*": ["./utils/*"],
-      "@database/*": ["../../packages/database/*"]
-    }
+    "composite": true
   },
+  "include": ["./**/*.ts"],
   "include": [
-    "./**/*.ts",
-    "next-env.d.ts",
-    "next.config.mjs",
-    "**/*.ts",
-    "**/*.tsx"
-  ],
-  "exclude": ["node_modules", "dist"],
+    "./**/*.ts"],
+    "exclude": ["node_modules", "dist"],
   "references": [
     { "path": "../../packages/database" }
   ]
-}
+
+  }
