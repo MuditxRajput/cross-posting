@@ -4,13 +4,11 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    console.log()
-    if (process.env.NODE_ENV !== 'production') {
-      // Prevent DB/queue connection logic from running during build time
-      console.log('Running in non-production, skipping database connection...');
+    // Only establish DB connection during runtime (on each request)
+    if (process.env.NODE_ENV === 'production') {
+      await dbConnection();  // Ensure this runs only during request handling
     } else {
-      // Database connection
-      await dbConnection();  // Only runs during runtime
+      console.log('Skipping DB connection in non-production environment');
     }
 
     const { formData, email, mediaType } = await req.json();
@@ -44,14 +42,18 @@ export async function POST(req: Request) {
     // Update user cycle count
     user.cycle = (user.cycle as number) - 1;
     await user.save();
-    // const queueSize = await postQueue.getJobCounts();
-    // console.log("Queue Status:", queueSize);
 
-    // ✅ Add job directly to Redis queue instead of making an HTTP request
+    // Only add to the queue in production
     if (process.env.NODE_ENV === 'production') {
-
-
-    await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+      if (postQueue) {
+        await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+      } else {
+        console.error("postQueue is null");
+        return NextResponse.json(
+          { message: "Queue service unavailable", success: false },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({
