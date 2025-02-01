@@ -15,7 +15,7 @@ const InstagramCallback = () => {
     if (access_token) {
       const sendToken = async () => {
         try {
-          const res = await fetch(`https://cross-posting-web.vercel.app/api/instagram/callback`, {
+          const res = await fetch(`http://localhost:3000/api/instagram/callback`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
