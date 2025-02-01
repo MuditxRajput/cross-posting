@@ -1,3 +1,4 @@
+import { postQueue } from "@/app/services/queue";
 import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
@@ -47,7 +48,11 @@ export async function POST(req: Request) {
     // console.log("Queue Status:", queueSize);
 
     // ✅ Add job directly to Redis queue instead of making an HTTP request
-    // await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+    if (process.env.NODE_ENV === 'production') {
+
+
+    await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+    }
 
     return NextResponse.json({
       message: "Post scheduled",
