@@ -1,11 +1,16 @@
 import { postQueue } from "@/app/services/queue";
-import { User } from "@database/database";
+import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    // Database connection
-    // await dbConnection();
+    if (process.env.NODE_ENV !== 'production') {
+      // Prevent DB/queue connection logic from running during build time
+      console.log('Running in non-production, skipping database connection...');
+    } else {
+      // Database connection
+      await dbConnection();  // Only runs during runtime
+    }
 
     const { formData, email, mediaType } = await req.json();
     const dateTime = new Date(formData.dateTime);
