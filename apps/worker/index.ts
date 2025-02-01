@@ -26,11 +26,13 @@ interface RedisConfig extends RedisOptions {
   retryStrategy: (times: number) => number;
 }
 
+const redisUrl = new URL(process.env.REDIS_URL!);
+
 const redisConfig: RedisConfig = {
-  host: process.env.REDIS_URL!.split('@')[1].split(':')[0],
+  host: redisUrl.hostname,
   port: parseInt(redisUrl.port || '6379'),
   username: 'default',
-  password: process.env.REDIS_URL!.split(':')[2].split('@')[0],
+  password: redisUrl.password,
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
   reconnectOnError: (err: Error) => {
