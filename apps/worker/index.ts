@@ -6,7 +6,10 @@ if (!process.env.REDIS_URL) {
   throw new Error('REDIS_URL is not set');
 }
 
-const redisUrl = new URL(process.env.REDIS_URL);
+if (!process.env.REDIS_PUBLIC_URL) {
+  throw new Error('REDIS_PUBLIC_URL is not set');
+}
+const redisUrl = new URL(process.env.REDIS_PUBLIC_URL);
 
 // Append '?family=0' to enable dual stack lookup (IPv4 and IPv6)
 const redisConfig = {
