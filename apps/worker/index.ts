@@ -25,10 +25,26 @@ redisConnection.on('connect', () => {
   console.log('✅ Redis is connected');
 });
 
-const queueWorker = new Worker('postQueue', processJob, {
-  connection: redisConnection,
-  concurrency: 5
-});
+
+
+const queueWorker = new Worker(
+  'postQueue', // Queue name
+  async job => {
+    console.log('Starting job:', job.name);
+    // Add your job processing logic here
+    const { email, formData, mediaType } = job.data;
+    if (job.name === 'schedulePost') {
+      console.log('Processing post:', formData);
+      // Your job processing logic (e.g., post to Instagram)
+    }
+    return 'Job completed successfully';
+  },
+  {
+    connection: redisConnection,
+    concurrency: 5,
+  }
+);
+
 
 queueWorker.on('completed', (job) => console.log(`✅ Job ${job.id} completed`));
 queueWorker.on('failed', (job, err) => console.error(`❌ Job ${job?.id} failed:`, err));

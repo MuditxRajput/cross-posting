@@ -46,7 +46,8 @@ export async function POST(req: Request) {
     // Only add to the queue in production
     if (process.env.NODE_ENV === 'production') {
       if (postQueue) {
-        await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+        const job = await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+        console.log("Job added to queue:", job.id);
       } else {
         console.error("postQueue is null");
         return NextResponse.json(
