@@ -28,7 +28,7 @@ interface RedisConfig extends RedisOptions {
 
 const redisConfig: RedisConfig = {
   host: process.env.REDIS_URL!.split('@')[1].split(':')[0],
-  port: parseInt(process.env.REDIS_URL!.split(':')[2]),
+  port: parseInt(redisUrl.port || '6379'),
   username: 'default',
   password: process.env.REDIS_URL!.split(':')[2].split('@')[0],
   maxRetriesPerRequest: null,
