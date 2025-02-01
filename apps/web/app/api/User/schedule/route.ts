@@ -1,11 +1,11 @@
 import { postQueue } from "@/app/services/queue";
-import { dbConnection, User } from "@database/database";
+import { User } from "@database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     // Database connection
-    await dbConnection();
+    // await dbConnection();
 
     const { formData, email, mediaType } = await req.json();
     const dateTime = new Date(formData.dateTime);
