@@ -119,7 +119,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
   const saveToCloudinary = async (image: any, aspectRatio: string) => {
     try {
       const fileType = image[0]?.src?.startsWith('data:image') ? 'image' : 'video';
-      const response = await fetch('http://localhost:3000/api/cloudinary', {
+      const response = await fetch('https://cross-posting-web.vercel.app/api/cloudinary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ image, fileType, aspectRatio }), // Include aspectRatio in the request

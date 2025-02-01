@@ -71,7 +71,7 @@ const ImageUploadForm = ({ image }: any) => {
   const saveToCloudinary = async (image: any) => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/cloudinary", {
+      const response = await fetch("https://cross-posting-web.vercel.app/api/cloudinary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image }),
@@ -83,7 +83,7 @@ const ImageUploadForm = ({ image }: any) => {
         const userEmail = session.data?.user?.email;
         const dataType = data.type;
 
-        const res = await fetch("http://localhost:3000/api/User/media", {
+        const res = await fetch("https://cross-posting-web.vercel.app/api/User/media", {
           method: "POST",
           headers: {
             "Content-Type": "Application/json",
@@ -106,7 +106,7 @@ const ImageUploadForm = ({ image }: any) => {
     setShowSchedule(false);
     const userEmail = session.data?.user?.email;
     try {
-      const res = await fetch("http://localhost:3000/api/User/schedule", {
+      const res = await fetch("https://cross-posting-web.vercel.app/api/User/schedule", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
