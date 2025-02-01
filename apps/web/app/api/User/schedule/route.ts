@@ -1,13 +1,9 @@
+import { postQueue } from "@/app/services/queue";
 import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    // Validate environment
-    if (!process.env.WORKER_ENDPOINT) {
-      throw new Error('WORKER_ENDPOINT not configured');
-    }
-
     // Database connection
     await dbConnection();
 
@@ -39,24 +35,14 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update user
+    // Update user cycle count
     user.cycle = (user.cycle as number) - 1;
     await user.save();
+    const queueSize = await postQueue.getJobCounts();
+    console.log("Queue Status:", queueSize);
 
-    // Forward to worker
-    const workerResponse = await fetch(`${process.env.WORKER_ENDPOINT}/jobs`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'schedulePost',
-        payload: { formData, email, mediaType },
-        delay
-      })
-    });
-
-    if (!workerResponse.ok) {
-      throw new Error('Worker service failed');
-    }
+    // ✅ Add job directly to Redis queue instead of making an HTTP request
+    await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
 
     return NextResponse.json({
       message: "Post scheduled",
