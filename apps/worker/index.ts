@@ -8,15 +8,22 @@ if (!process.env.REDIS_URL) {
 
 const redisUrl = new URL(process.env.REDIS_URL);
 
+// Append '?family=0' to enable dual stack lookup (IPv4 and IPv6)
 const redisConfig = {
   host: redisUrl.hostname,
   port: Number(redisUrl.port),
   username: redisUrl.username || 'default',
   password: decodeURIComponent(redisUrl.password),
-  tls: undefined  // ❌ Remove TLS
+  tls: undefined,  // Remove TLS if not needed
+  family: 0        // Dual stack lookup (both IPv4 and IPv6)
 };
 
 const redisConnection = new IORedis(redisConfig);
+
+// Log when Redis is connected
+redisConnection.on('connect', () => {
+  console.log('✅ Redis is connected');
+});
 
 const queueWorker = new Worker('postQueue', processJob, {
   connection: redisConnection,
