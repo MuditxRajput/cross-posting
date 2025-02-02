@@ -1,5 +1,7 @@
 // redis-test.js
 require('dotenv').config();
+import { Worker } from 'bullmq';
+import { processJob } from './scheduling/processJob';
 const Redis = require('ioredis');
 
 const redis = new Redis({
@@ -19,23 +21,18 @@ redis.on('error', (error:any) => {
   console.error('Redis Error:', error);
 });
 
-async function testRedisOperations() {
-  try {
-    // Test setting a value
-    await redis.set('test-key', 'Hello from EC2!');
-    console.log('Successfully set test-key');
 
-    // Test getting the value
-    const value = await redis.get('test-key');
-    console.log('Retrieved value:', value);
 
-    // Clean up
-    await redis.quit();
-    console.log('Test completed successfully');
-  } catch (error) {
-    console.error('Error during Redis operations:', error);
-    process.exit(1);
+const worker = new Worker(
+  'postingQueue', // Queue name
+  async (job) => {
+    console.log(`Processing job ${job.id}`);
+    await processJob(job); // Use the processJob function to handle the job
+  },
+  {
+    connection: redis, // Use the Redis connection
+    concurrency: 5, // Number of jobs to process concurrently
+    removeOnComplete: { count: 100 }, // Keep the last 100 completed jobs
+    removeOnFail: { count: 100 }, // Keep the last 100 failed jobs
   }
-}
-
-testRedisOperations();
+);
