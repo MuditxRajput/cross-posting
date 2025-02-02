@@ -26,11 +26,11 @@ redis.on('error', (error:any) => {
 const worker = new Worker(
   'postingQueue', // Queue name
   async (job) => {
-    console.log(`Processing job ${job.id}`);
     await processJob(job); // Use the processJob function to handle the job
   },
   {
     connection: redis, // Use the Redis connection
+    prefix: '{postingQueue}', // Add a hash tag to ensure all keys hash to the same slot
     concurrency: 5, // Number of jobs to process concurrently
     removeOnComplete: { count: 100 }, // Keep the last 100 completed jobs
     removeOnFail: { count: 100 }, // Keep the last 100 failed jobs
