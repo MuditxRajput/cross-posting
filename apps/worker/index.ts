@@ -1,33 +1,41 @@
-require('dotenv').config(); // Load environment variables from .env file
-
+// redis-test.js
+require('dotenv').config();
 const Redis = require('ioredis');
 
-// Connect to your Redis instance using the host and port provided
 const redis = new Redis({
-  host: process.env.REDIS_URL ? process.env.REDIS_URL.split(':')[0] : 'localhost', // Your Redis host (e.g., 'post-19d1vz.serverless.use1.cache.amazonaws.com')
-  port: process.env.REDIS_URL ? parseInt(process.env.REDIS_URL.split(':')[1], 10) : 6379, // Redis port (e.g., '6379')
-  tls: process.env.REDIS_URL ? {} : undefined, // Add TLS if Redis URL is used (for encrypted connections)
+  host: process.env.REDIS_URL,
+  port: 6379,
+  tls: {},
+  retryStrategy(times:any) {
+    return Math.min(times * 50, 2000);
+  }
 });
 
-// Listen for successful Redis connection
 redis.on('connect', () => {
-  console.log('Connected to Redis!');
+  console.log('Successfully connected to Redis!');
 });
 
-// Example of setting and getting a value from Redis
-async function testRedis() {
+redis.on('error', (error:any) => {
+  console.error('Redis Error:', error);
+});
+
+async function testRedisOperations() {
   try {
-    // Set a value in Redis
-    await redis.set('myKey', 'Hello Redis');
-    
-    // Get the value from Redis
-    const value = await redis.get('myKey');
-    
-    // Print the value from Redis
-    console.log('Value from Redis:', value); // Should print 'Hello Redis'
-  } catch (err) {
-    console.error('Error interacting with Redis:', err);
+    // Test setting a value
+    await redis.set('test-key', 'Hello from EC2!');
+    console.log('Successfully set test-key');
+
+    // Test getting the value
+    const value = await redis.get('test-key');
+    console.log('Retrieved value:', value);
+
+    // Clean up
+    await redis.quit();
+    console.log('Test completed successfully');
+  } catch (error) {
+    console.error('Error during Redis operations:', error);
+    process.exit(1);
   }
 }
-// Test Redis connection and operations
-testRedis().catch(console.error);
+
+testRedisOperations();
