@@ -29,6 +29,5 @@ async function testRedis() {
     console.error('Error interacting with Redis:', err);
   }
 }
-
 // Test Redis connection and operations
 testRedis().catch(console.error);
