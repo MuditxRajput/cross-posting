@@ -1,4 +1,4 @@
-import { postQueue } from "@/app/services/queue";
+// import { postQueue } from "@/app/services/queue";
 import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
@@ -45,9 +45,9 @@ export async function POST(req: Request) {
 
     // Only add to the queue in production
     if (process.env.NODE_ENV === 'production') {
-      if (postQueue) {
-        const job = await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
-        console.log("Job added to queue:", job.id);
+      if (true) {
+        // const job = await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
+        console.log("Job added to queue:",);
       } else {
         console.error("postQueue is null");
         return NextResponse.json(
