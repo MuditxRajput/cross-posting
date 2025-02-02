@@ -1,27 +1,27 @@
-// import { Queue } from 'bullmq';
-// import IORedis from 'ioredis';
+import { Queue } from "bullmq";
+import IORedis from "ioredis";
 
-// if (!process.env.REDIS_PUBLIC_URL) {
-//   throw new Error('❌ REDIS_PUBLIC_URL is not set');
-// }
+// Declare types for better type safety
+let redisConnection: IORedis | null = null;
+let postQueue: Queue | null = null;
+console.log(process.env.REDIS_PUBLIC_URL);
+// Only initialize if we're on the server side
+if (typeof window === 'undefined') {
+  const initializeQueue = () => {
+    if (process.env.NODE_ENV === 'production') {
+      console.log("Initializing Redis in Node.js runtime...");
+      redisConnection = new IORedis(process.env.REDIS_PUBLIC_URL, {
+        maxRetriesPerRequest: null,
+        enableReadyCheck: false,
+      });
+      postQueue = new Queue("postQueue", { connection: redisConnection });
+    } else {
+      console.log("Skipping Redis initialization in non-production environment...");
+    }
+  };
 
-// // Create Redis connection
-// const redisConnection = new IORedis(process.env.REDIS_PUBLIC_URL, {
-//   maxRetriesPerRequest: null,
-//   enableReadyCheck: false,
-// });
+  // Initialize queue
+  initializeQueue();
+}
 
-// redisConnection.on('connect', () => console.log('🟡 Connecting to Redis...'));
-// redisConnection.on('ready', () => console.log('✅ Redis Ready!'));
-// redisConnection.on('error', (err) => console.error('❌ Redis connection error:', err));
-
-// // Create the BullMQ queue
-// const postQueue = new Queue('postQueue', {
-//   connection: redisConnection,
-//   defaultJobOptions: {
-//     removeOnComplete: 1000,
-//     removeOnFail: 5000,
-//   },
-// });
-
-// export { postQueue };
+export { postQueue };

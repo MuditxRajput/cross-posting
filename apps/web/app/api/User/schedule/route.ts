@@ -1,14 +1,12 @@
-// import { postQueue } from "@/app/services/queue";
+import { postQueue } from "@/app/services/queue";
 import { dbConnection, User } from "@database/database";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     // Only establish DB connection during runtime (on each request)
-    if (process.env.NODE_ENV === 'production') {
-      await dbConnection();  // Ensure this runs only during request handling
-    } else {
-      console.log('Skipping DB connection in non-production environment');
+    if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+      await dbConnection();
     }
 
     const { formData, email, mediaType } = await req.json();
@@ -43,11 +41,15 @@ export async function POST(req: Request) {
     user.cycle = (user.cycle as number) - 1;
     await user.save();
 
-    // Only add to the queue in production
-    if (process.env.NODE_ENV === 'production') {
-      if (true) {
-        // const job = await postQueue.add("schedulePost", { formData, email, mediaType }, { delay });
-        console.log("Job added to queue:",);
+    // Queue handling
+    if (typeof window === 'undefined' && process.env.NODE_ENV === 'production') {
+      if (postQueue) {
+        const job = await postQueue.add(
+          "schedulePost", 
+          { formData, email, mediaType }, 
+          { delay }
+        );
+        console.log("Job added to queue:", job.id);
       } else {
         console.error("postQueue is null");
         return NextResponse.json(
