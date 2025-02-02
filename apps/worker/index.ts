@@ -2,7 +2,7 @@ const Redis = require('ioredis');
 
 // Connect to your Redis instance using the host and port provided
 const redis = new Redis({
-  host: 'post-19d1vz.serverless.use1.cache.amazonaws.com', // Your Redis host
+  host: process.env.REDIS_URL, // Your Redis host
   port: 6379, // Redis port
   db: 0, // Optionally, specify the Redis database number
 });
