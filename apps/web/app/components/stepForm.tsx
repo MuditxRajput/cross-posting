@@ -130,7 +130,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         const userEmail = session.data?.user?.email;
         const mediaType = fileType;
         console.log("image is uploaded", formData.image);
-        const resp = await fetch('https://cross-posting-web.vercel.app/api/User/schedule', {
+        const resp = await fetch('arn:aws:apigateway:us-east-1::/apis/a8d7v7e145/routes/2fz4ssl/queue-creation', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
