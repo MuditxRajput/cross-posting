@@ -1,38 +1,35 @@
-// redis-test.js
-require('dotenv').config();
 import { Worker } from 'bullmq';
+import 'dotenv/config';
+import Redis from 'ioredis';
 import { processJob } from './scheduling/processJob';
-const Redis = require('ioredis');
 
-const redis = new Redis({
-  host: process.env.REDIS_URL,
+// ✅ Configure Redis (Valkey) Connection
+const redisOptions = {
+  host: 'redisposting-19d2vz.serverless.use1.cache.amazonaws.com',
   port: 6379,
-  tls: {},
-  retryStrategy(times:any) {
-    return Math.min(times * 50, 2000);
-  }
-});
+  tls: {}, // Required for AWS Valkey
+  retryStrategy: (times: number) => Math.min(times * 50, 2000),
+};
 
-redis.on('connect', () => {
-  console.log('Successfully connected to Redis!');
-});
+const redis = new Redis(redisOptions);
 
-redis.on('error', (error:any) => {
-  console.error('Redis Error:', error);
-});
+redis.on('connect', () => console.log('✅ Successfully connected to AWS Valkey!'));
+redis.on('error', (error) => console.error('❌ Redis Error:', error));
 
-
-
+// ✅ Create BullMQ Worker
 const worker = new Worker(
-  'postingQueue', // Queue name
+  'postingQueue', 
   async (job) => {
-    await processJob(job); // Use the processJob function to handle the job
+    console.log(`Processing job: ${job.id}`);
+    await processJob(job); // Process the job
   },
   {
-    connection: redis, // Use the Redis connection
-    prefix: '{postingQueue}', // Add a hash tag to ensure all keys hash to the same slot
-    concurrency: 5, // Number of jobs to process concurrently
-    removeOnComplete: { count: 100 }, // Keep the last 100 completed jobs
-    removeOnFail: { count: 100 }, // Keep the last 100 failed jobs
+    connection: redisOptions, // Pass Redis config instead of instance
+    prefix: '{postingQueue}',
+    concurrency: 5, // Process 5 jobs in parallel
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 100 },
   }
 );
+
+console.log('🚀 Worker is ready and listening for jobs...');
