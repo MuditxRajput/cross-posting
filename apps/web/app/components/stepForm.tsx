@@ -130,7 +130,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         const userEmail = session.data?.user?.email;
         const mediaType = fileType;
         console.log("image is uploaded", formData.image);
-        const resp = await fetch('https://h2sfj6zzo7.execute-api.us-east-1.amazonaws.com/cors/connectingToValkey', {
+        const resp = await fetch('https://h2sfj6zzo7.execute-api.us-east-1.amazonaws.com/connectingToValkey', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
