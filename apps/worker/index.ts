@@ -5,7 +5,7 @@ import { processJob } from './scheduling/processJob';
 
 // ✅ Configure Redis (Valkey) Connection
 const redisOptions = {
-  host: 'redisposting-19d2vz.serverless.use1.cache.amazonaws.com',
+  host: process.env.REDIS_URL,
   port: 6379,
   tls: {}, // Required for AWS Valkey
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
