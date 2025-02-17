@@ -3,12 +3,12 @@ import 'dotenv/config';
 import Redis from 'ioredis';
 import { processJob } from './scheduling/processJob';
 
-// ✅ Configure Redis (Valkey) Connection
 const redisOptions = {
   host: process.env.REDIS_URL,
   port: 6379,
-  tls: {}, // Required for AWS Valkey
+  tls: {}, 
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
+  keyPrefix: '{bull}' // Match Lambda's prefix
 };
 
 const redis = new Redis(redisOptions);
@@ -16,20 +16,29 @@ const redis = new Redis(redisOptions);
 redis.on('connect', () => console.log('✅ Successfully connected to AWS Valkey!'));
 redis.on('error', (error) => console.error('❌ Redis Error:', error));
 
-// ✅ Create BullMQ Worker
+// Update queue name to match Lambda
 const worker = new Worker(
-  'postingQueue', 
+  'postQueue',  // Changed from 'postingQueue' to match Lambda
   async (job) => {
     console.log(`Processing job: ${job.id}`);
-    await processJob(job); // Process the job
+    await processJob(job);
   },
   {
-    connection: redisOptions, // Pass Redis config instead of instance
-    prefix: '{postingQueue}',
-    concurrency: 5, // Process 5 jobs in parallel
+    connection: redisOptions,
+    // Remove prefix here since it's in redisOptions
+    concurrency: 5,
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 100 },
   }
 );
+
+// Add more logging to debug
+worker.on('completed', job => {
+  console.log(`✅ Job completed: ${job.id}`);
+});
+
+worker.on('failed', (job, err) => {
+  console.error(`❌ Job failed: ${job?.id}`, err);
+});
 
 console.log('🚀 Worker is ready and listening for jobs...');
