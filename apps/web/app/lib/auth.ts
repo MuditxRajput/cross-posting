@@ -32,7 +32,7 @@ export const authOptions: NextAuthOptions = {
                 accessToken: account?.access_token || '',
                 refreshToken: account?.refresh_token || '',
                 accounts: account?.provider || '',
-                accountsId: account?.id || '',
+                accountsId: account?.id ,
                 expiresIn: new Date(Date.now() + (account?.expires_at || 0) * 1000),
               },
             ],

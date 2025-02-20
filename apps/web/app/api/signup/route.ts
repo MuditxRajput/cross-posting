@@ -7,8 +7,6 @@ export async function POST(req: NextRequest) {
     try {
         await dbConnection();
         const userData = await req.json();
-
-
         const { email, password, name } = userData;
 
         const existedEmail = await User.findOne({ email: email });
