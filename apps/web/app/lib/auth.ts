@@ -16,12 +16,15 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account }) {
       try {
         await dbConnection();
-
+    
         const existingUser = await User.findOne({ email: user.email });
-
+    
         if (existingUser) {
           return true;
         } else {
+          // Ensure accountsId is unique and not empty
+          const accountsId = account?.id || `${user.email}-${Date.now()}`;
+    
           const newUser = new User({
             email: user.email,
             name: user.name,
@@ -32,12 +35,12 @@ export const authOptions: NextAuthOptions = {
                 accessToken: account?.access_token || '',
                 refreshToken: account?.refresh_token || '',
                 accounts: account?.provider || '',
-                accountsId: account?.id ,
+                accountsId: accountsId, // Use a unique value
                 expiresIn: new Date(Date.now() + (account?.expires_at || 0) * 1000),
               },
             ],
           });
-
+    
           await newUser.save();
           return true;
         }
