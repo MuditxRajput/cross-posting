@@ -135,8 +135,10 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({ formData, email: userEmail, mediaType }),
         });
+        
         const val1 = await resp.json();
         if (val1.success) setLoading(false);
         return val1;
