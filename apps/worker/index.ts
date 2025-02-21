@@ -49,22 +49,20 @@ redis.on('error', (error) => console.error('❌ Redis Error:', error));
 const worker = new Worker(
   'postQueue',
   async (job) => {
-    console.log(`Processing job: ${job.id}`);
-    console.log('Job data:', job.data);
-    await processJob(job);
+    try {
+      console.log(`🚀 Processing job: ${job.id}`);
+      console.log('📦 Job Data:', job.data);
+
+      await processJob(job);
+
+      console.log(`✅ Job ${job.id} completed`);
+    } catch (error) {
+      console.error(`❌ Error processing job ${job.id}:`, error);
+    }
   },
-  {
-    connection: redis,
-    prefix: PREFIX,
-    concurrency: 5,
-    stalledInterval: 30000,
-    maxStalledCount: 2,
-    lockDuration: 30000,
-    drainDelay: 5000,
-    removeOnComplete: { count: 100 },
-    removeOnFail: { count: 100 },
-  }
+  { connection: redis, prefix: PREFIX, concurrency: 5 }
 );
+
 
 // Event handlers
 worker.on('completed', job => {
