@@ -8,7 +8,7 @@ const redisOptions = {
   port: 6379,
   tls: {}, 
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
-
+  keyPrefix: '{bull}' // Match Lambda's prefix
 };
 
 const redis = new Redis(redisOptions);
