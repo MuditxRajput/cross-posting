@@ -63,21 +63,18 @@ worker.on('failed', (job, err) => {
 });
 
 // Add monitoring for delayed jobs
-worker.on('delayed', job => {
-  console.log(`⏳ Delayed job detected: ${job.id}`);
-  console.log('Delayed until:', new Date(job.timestamp).toISOString());
-});
+// Removed 'delayed' event listener as it is not a valid event for Worker class
 
 worker.on('stalled', job => {
-  console.log(`⚠️ Stalled job detected: ${job.id}`);
+  console.log(`⚠️ Stalled job detected: ${job}`);
 });
 
 console.log('🚀 Worker is ready and listening for jobs...');
 
 // Periodic check for queue health
-    const counts = await queue.getJobCounts('active', 'completed', 'failed', 'delayed', 'wait');
+setInterval(async () => {
   try {
-    const counts = await worker.getJobCounts('active', 'completed', 'failed', 'delayed', 'wait');
+    const counts = await queue.getJobCounts('active', 'completed', 'failed', 'delayed', 'wait');
     console.log('Queue status:', counts);
   } catch (error) {
     console.error('Failed to get queue status:', error);
