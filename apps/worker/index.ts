@@ -2,6 +2,9 @@ import { Worker } from 'bullmq';
 import Redis from 'ioredis';
 import { processJob } from './scheduling/processJob'; // Import your processJob function
 
+// Use a hash tag to ensure all keys hash to the same slot
+const PREFIX = '{bull}:postQueue';
+
 // Redis Cluster configuration
 const redis = new Redis.Cluster(
   [
@@ -29,26 +32,26 @@ redis.on('error', (err) => {
 
 // Worker configuration
 const worker = new Worker(
-  'postQueue', // Queue name (must match the queue name in your Lambda)
+  'postQueue',
   async (job) => {
     try {
       console.log(`🚀 Processing job: ${job.id}`);
       console.log('📦 Job Data:', job.data);
 
-      // Call your processJob function to handle the job
       await processJob(job);
 
       console.log(`✅ Job ${job.id} completed successfully!`);
     } catch (error) {
       console.error(`❌ Error processing job ${job.id}:`, error);
-      throw error; // Re-throw the error to mark the job as failed
+      throw error;
     }
   },
   {
-    connection: redis, // Use the Redis Cluster connection
-    concurrency: 5, // Number of jobs to process concurrently
-    removeOnComplete: { count: 100 }, // Keep up to 100 completed jobs
-    removeOnFail: { count: 100 }, // Keep up to 100 failed jobs
+    connection: redis,
+    prefix: PREFIX, // Add the prefix here
+    concurrency: 5,
+    removeOnComplete: { count: 100 },
+    removeOnFail: { count: 100 },
   }
 );
 
