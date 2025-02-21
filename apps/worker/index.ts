@@ -6,7 +6,7 @@ import { processJob } from './scheduling/processJob';
 const redisOptions = {
   host: "redisposting-19d1vz.serverless.use1.cache.amazonaws.com",
   port: 6379,
-  tls: {}, 
+  tls: { rejectUnauthorized: false } ,
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
   keyPrefix: '{bull}' // Match Lambda's prefix
 };
@@ -36,7 +36,12 @@ const worker = new Worker(
 worker.on('completed', job => {
   console.log(`✅ Job completed: ${job.id}`);
 });
-
+worker.on('active', (job) => {
+  console.log(`🚀 Job started: ${job.id}`);
+});
+ worker.on('error', (error) => {
+  console.error('❌ Worker error:', error);
+ });
 worker.on('failed', (job, err) => {
   console.error(`❌ Job failed: ${job?.id}`, err);
 });
