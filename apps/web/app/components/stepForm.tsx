@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { reduceCycle } from '@/store/slices/social-account';
 import { RootState, SocialState } from '@/store/store';
-import { format, parseISO } from 'date-fns';
+import { format } from 'date-fns';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { ThreeDot } from 'react-loading-indicators';
@@ -97,31 +97,41 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
       setCurrentStep(currentStep + 1);
     } else {
       setLoading(true);
-  
-      // Convert dateTime to ISO format with timezone
-      const updatedFormData = {
-        ...formData,
-        dateTime: new Date(formData.dateTime).toISOString(), // Add this line
-      };
-  
-      const res = await saveToCloudinary(image, aspectRatio);
-      if (res.success) {
-        toast({
-          title: 'Success',
-          description: 'Post scheduled successfully!',
-        });
-      } else {
-        if (res.error) {
+
+      try {
+        // Convert dateTime to ISO format with timezone
+        const updatedFormData = {
+          ...formData,
+          dateTime: new Date(formData.dateTime).toISOString(), // Add this line
+        };
+
+        const res = await saveToCloudinary(image, aspectRatio, updatedFormData); // Pass updatedFormData
+        if (res.success) {
           toast({
-            title: 'Something went wrong',
+            title: 'Success',
+            description: 'Post scheduled successfully!',
           });
-        } else if (!res.success) {
-          dispatch(reduceCycle(1));
+        } else {
+          if (res.error) {
+            toast({
+              title: 'Something went wrong',
+            });
+          } else if (!res.success) {
+            dispatch(reduceCycle(1));
+          }
         }
+      } catch (error) {
+        console.error('Error:', error);
+        toast({
+          title: 'Something went wrong',
+        });
+      } finally {
+        setLoading(false); // Reset loading state
       }
     }
   };
-  const saveToCloudinary = async (image: any, aspectRatio: string) => {
+
+  const saveToCloudinary = async (image: any, aspectRatio: string, updatedFormData: FormData) => {
     try {
       const fileType = image[0]?.src?.startsWith('data:image') ? 'image' : 'video';
       const response = await fetch('https://cross-posting-web.vercel.app/api/cloudinary', {
@@ -131,18 +141,19 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
       });
       const data = await response.json();
       if (data.uploadedImages.length > 0) {
-        formData.image = data.uploadedImages;
+        updatedFormData.image = data.uploadedImages; // Use updatedFormData
         const userEmail = session.data?.user?.email;
         const mediaType = fileType;
+
         const resp = await fetch('https://h2sfj6zzo7.execute-api.us-east-1.amazonaws.com/connectingToValkey', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify({ formData, email: userEmail, mediaType }),
+          body: JSON.stringify({ formData: updatedFormData, email: userEmail, mediaType }), // Use updatedFormData
         });
-        
+
         const val1 = await resp.json();
         if (val1.success) setLoading(false);
         return val1;
@@ -220,10 +231,10 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
             <p>
               <strong>Scheduled Time:</strong>{' '}
               {
-  formData.dateTime
-    ? format(new Date(formData.dateTime), 'dd-MM-yyyy HH:mm') // Use `new Date` instead of `parseISO`
-    : 'Not Set'
-}
+                formData.dateTime
+                  ? format(new Date(formData.dateTime), 'dd-MM-yyyy HH:mm') // Use `new Date` to parse the date
+                  : 'Not Set'
+              }
             </p>
           </div>
         );
