@@ -4,11 +4,11 @@ import Redis from 'ioredis';
 import { processJob } from './scheduling/processJob';
 
 const redisOptions = {
-  host: process.env.REDIS_URL,
+  host: "redisposting-19d1vz.serverless.use1.cache.amazonaws.com",
   port: 6379,
   tls: {}, 
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
-  keyPrefix: '{bull}' // Match Lambda's prefix
+
 };
 
 const redis = new Redis(redisOptions);
