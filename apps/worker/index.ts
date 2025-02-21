@@ -55,6 +55,8 @@ const worker = new Worker(
   }
 );
 
+console.log('Worker initialized with prefix:', PREFIX); // Log the prefix
+
 // Worker event listeners
 worker.on('ready', () => {
   console.log('🚀 Worker is ready and listening for jobs...');
