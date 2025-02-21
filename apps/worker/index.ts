@@ -6,9 +6,9 @@ import { processJob } from './scheduling/processJob';
 const redisOptions = {
   host: "redisposting-19d1vz.serverless.use1.cache.amazonaws.com",
   port: 6379,
-  tls: { rejectUnauthorized: false } ,
+  tls: { rejectUnauthorized: false },
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
-  keyPrefix: '{bull}' // Match Lambda's prefix
+  // Remove keyPrefix from here
 };
 
 const redis = new Redis(redisOptions);
@@ -16,16 +16,15 @@ const redis = new Redis(redisOptions);
 redis.on('connect', () => console.log('✅ Successfully connected to AWS Valkey!'));
 redis.on('error', (error) => console.error('❌ Redis Error:', error));
 
-// Update queue name to match Lambda
 const worker = new Worker(
-  'postQueue',  // Changed from 'postingQueue' to match Lambda
+  'postQueue',
   async (job) => {
     console.log(`Processing job: ${job.id}`);
     await processJob(job);
   },
   {
     connection: redis,
-    // Remove prefix here since it's in redisOptions
+    prefix: '{bull}', // Move the prefix here
     concurrency: 5,
     removeOnComplete: { count: 100 },
     removeOnFail: { count: 100 },
@@ -36,12 +35,15 @@ const worker = new Worker(
 worker.on('completed', job => {
   console.log(`✅ Job completed: ${job.id}`);
 });
+
 worker.on('active', (job) => {
   console.log(`🚀 Job started: ${job.id}`);
 });
- worker.on('error', (error) => {
+
+worker.on('error', (error) => {
   console.error('❌ Worker error:', error);
- });
+});
+
 worker.on('failed', (job, err) => {
   console.error(`❌ Job failed: ${job?.id}`, err);
 });
