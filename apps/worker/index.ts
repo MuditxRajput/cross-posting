@@ -8,7 +8,7 @@ const redisOptions = {
   port: 6379,
   tls: { rejectUnauthorized: false },
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
-  // Remove keyPrefix from here
+  // No keyPrefix here
 };
 
 const redis = new Redis(redisOptions);
