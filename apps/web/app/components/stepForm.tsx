@@ -97,13 +97,19 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
       setCurrentStep(currentStep + 1);
     } else {
       setLoading(true);
-      const res = await saveToCloudinary(image, aspectRatio); // Pass aspectRatio here
+  
+      // Convert dateTime to ISO format with timezone
+      const updatedFormData = {
+        ...formData,
+        dateTime: new Date(formData.dateTime).toISOString(), // Add this line
+      };
+  
+      const res = await saveToCloudinary(image, aspectRatio);
       if (res.success) {
         toast({
           title: 'Success',
           description: 'Post scheduled successfully!',
         });
-        // window.location.href = "/";
       } else {
         if (res.error) {
           toast({
@@ -115,7 +121,6 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
       }
     }
   };
-
   const saveToCloudinary = async (image: any, aspectRatio: string) => {
     try {
       const fileType = image[0]?.src?.startsWith('data:image') ? 'image' : 'video';
@@ -129,7 +134,6 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         formData.image = data.uploadedImages;
         const userEmail = session.data?.user?.email;
         const mediaType = fileType;
-        console.log("image is uploaded", formData.image);
         const resp = await fetch('https://h2sfj6zzo7.execute-api.us-east-1.amazonaws.com/connectingToValkey', {
           method: 'POST',
           headers: {
@@ -215,7 +219,11 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
             </p>
             <p>
               <strong>Scheduled Time:</strong>{' '}
-              {formData.dateTime ? format(parseISO(formData.dateTime), 'dd-MM-yyyy HH:mm') : 'Not Set'}
+              {
+  formData.dateTime
+    ? format(new Date(formData.dateTime), 'dd-MM-yyyy HH:mm') // Use `new Date` instead of `parseISO`
+    : 'Not Set'
+}
             </p>
           </div>
         );
