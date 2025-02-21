@@ -24,7 +24,7 @@ const worker = new Worker(
     await processJob(job);
   },
   {
-    connection: redisOptions,
+    connection: redis,
     // Remove prefix here since it's in redisOptions
     concurrency: 5,
     removeOnComplete: { count: 100 },
