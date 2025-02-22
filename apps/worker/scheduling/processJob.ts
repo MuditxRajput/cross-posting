@@ -234,7 +234,7 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
 };
 
 const step1 = async (accountsId:any,token:any) => {
-  console.log("inciede step1");
+  // console.log("inciede step1");
   
   const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`,{
     method: 'POST',
@@ -258,17 +258,17 @@ const step1 = async (accountsId:any,token:any) => {
   })
 });
 const val = await response.json() as { value: { uploadMechanism: { "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest": { uploadUrl: string } } } };
-console.log("This is the VAL",val);
+// console.log("This is the VAL",val);
 
-console.log("This is the VAL",val.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl);
+// console.log("This is the VAL",val.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl);
 return val;
 }
 const step2 = async (data:any,token:any,formData:any,accountsId:any) => {
-  console.log("inside step2");
+  // console.log("inside step2");
 const url = data.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl;
 const assets = data.value.asset;
-console.log("This is the url",url);
-console.log("image",formData.image);
+// console.log("This is the url",url);
+// console.log("image",formData.image);
 const imageResponse = await fetch(formData.image);
 if (!imageResponse.ok) {
   throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
@@ -284,8 +284,8 @@ const response = await fetch(url,{
   body: imageArrayBuffer
 });
 // console.log("This is the VAL1",val1);
-console.log("asset",assets);
-console.log("urn",accountsId);
+// console.log("asset",assets);
+// console.log("urn",accountsId);
 
 // const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === 'linkedin');
 if(response)
@@ -343,11 +343,12 @@ export const processJob = async (job: any) => {
   try {
     const user = await User.findOne({ email: job.data.email });
     if (!user) throw new Error(`User ${job.data.email} not found`);
-
+      console.log(job.data.formData.platforms);
     for (const platform of job.data.formData.platforms) {
       console.log(`Processing ${platform.name.toLowerCase()} platform ->>>`);
       
       if (platform.name.toLowerCase() === 'instagram') {
+        console.log("inside instagram");
           const igData = await getIgId(job.data.email, job.data.formData.platforms);
           if (igData.igId && igData.token) {
             await postInstagram(igData.igId, igData.token, job.data.formData, job.data.mediaType);
