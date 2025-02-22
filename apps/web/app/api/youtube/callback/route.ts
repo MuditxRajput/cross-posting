@@ -16,8 +16,12 @@ const oauth2Client = new OAuth2Client(
 
 export async function GET(request: NextRequest) {
   try {
+  console.log("YouTube OAuth callback initiated");
     // Fetch session information for the current user
+    // const session = await getServerSession(authOptions);
+    // const session = await getServerSession(authO)
     const session = await getServerSession(authOptions);
+    console.log("Session",session);
     if (!session) {
       return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
     }
