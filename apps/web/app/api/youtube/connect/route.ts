@@ -8,6 +8,8 @@ const oauth2Client = new OAuth2Client(
 );
 
 export async function GET() {
+  console.log("YouTube OAuth callback initiated");
+  
   try {
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",
