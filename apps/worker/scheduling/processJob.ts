@@ -211,9 +211,10 @@ const getToken = async (existedUser:any,platforms:string[]) => {
   console.log("inside getToken");
   for(const account of platforms)
   {
+
     if(existedUser.socialAccounts)
     {
-      const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account);
+      const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account[0]);
       if(linkedinAccount)
       {
         
@@ -221,7 +222,7 @@ const getToken = async (existedUser:any,platforms:string[]) => {
       }
       else
       {
-        console.log(`Linkedin account ${account} not found for user `);
+        console.log(`Linkedin account ${account[0]} not found for user `);
         return null;
       }
     }
