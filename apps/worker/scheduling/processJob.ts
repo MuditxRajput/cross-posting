@@ -207,13 +207,13 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
   if (!existedUser) {
     return;
   }
-  console.log("inside getToken");
+ 
 
   for (const account of platforms) {
-    console.log("inside for loop and account", account);
+    // console.log("inside for loop and account", account);
 
     if (existedUser.socialAccounts) {
-      console.log("existedUser.socialAccounts", existedUser.socialAccounts);
+      // console.log("existedUser.socialAccounts", existedUser.socialAccounts);
 
       const linkedinAccount = existedUser.socialAccounts.find(
         (acc: any) => acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account.account[0]
@@ -355,7 +355,7 @@ export const processJob = async (job: any) => {
             throw new Error('Invalid Instagram data');
           }
         }
-        else if(platform.name.toLowerCase() === 'linkedin')
+         if(platform.name.toLowerCase() === 'linkedin')
         {
           console.log("inside linkdln")
           const data = await getToken(user, job.data.formData.platforms);
