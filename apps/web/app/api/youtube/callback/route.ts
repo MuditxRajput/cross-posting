@@ -1,4 +1,3 @@
-// src/app/api/youtube/callback/route.ts
 import { dbConnection } from "@database/database";
 import { User } from "@database/models/user.model";
 import { OAuth2Client } from "google-auth-library";
@@ -16,10 +15,9 @@ const oauth2Client = new OAuth2Client(
 
 export async function GET(request: NextRequest) {
   try {
-  console.log("YouTube OAuth callback initiated");
-    // Fetch session information for the current user
-    // const session = await getServerSession(authOptions);
-    // const session = await getServerSession(authO)
+    console.log("YouTube OAuth callback initiated");
+
+    // Get session information
     const session = await getServerSession(authOptions);
     console.log("SESSION", session);
     if (!session) {
@@ -50,7 +48,7 @@ export async function GET(request: NextRequest) {
     const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
     const userInfoResponse = await oauth2.userinfo.get();
 
-    // Check for necessary data in the responses
+    // Validate responses
     if (!channelResponse.data.items?.[0] || !userInfoResponse.data.email) {
       throw new Error("Failed to fetch channel or user information");
     }
@@ -67,14 +65,14 @@ export async function GET(request: NextRequest) {
     const existingChannel = user.socialAccounts?.find(
       (account) => account.socialName === "YouTube" && account.accountsId === channelData.id
     );
-   
+
     if (existingChannel) {
       // Update existing channel's tokens
       existingChannel.accessToken = tokens.access_token;
       existingChannel.refreshToken = tokens.refresh_token;
     } else {
       // Add a new entry for the YouTube channel
-      user.connectedPlatform = [...user.connectedPlatform || "","Youtube"],
+      user.connectedPlatform = [...(user.connectedPlatform || []), "Youtube"];
       user.socialAccounts?.push({
         socialName: "YouTube",
         accessToken: tokens.access_token,
@@ -88,11 +86,22 @@ export async function GET(request: NextRequest) {
     await user.save();
     console.log("User social accounts saved successfully");
 
-    // Return HTML response to close popup and notify the parent window of success
-    
-}
-catch (error) {
+    // Return an HTML response to close the popup
+    return new NextResponse(
+      `<script>
+        window.opener.postMessage({ success: true, message: "YouTube linked successfully" }, "*");
+        window.close();
+      </script>`,
+      { headers: { "Content-Type": "text/html" } }
+    );
+  } catch (error) {
     console.error("YouTube OAuth callback error:", error);
-    return NextResponse.json({ error: "Authentication failed" }, { status: 400 });
+    return new NextResponse(
+      `<script>
+        window.opener.postMessage({ success: false, message: "Authentication failed",error:error }, "*");
+        window.close();
+      </script>`,
+      { headers: { "Content-Type": "text/html" } }
+    );
   }
 }
