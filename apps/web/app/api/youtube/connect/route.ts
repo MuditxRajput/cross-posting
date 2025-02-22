@@ -7,7 +7,7 @@ const oauth2Client = new OAuth2Client(
   "https://cross-posting-web.vercel.app/api/youtube/callback" // e.g., "http://localhost:3000/api/youtube/callback"
 );
 
-export async function connect() {
+export async function GET() {
   console.log("YouTube OAuth callback initiated");
   try {
     const authUrl = oauth2Client.generateAuthUrl({
