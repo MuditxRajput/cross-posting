@@ -151,6 +151,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         
       }
     } catch (error) {
+      console.log('Error', error);
       
     }
     try {
