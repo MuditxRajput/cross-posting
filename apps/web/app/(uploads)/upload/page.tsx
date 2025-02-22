@@ -55,7 +55,7 @@ const UploadPage = () => {
             <button
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300"
               onClick={() => {
-                window.location.href = "/payments/payment-card";
+                window.location.href = "/payment-card";
               }}
             >
               Buy Credit
