@@ -235,6 +235,7 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
 
 const step1 = async (accountsId: any, token: any, images: string[]) => {
   const assets = [];
+  console.log("inside step1", accountsId, token, images);
 
   for (const image of images) {
     const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
@@ -253,27 +254,38 @@ const step1 = async (accountsId: any, token: any, images: string[]) => {
               identifier: 'urn:li:userGeneratedContent',
             },
           ],
+          // Include the image URL in the request
+          mediaUrl: image, // Add this line
         },
       }),
     });
 
     const data = await response.json();
-    assets.push(data.value.asset); // Collect the asset for each image
+    console.log("Registered asset for image:", image, data);
+
+    if (data.value && data.value.asset) {
+      assets.push(data.value.asset); // Collect the asset for each image
+    } else {
+      console.error("Failed to register asset for image:", image, data);
+    }
   }
 
   return assets; // Return an array of assets
 };
-const step2 = async (assets: any[], token: any, formData: any, accountsId: any) => {
+const step2 = async (assets: any[], token: any, formData: any, accountsId: any, images: string[]) => {
   // Upload each image
-  for (const asset of assets) {
+  for (let i = 0; i < assets.length; i++) {
+    const asset = assets[i];
+    const imageUrl = images[i]; // Get the corresponding image URL
+
     const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
-    const imageResponse = await fetch(formData.image); // Replace with the correct image URL
+    const imageResponse = await fetch(imageUrl); // Fetch the image from the URL
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
     }
     const imageArrayBuffer = await imageResponse.arrayBuffer();
 
-    await fetch(url, {
+    const uploadResponse = await fetch(url, {
       method: 'PUT',
       headers: {
         'media-type-family': 'STILLIMAGE',
@@ -282,6 +294,12 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any) 
       },
       body: imageArrayBuffer,
     });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
+    }
+
+    console.log("Uploaded image:", imageUrl);
   }
 
   // Post the carousel
@@ -301,12 +319,13 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any) 
               text: formData.description,
             },
             shareMediaCategory: 'CAROUSEL', // Use CAROUSEL for multiple images
-            media: assets.map((asset) => ({
+            media: assets.map((asset, index) => ({
               status: 'READY',
               description: {
                 text: formData.description,
               },
-              media: asset,
+              media: `urn:li:digitalmediaAsset:${asset.asset}`, // Use the asset ID
+              originalUrl: images[index], // Include the original image URL
             })),
           },
         },
@@ -327,7 +346,6 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any) 
     return { success: false };
   }
 };
-
 // Main job processor
 export const processJob = async (job: any) => {
   console.log(`Starting job ${job.id}`, JSON.stringify(job.data, null, 2));
@@ -352,7 +370,7 @@ export const processJob = async (job: any) => {
           console.log("inside linkdln")
           const data = await getToken(user, job.data.formData.platforms);
           const step1Res =  await step1(data?.accountsId, data?.token,job.data.formData.image);
-          const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
+          const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId,job.data.formData.image);
           if (step2Res) {
             const resLinkdln = step2Res;
             if (resLinkdln) {
