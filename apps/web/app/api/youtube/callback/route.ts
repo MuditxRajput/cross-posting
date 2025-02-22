@@ -1,91 +1,98 @@
-// app/api/youtube/callback/route.ts
+// src/app/api/youtube/callback/route.ts
+import { dbConnection } from "@database/database";
+import { User } from "@database/models/user.model";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { authOptions } from "../../../lib/auth";
 
-// Type definitions
-interface UserDocument {
-  email: string;
-  socialAccounts: Array<{
-    socialName: string;
-    accessToken: string;
-    refreshToken: string;
-    accounts: string;
-    accountsId: string;
-  }>;
-  connectedPlatform: string[];
-  save: () => Promise<void>;
-}
-
-const clientId = process.env.YOUTUBE_CLIENT_ID;
-const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
-const redirectUri = process.env.VERCEL_URL 
-  ? `https://${process.env.VERCEL_URL}/api/youtube/callback`
-  : "http://localhost:3000/api/youtube/callback";
-
-const oauth2Client = new OAuth2Client({
-  clientId: clientId,
-  clientSecret: clientSecret,
-  redirectUri: redirectUri,
-});
+// Initialize OAuth2 client with credentials and redirect URL
+const oauth2Client = new OAuth2Client(
+  process.env.YOUTUBE_CLIENT_ID,
+  process.env.YOUTUBE_CLIENT_SECRET,
+  "https://cross-posting-web.vercel.app/api/youtube/callback"
+);
 
 export async function GET(request: NextRequest) {
   try {
+  console.log("YouTube OAuth callback initiated");
+    // Fetch session information for the current user
+    // const session = await getServerSession(authOptions);
+    // const session = await getServerSession(authO)
+    const session = await getServerSession(authOptions);
+    // console.log("SE);
+    if (!session) {
+      return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
+    }
+
+    await dbConnection();
+
+    // Extract the authorization code from the request URL
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get("code");
-
     if (!code) {
-      return NextResponse.json(
-        { error: "No authorization code provided" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No authorization code provided" }, { status: 400 });
     }
 
-    if (!clientId || !clientSecret) {
-      return NextResponse.json(
-        { error: "OAuth credentials not configured" },
-        { status: 500 }
-      );
-    }
-
-    // Get tokens
+    // Exchange authorization code for tokens
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    // Get user info
+    // Retrieve YouTube channel information
+    const youtube = google.youtube({ version: "v3", auth: oauth2Client });
+    const channelResponse = await youtube.channels.list({
+      part: ["snippet"],
+      mine: true,
+    });
+
+    // Retrieve user info (email) from Google
     const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
-    const userInfo = await oauth2.userinfo.get();
+    const userInfoResponse = await oauth2.userinfo.get();
 
-    // Close the window with a success message
-    return new NextResponse(
-      `<!DOCTYPE html>
-      <html>
-        <head><title>Authorization Successful</title></head>
-        <body>
-          <script>
-            window.opener.postMessage({ 
-              type: 'YOUTUBE_AUTH_SUCCESS',
-              data: ${JSON.stringify({
-                accessToken: tokens.access_token,
-                email: userInfo.data.email
-              })}
-            }, '*');
-            window.close();
-          </script>
-        </body>
-      </html>`,
-      {
-        headers: {
-          "Content-Type": "text/html",
-        },
-      }
+    // Check for necessary data in the responses
+    if (!channelResponse.data.items?.[0] || !userInfoResponse.data.email) {
+      throw new Error("Failed to fetch channel or user information");
+    }
+
+    const channelData = channelResponse.data.items[0];
+    const email = session.user?.email;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if this channel already exists in the user's social accounts
+    const existingChannel = user.socialAccounts?.find(
+      (account) => account.socialName === "YouTube" && account.accountsId === channelData.id
     );
+   
+    if (existingChannel) {
+      // Update existing channel's tokens
+      existingChannel.accessToken = tokens.access_token;
+      existingChannel.refreshToken = tokens.refresh_token;
+    } else {
+      // Add a new entry for the YouTube channel
+      user.connectedPlatform = [...user.connectedPlatform || "","Youtube"],
+      user.socialAccounts?.push({
+        socialName: "YouTube",
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+        accounts: channelData.snippet?.title || "",
+        accountsId: channelData.id || "",
+      });
+    }
 
-  } catch (error) {
+    // Save the updated user document
+    await user.save();
+    console.log("User social accounts saved successfully");
+
+    // Return HTML response to close popup and notify the parent window of success
+    
+}
+catch (error) {
     console.error("YouTube OAuth callback error:", error);
-    return NextResponse.json(
-      { error: "Authentication failed" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Authentication failed" }, { status: 400 });
   }
 }
