@@ -111,7 +111,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
             title: 'Success',
             description: 'Post scheduled successfully!',
           });
-          window.location.href ='/dasboard';
+          window.location.href ='./';
         } else {
           if (res.error) {
             toast({
@@ -133,6 +133,26 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
   };
 
   const saveToCloudinary = async (image: any, aspectRatio: string, updatedFormData: FormData) => {
+    try {
+     const cycleCheckingResponse =  await fetch('https://cross-posting-web.vercel.app/api/reduceCycle', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const cycleCheckingData = await cycleCheckingResponse.json();
+      if(!cycleCheckingData.success)
+      {
+        toast({
+          title: 'Out of free tokens',
+        });
+        // redirect to payments card page..
+        window.location.href = './';
+        
+      }
+    } catch (error) {
+      
+    }
     try {
       const fileType = image[0]?.src?.startsWith('data:image') ? 'image' : 'video';
       const response = await fetch('https://cross-posting-web.vercel.app/api/cloudinary', {
