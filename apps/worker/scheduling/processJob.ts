@@ -370,7 +370,7 @@ export const processJob = async (job: any) => {
           } else {
             console.error('step2Res is undefined');
           }
-          break;
+         
         }
         // else if(  ) 
         // {
