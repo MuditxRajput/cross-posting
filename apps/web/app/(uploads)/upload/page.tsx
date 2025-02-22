@@ -11,7 +11,7 @@ const UploadPage = () => {
         const res = await fetch(`https://cross-posting-web.vercel.app/api/getaccount`,{
           method: "GET"
         });
-        const data = await res.json();``
+        const data = await res.json();
         if(data.success)
         {
          {data.connectedaccount.slice(1).forEach((acc:any)=>{
@@ -50,12 +50,12 @@ const UploadPage = () => {
           <div className="bg-white p-8 rounded-xl shadow-2xl text-center max-w-md">
             <h2 className="text-2xl font-bold mb-4 text-gray-800">Free Credit is Over ❗</h2>
             <p className="text-gray-600 mb-6">
-              You've used all your free credits. Please purchase additional credits to continue.
+              You've used all your free credits. Please purchase additional credits.
             </p>
             <button
               className="px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 text-white rounded-lg font-semibold hover:from-green-600 hover:to-blue-600 transition-all duration-300"
               onClick={() => {
-                window.location.href = "../../components/paymentCard";
+                window.location.href = "/payments/payment-card";
               }}
             >
               Buy Credit
