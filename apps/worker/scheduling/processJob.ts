@@ -203,33 +203,36 @@ const waitForVideoProcessing = async (containerId: string, token: string) => {
 
   throw new Error('Video processing timeout');
 };
-const getToken = async (existedUser:any,platforms:string[]) => {
-  // const existedUser = await User.findOne({email:email});
-  if(!existedUser){
+const getToken = async (existedUser: any, platforms: { name: string; account: string[] }[]) => {
+  if (!existedUser) {
     return;
   }
   console.log("inside getToken");
-  for(const account of platforms)
-  {
-   console.log("inside for loop and account",account);
-    if(existedUser.socialAccounts)
-    {
-      console.log("existedUser.socialAccounts",existedUser.socialAccounts);
-      const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account[0]);
 
-      if(linkedinAccount)
-      {
-        
-        return {token : linkedinAccount.accessToken,userData :existedUser,accountsId:linkedinAccount.accountsId};
-      }
-      else
-      {
-        console.log(`Linkedin account ${account[0]} not found for user `);
+  for (const account of platforms) {
+    console.log("inside for loop and account", account);
+
+    if (existedUser.socialAccounts) {
+      console.log("existedUser.socialAccounts", existedUser.socialAccounts);
+
+      const linkedinAccount = existedUser.socialAccounts.find(
+        (acc: any) => acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account.account[0]
+      );
+
+      if (linkedinAccount) {
+        return {
+          token: linkedinAccount.accessToken,
+          userData: existedUser,
+          accountsId: linkedinAccount.accountsId
+        };
+      } else {
+        console.log(`LinkedIn account ${account.account[0]} not found for user`);
         return null;
       }
     }
   }
-}
+};
+
 const step1 = async (accountsId:any,token:any) => {
   console.log("inciede step1");
   
