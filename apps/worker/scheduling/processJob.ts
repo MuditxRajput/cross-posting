@@ -233,109 +233,100 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
   }
 };
 
-const step1 = async (accountsId:any,token:any) => {
-  // console.log("inciede step1");
-  
-  const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`,{
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-  },
-  body: JSON.stringify({
-    "registerUploadRequest": {
-        "owner": `urn:li:person:${accountsId}`,
-        "recipes": [
-            "urn:li:digitalmediaRecipe:feedshare-image"
-        ],
-        "serviceRelationships": [
-            {
-                "relationshipType": "OWNER",
-                "identifier": "urn:li:userGeneratedContent"
-            }
-        ]
-    }
-  })
-});
-const val = await response.json() as { value: { uploadMechanism: { "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest": { uploadUrl: string } } } };
-// console.log("This is the VAL",val);
+const step1 = async (accountsId: any, token: any, images: string[]) => {
+  const assets = [];
 
-// console.log("This is the VAL",val.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl);
-return val;
-}
-const step2 = async (data:any,token:any,formData:any,accountsId:any) => {
-  // console.log("inside step2");
-const url = data.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl;
-const assets = data.value.asset;
-// console.log("This is the url",url);
-// console.log("image",formData.image);
-const imageResponse = await fetch(formData.image);
-if (!imageResponse.ok) {
-  throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
-}
-const imageArrayBuffer = await imageResponse.arrayBuffer();
-const response = await fetch(url,{
-    method: 'PUT',
-    headers: {
-      'media-type-family': 'STILLIMAGE',
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'image/png'
-  },
-  body: imageArrayBuffer
-});
-// console.log("This is the VAL1",val1);
-// console.log("asset",assets);
-// console.log("urn",accountsId);
-
-// const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === 'linkedin');
-if(response)
-{
-  try {
-    const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`,{
+  for (const image of images) {
+    const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      'author': `urn:li:person:${accountsId}`,
-      'lifecycleState': 'PUBLISHED',
-      'specificContent': {
-          'com.linkedin.ugc.ShareContent': {
-              'shareCommentary': {
-                  'text': formData.description
-              },
-              'shareMediaCategory': 'IMAGE',
-              'media': [
-                  {
-                      'status': 'READY',
-                      'description': {
-                          'text': formData.description
-                      },
-                      'media': assets
-                  }
-              ]
-  
-          },
-          
       },
-      "visibility": {
-            "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"  
-          }
-    })  
+      body: JSON.stringify({
+        registerUploadRequest: {
+          owner: `urn:li:person:${accountsId}`,
+          recipes: ['urn:li:digitalmediaRecipe:feedshare-image'],
+          serviceRelationships: [
+            {
+              relationshipType: 'OWNER',
+              identifier: 'urn:li:userGeneratedContent',
+            },
+          ],
+        },
+      }),
     });
-    const postData = await post.json();
-    console.log("This is the post data",postData);  
-  if(postData)
-  {
-    return {sucess:true};
-  }
-} catch (error) {
-  return {sucess:false};
-}
-}
 
-}
+    const data = await response.json();
+    assets.push(data.value.asset); // Collect the asset for each image
+  }
+
+  return assets; // Return an array of assets
+};
+const step2 = async (assets: any[], token: any, formData: any, accountsId: any) => {
+  // Upload each image
+  for (const asset of assets) {
+    const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
+    const imageResponse = await fetch(formData.image); // Replace with the correct image URL
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
+    }
+    const imageArrayBuffer = await imageResponse.arrayBuffer();
+
+    await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'media-type-family': 'STILLIMAGE',
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'image/png', // Adjust based on the image type
+      },
+      body: imageArrayBuffer,
+    });
+  }
+
+  // Post the carousel
+  try {
+    const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        author: `urn:li:person:${accountsId}`,
+        lifecycleState: 'PUBLISHED',
+        specificContent: {
+          'com.linkedin.ugc.ShareContent': {
+            shareCommentary: {
+              text: formData.description,
+            },
+            shareMediaCategory: 'CAROUSEL', // Use CAROUSEL for multiple images
+            media: assets.map((asset) => ({
+              status: 'READY',
+              description: {
+                text: formData.description,
+              },
+              media: asset,
+            })),
+          },
+        },
+        visibility: {
+          'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+        },
+      }),
+    });
+
+    const postData = await post.json();
+    console.log('This is the post data', postData);
+
+    if (postData) {
+      return { success: true };
+    }
+  } catch (error) {
+    console.error('Error posting carousel:', error);
+    return { success: false };
+  }
+};
 
 // Main job processor
 export const processJob = async (job: any) => {
@@ -360,7 +351,7 @@ export const processJob = async (job: any) => {
         {
           console.log("inside linkdln")
           const data = await getToken(user, job.data.formData.platforms);
-          const step1Res =  await step1(data?.accountsId, data?.token);
+          const step1Res =  await step1(data?.accountsId, data?.token,job.data.formData.image);
           const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
           if (step2Res) {
             const resLinkdln = step2Res;
