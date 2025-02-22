@@ -340,7 +340,7 @@ export const processJob = async (job: any) => {
     if (!user) throw new Error(`User ${job.data.email} not found`);
 
     for (const platform of job.data.formData.platforms) {
-      console.log(`Processing ${platform.name} platform`);
+      console.log(`Processing ${platform.name.toLowerCase()} platform ->>>`);
       
       switch (platform.name.toLowerCase()) {
         case 'instagram':
@@ -351,7 +351,6 @@ export const processJob = async (job: any) => {
             throw new Error('Invalid Instagram data');
           }
           break;
-
         case 'linkedin':
           console.log("inside linkdln")
           const data = await getToken(user, job.data.formData.platforms);
