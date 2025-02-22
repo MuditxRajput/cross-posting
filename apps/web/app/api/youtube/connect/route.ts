@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 //     : "http://localhost:3000/api/youtube/callback"
 // );
 
-export async function GET() {
+export async function POST() {
   console.log("YouTube OAuth callback initiated");
 
   // Log environment variables for debugging
