@@ -35,7 +35,7 @@ const SocialConnection = () => {
     } else {
       console.log("Connecting to", name);
       try {
-        const res = await fetch(`https://cross-posting-web.vercel.app/components/${name.toLowerCase()}/connect`,
+        const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`,
          {
           method: "GET",
           headers: {
