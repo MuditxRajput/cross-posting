@@ -47,6 +47,7 @@ const SocialConnection = () => {
     //     console.error("Error initiating social connection:", error);
     //   }
     // }
+    console.log("inside");
     
   };
 
