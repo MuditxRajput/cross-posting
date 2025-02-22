@@ -1,14 +1,13 @@
 import { OAuth2Client } from "google-auth-library";
 import { NextResponse } from "next/server";
 
-// Dynamic redirect URI based on environment
-
-
 // Initialize OAuth2Client
 const oauth2Client = new OAuth2Client(
   process.env.YOUTUBE_CLIENT_ID,
   process.env.YOUTUBE_CLIENT_SECRET,
-  "https://cross-posting-web.vercel.app/api/youtube/callback"
+  process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}/api/youtube/callback`
+    : "http://localhost:3000/api/youtube/callback"
 );
 
 export async function GET() {
@@ -17,7 +16,6 @@ export async function GET() {
   // Log environment variables for debugging
   console.log("Client ID:", process.env.YOUTUBE_CLIENT_ID);
   console.log("Client Secret:", process.env.YOUTUBE_CLIENT_SECRET);
-
 
   try {
     // Generate the OAuth URL
