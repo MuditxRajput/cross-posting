@@ -2,7 +2,6 @@
 import { OAuth2Client } from "google-auth-library";
 import { NextResponse } from "next/server";
 
-// Validate environment variables first
 const YOUTUBE_CLIENT_ID = process.env.YOUTUBE_CLIENT_ID;
 const YOUTUBE_CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
 const REDIRECT_URI = "https://cross-posting-web.vercel.app/api/youtube/callback";
@@ -28,13 +27,14 @@ export async function GET() {
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",
       scope: [
-        "https://www.googleapis.com/auth/youtube.readonly",
-        "https://www.googleapis.com/auth/youtube.channel-memberships.creator",
-        "profile",
-        "email"
+        // Updated scopes to match exactly what's shown in the Google Console
+        "https://www.googleapis.com/auth/youtube.download",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "openid"
       ],
       prompt: "consent",
-      include_granted_scopes: true // Include any previously granted scopes
+      include_granted_scopes: true
     });
 
     return NextResponse.json({ authUrl });
