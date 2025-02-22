@@ -214,8 +214,9 @@ const getToken = async (existedUser:any,platforms:string[]) => {
    console.log("inside for loop and account",account);
     if(existedUser.socialAccounts)
     {
+      console.log("existedUser.socialAccounts",existedUser.socialAccounts);
       const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account[0]);
-      
+
       if(linkedinAccount)
       {
         
