@@ -11,13 +11,17 @@ import { authOptions } from "../../../lib/auth";
 const oauth2Client = new OAuth2Client(
   process.env.YOUTUBE_CLIENT_ID,
   process.env.YOUTUBE_CLIENT_SECRET,
-  "http://localhost:3000/api/youtube/callback"
+  "https://cross-posting-web.vercel.app/api/youtube/callback"
 );
 
 export async function GET(request: NextRequest) {
   try {
+  console.log("YouTube OAuth callback initiated");
     // Fetch session information for the current user
+    // const session = await getServerSession(authOptions);
+    // const session = await getServerSession(authO)
     const session = await getServerSession(authOptions);
+    console.log("Session",session);
     if (!session) {
       return NextResponse.json({ error: "User not authenticated" }, { status: 401 });
     }

@@ -4,10 +4,11 @@ import { NextResponse } from "next/server";
 const oauth2Client = new OAuth2Client(
   process.env.YOUTUBE_CLIENT_ID,
   process.env.YOUTUBE_CLIENT_SECRET,
-  "http://localhost:3000/api/youtube/callback" // e.g., "http://localhost:3000/api/youtube/callback"
+  "https://cross-posting-web.vercel.app/api/youtube/callback" // e.g., "http://localhost:3000/api/youtube/callback"
 );
 
-export async function GET() {
+export async function connect() {
+  console.log("YouTube OAuth callback initiated");
   try {
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: "offline",

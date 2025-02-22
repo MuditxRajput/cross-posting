@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 const SocialConnection = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-
+  
   // Fetch account details from Redux
   const youtube = useSelector((state: RootState) => state.social.youtube);
   const instagram = useSelector((state: RootState) => state.social.instagram);
@@ -33,8 +33,15 @@ const SocialConnection = () => {
     } else if (name === "LinkedIn") {
       window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID}&redirect_uri=https://cross-posting-web.vercel.app/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
     } else {
+      console.log("Connecting to", name);
       try {
-        const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`);
+        const res = await fetch(`https://cross-posting-web.vercel.app/components/${name.toLowerCase()}/connect`,
+         {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
         const data = await res.json();
         if (data.authUrl) {
           window.open(data.authUrl);
