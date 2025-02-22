@@ -111,6 +111,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
             title: 'Success',
             description: 'Post scheduled successfully!',
           });
+          window.location.href ='/dasboard';
         } else {
           if (res.error) {
             toast({
@@ -155,7 +156,18 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         });
 
         const val1 = await resp.json();
-        if (val1.success) setLoading(false);
+        if (val1.success)
+          {
+             setLoading(false);
+             // api for reduce the cycle ..
+             await fetch('https://cross-posting-web.vercel.app/api/reduceCycle', {
+               method: 'POST',
+               headers: {
+                 'Content-Type': 'application/json',
+               }, 
+             });
+          }
+
         return val1;
       } else {
         return { meg: 'error' };
