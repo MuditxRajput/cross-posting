@@ -372,14 +372,6 @@ export const processJob = async (job: any) => {
           }
          
         }
-        // else if(  ) 
-        // {
-
-        // }
-          // Implement YouTube logic
-          break;
-
-       
           console.log(`Completed job ${job.id} successfully`);
       }
     
