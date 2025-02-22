@@ -36,7 +36,14 @@ const SocialConnection = () => {
     } else {
       console.log("Connecting to", name);
       try {
-        const res = await fetch(`/api/${name.toLowerCase()}/connect`);
+        const res = await fetch(`/api/${name.toLowerCase()}/connect`
+      , {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
         const data = await res.json();
         if (data.authUrl) {
           window.open(data.authUrl);
@@ -47,7 +54,6 @@ const SocialConnection = () => {
         console.error("Error initiating social connection:", error);
       }
     }
-    console.log("inside");
     
   };
 
