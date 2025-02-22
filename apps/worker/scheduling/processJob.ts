@@ -334,7 +334,6 @@ if(response)
 // Main job processor
 export const processJob = async (job: any) => {
   console.log(`Starting job ${job.id}`, JSON.stringify(job.data, null, 2));
-
   try {
     const user = await User.findOne({ email: job.data.email });
     if (!user) throw new Error(`User ${job.data.email} not found`);
@@ -342,16 +341,16 @@ export const processJob = async (job: any) => {
     for (const platform of job.data.formData.platforms) {
       console.log(`Processing ${platform.name.toLowerCase()} platform ->>>`);
       
-      switch (platform.name.toLowerCase()) {
-        case 'instagram':
+      if (platform.name.toLowerCase() === 'instagram') {
           const igData = await getIgId(job.data.email, job.data.formData.platforms);
           if (igData.igId && igData.token) {
             await postInstagram(igData.igId, igData.token, job.data.formData, job.data.mediaType);
           } else {
             throw new Error('Invalid Instagram data');
           }
-          break;
-        case 'linkedin':
+        }
+        else if(platform.name.toLowerCase() === 'linkedin')
+        {
           console.log("inside linkdln")
           const data = await getToken(user, job.data.formData.platforms);
           const step1Res =  await step1(data?.accountsId, data?.token);
@@ -365,17 +364,18 @@ export const processJob = async (job: any) => {
             console.error('step2Res is undefined');
           }
           break;
+        }
+        // else if(  ) 
+        // {
 
-        case 'youtube':
+        // }
           // Implement YouTube logic
           break;
 
-        default:
-          console.warn(`Unsupported platform: ${platform.name}`);
+       
+          console.log(`Completed job ${job.id} successfully`);
       }
-    }
-
-    console.log(`Completed job ${job.id} successfully`);
+    
   } catch (error) {
     console.error(`Job ${job.id} failed:`, error);
     throw error; // Ensure failure is propagated to BullMQ
