@@ -45,6 +45,7 @@ const SocialConnection = () => {
         }
       );
         const data = await res.json();
+        console.log("Data:", data);
         if (data.authUrl) {
           window.open(data.authUrl);
         } else {

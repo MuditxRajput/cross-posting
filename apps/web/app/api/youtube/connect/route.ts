@@ -15,7 +15,8 @@ export async function POST() {
   // Log environment variables for debugging
   console.log("Client ID:", process.env.YOUTUBE_CLIENT_ID);
   console.log("Client Secret:", process.env.YOUTUBE_CLIENT_SECRET);
-   return NextResponse.json({message: "Hello"});
+   return NextResponse.json({message: "Hello", status: 200, id : process.env.YOUTUBE_CLIENT_ID , secret : process.env.YOUTUBE_CLIENT_SECRET});
+   
   // try {
   //   // Generate the OAuth URL
   //   const authUrl = oauth2Client.generateAuthUrl({
