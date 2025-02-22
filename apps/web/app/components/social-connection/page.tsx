@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from "react-redux";
 const SocialConnection = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  console.log("SocialConnection->>>>>");
   
   // Fetch account details from Redux
   const youtube = useSelector((state: RootState) => state.social.youtube);
@@ -36,7 +35,7 @@ const SocialConnection = () => {
     } else {
       console.log("Connecting to", name);
       try {
-        const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`,
+        const res = await fetch(`https://cross-posting-web.vercel.app/components/${name.toLowerCase()}/connect`,
          {
           method: "GET",
           headers: {
