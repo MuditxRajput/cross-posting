@@ -208,6 +208,7 @@ const getToken = async (existedUser:any,platforms:string[]) => {
   if(!existedUser){
     return;
   }
+  console.log("inside getToken");
   for(const account of platforms)
   {
     if(existedUser.socialAccounts)
@@ -227,6 +228,8 @@ const getToken = async (existedUser:any,platforms:string[]) => {
   }
 }
 const step1 = async (accountsId:any,token:any) => {
+  console.log("inciede step1");
+  
   const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`,{
     method: 'POST',
     headers: {
@@ -255,6 +258,7 @@ console.log("This is the VAL",val.value.uploadMechanism["com.linkedin.digitalmed
 return val;
 }
 const step2 = async (data:any,token:any,formData:any,accountsId:any) => {
+  console.log("inside step2");
 const url = data.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl;
 const assets = data.value.asset;
 console.log("This is the url",url);
@@ -349,6 +353,7 @@ export const processJob = async (job: any) => {
           break;
 
         case 'linkedin':
+          console.log("inside linkdln")
           const data = await getToken(user, job.data.formData.platforms);
           const step1Res =  await step1(data?.accountsId, data?.token);
           const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
