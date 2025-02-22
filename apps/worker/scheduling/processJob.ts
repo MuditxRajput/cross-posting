@@ -203,6 +203,129 @@ const waitForVideoProcessing = async (containerId: string, token: string) => {
 
   throw new Error('Video processing timeout');
 };
+const getToken = async (existedUser:any,platforms:string[]) => {
+  // const existedUser = await User.findOne({email:email});
+  if(!existedUser){
+    return;
+  }
+  for(const account of platforms)
+  {
+    if(existedUser.socialAccounts)
+    {
+      const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === account);
+      if(linkedinAccount)
+      {
+        
+        return {token : linkedinAccount.accessToken,userData :existedUser,accountsId:linkedinAccount.accountsId};
+      }
+      else
+      {
+        console.log(`Linkedin account ${account} not found for user `);
+        return null;
+      }
+    }
+  }
+}
+const step1 = async (accountsId:any,token:any) => {
+  const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`,{
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+  },
+  body: JSON.stringify({
+    "registerUploadRequest": {
+        "owner": `urn:li:person:${accountsId}`,
+        "recipes": [
+            "urn:li:digitalmediaRecipe:feedshare-image"
+        ],
+        "serviceRelationships": [
+            {
+                "relationshipType": "OWNER",
+                "identifier": "urn:li:userGeneratedContent"
+            }
+        ]
+    }
+  })
+});
+const val = await response.json() as { value: { uploadMechanism: { "com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest": { uploadUrl: string } } } };
+console.log("This is the VAL",val);
+
+console.log("This is the VAL",val.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl);
+return val;
+}
+const step2 = async (data:any,token:any,formData:any,accountsId:any) => {
+const url = data.value.uploadMechanism["com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest"].uploadUrl;
+const assets = data.value.asset;
+console.log("This is the url",url);
+console.log("image",formData.image);
+const imageResponse = await fetch(formData.image);
+if (!imageResponse.ok) {
+  throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
+}
+const imageArrayBuffer = await imageResponse.arrayBuffer();
+const response = await fetch(url,{
+    method: 'PUT',
+    headers: {
+      'media-type-family': 'STILLIMAGE',
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'image/png'
+  },
+  body: imageArrayBuffer
+});
+// console.log("This is the VAL1",val1);
+console.log("asset",assets);
+console.log("urn",accountsId);
+
+// const linkedinAccount = existedUser.socialAccounts.find((acc:any)=>acc.socialName.toLowerCase() === 'linkedin' && acc.accounts === 'linkedin');
+if(response)
+{
+  try {
+    const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`,{
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      'author': `urn:li:person:${accountsId}`,
+      'lifecycleState': 'PUBLISHED',
+      'specificContent': {
+          'com.linkedin.ugc.ShareContent': {
+              'shareCommentary': {
+                  'text': formData.description
+              },
+              'shareMediaCategory': 'IMAGE',
+              'media': [
+                  {
+                      'status': 'READY',
+                      'description': {
+                          'text': formData.description
+                      },
+                      'media': assets
+                  }
+              ]
+  
+          },
+          
+      },
+      "visibility": {
+            "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"  
+          }
+    })  
+    });
+    const postData = await post.json();
+    console.log("This is the post data",postData);  
+  if(postData)
+  {
+    return {sucess:true};
+  }
+} catch (error) {
+  return {sucess:false};
+}
+}
+
+}
 
 // Main job processor
 export const processJob = async (job: any) => {
@@ -226,7 +349,17 @@ export const processJob = async (job: any) => {
           break;
 
         case 'linkedin':
-          // Implement LinkedIn logic
+          const data = await getToken(user, job.data.formData.platforms);
+          const step1Res =  await step1(data?.accountsId, data?.token);
+          const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId);
+          if (step2Res) {
+            const resLinkdln = step2Res;
+            if (resLinkdln) {
+              console.log("Post Sucess");
+            }
+          } else {
+            console.error('step2Res is undefined');
+          }
           break;
 
         case 'youtube':
