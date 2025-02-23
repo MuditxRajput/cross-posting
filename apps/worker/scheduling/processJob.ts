@@ -561,14 +561,14 @@ export const processJob = async (job: any) => {
             console.log("Inside LinkedIn video upload");
             
             // Step 1: Register Video Upload
-            const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.video);
+            const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.image);
             if (!videoData) {
               console.error("Failed to register video upload.");
               return;
             }
         
             // Step 2: Upload Video
-            const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.video);
+            const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.image);
             if (!uploadSuccess) {
               console.error("Failed to upload video.");
               return;
