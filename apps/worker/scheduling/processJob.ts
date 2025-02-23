@@ -148,11 +148,10 @@ const postCarousel = async (igId: string, token: string, formData: any) => {
 const handleVideoPost = async (igId: string, token: string, formData: any) => {4
   console.log("inside the handle video post");
   if (!formData.image?.[0]) throw new Error("No video URL provided");
-
-  const mediaPayload = new FormData();
-  mediaPayload.append("video_url", formData.image[0]);
-  mediaPayload.append("caption", formData.description);
-
+  const mediaUrl = [formData.image[0]];
+  console.log("mediaUrl", mediaUrl);
+  const mediaPayload = `video_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}&media_type=REELS`;
+  console.log("mediaPayload", mediaPayload);
   const createRes = await fetch(
     `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
     { 
