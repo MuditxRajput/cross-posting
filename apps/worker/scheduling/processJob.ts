@@ -154,14 +154,13 @@ const handleVideoPost = async (igId: string, token: string, formData: any) => {4
   mediaPayload.append("caption", formData.description);
 
   const createRes = await fetch(
-    `https://graph.facebook.com/v21.0/${igId}/media`,
+    `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
     { 
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
-      body: mediaPayload
     }
   );
-  console.log("createRes", createRes);
+  // console.log("createRes", createRes);
   if (!createRes.ok) {
     const error = await createRes.text();
     throw new Error(`Video creation error: ${error}`);
@@ -174,7 +173,7 @@ const handleVideoPost = async (igId: string, token: string, formData: any) => {4
   await waitForVideoProcessing(id, token);
 
   const publishRes = await fetch(
-    `https://graph.facebook.com/latest/${igId}/media_publish?creation_id=${id}`,
+    `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${id}`,
     {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
