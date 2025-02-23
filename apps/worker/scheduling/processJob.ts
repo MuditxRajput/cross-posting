@@ -154,7 +154,7 @@ const handleVideoPost = async (igId: string, token: string, formData: any) => {4
   mediaPayload.append("caption", formData.description);
 
   const createRes = await fetch(
-    `https://graph.facebook.com/latest/${igId}/media`,
+    `https://graph.facebook.com/v21.0/${igId}/media`,
     { 
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
