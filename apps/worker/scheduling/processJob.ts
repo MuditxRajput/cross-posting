@@ -145,7 +145,8 @@ const postCarousel = async (igId: string, token: string, formData: any) => {
 };
 
 // Video handling
-const handleVideoPost = async (igId: string, token: string, formData: any) => {
+const handleVideoPost = async (igId: string, token: string, formData: any) => {4
+  console.log("inside the handle video post");
   if (!formData.image?.[0]) throw new Error("No video URL provided");
 
   const mediaPayload = new FormData();
@@ -160,7 +161,7 @@ const handleVideoPost = async (igId: string, token: string, formData: any) => {
       body: mediaPayload
     }
   );
-
+  console.log("createRes", createRes);
   if (!createRes.ok) {
     const error = await createRes.text();
     throw new Error(`Video creation error: ${error}`);
@@ -213,6 +214,71 @@ const waitForVideoProcessing = async (containerId: string, token: string) => {
 
   throw new Error('Video processing timeout');
 };
+// const handleVideoPost = async (igId: string, token: string, formData: any) => {
+//   if (!formData.video) throw new Error('No video URL provided');
+//    const mediaUrl = formData.image || [];
+//   const   mediaPayload = `video_url=${mediaUrl}&caption=${encodeURIComponent(formData.description)}&media_type=REELS`;
+//   const res = await fetch(
+//     `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
+//     { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+//   );
+//   const val = await res.json() as { id: string };
+//       containerResponse.push(val.id);
+//       // step 2 publish container
+//       const checkMediaStatus = async (containerId: string) => {
+//         let statusCode;
+//         let attempts = 0;
+//         const maxAttempts = 10; // Increased the number of attempts
+//         const retryDelay = 10000; // 10 seconds between each retry
+  
+//         while (attempts < maxAttempts) {
+//           const statusResponse = await fetch(
+//             `https://graph.facebook.com/v21.0/${containerId}?fields=status_code`,
+//             {
+//               method: 'GET',
+//               headers: {
+//                 Authorization: `Bearer ${token}`,
+//               },
+//             }
+//           );
+  
+//           const statusData = await statusResponse.json();
+//           statusCode = (statusData as { status_code: string }).status_code;
+  
+//           if (statusCode === 'FINISHED') {
+//             console.log('Media is ready to be published');
+//             break; // Media is ready, break out of the loop
+//           }
+  
+//           attempts++;
+//           console.log(`Waiting for media to be ready... Attempt ${attempts}/${maxAttempts}`);
+//           await new Promise(resolve => setTimeout(resolve, retryDelay)); // Wait 10 seconds before retrying
+//         }
+  
+//         if (statusCode !== 'FINISHED') {
+//           throw new Error('Media not ready after multiple attempts');
+//         }
+//       };
+//       await checkMediaStatus(val.id);
+//       const publishContainer = await fetch(
+//         `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${val.id}`,
+//         {
+//           method: 'POST',
+//           headers: {
+//             Authorization: `Bearer ${token}`,
+//           },
+//         }
+//       );
+//       const publishData = await publishContainer.json();
+//       if((publishData as { id: string }).id)
+//         {
+//           console.log('Media published successfully');
+//         }
+//         else{
+//           throw new Error('Invalid mediaType. Use "image" or "video".');
+//         }
+  
+// }
 const getToken = async (existedUser: any, platforms: { name: string; account: string[] }[]) => {
   if (!existedUser) {
     return;
