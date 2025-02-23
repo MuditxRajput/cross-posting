@@ -423,22 +423,27 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any, 
 const registerVideoUpload = async (accountsId: any, token: any, videoUrl: string) => {
   console.log("Inside registerVideoUpload", accountsId, token, videoUrl);
 
-  const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
+  // Fetch the video file to get its size
+  const videoResponse = await fetch(videoUrl);
+  if (!videoResponse.ok) {
+    throw new Error(`Failed to fetch video: ${videoResponse.statusText}`);
+  }
+  const videoBlob = await videoResponse.blob();
+  const fileSizeBytes = videoBlob.size;
+
+  const response = await fetch(`https://api.linkedin.com/rest/videos?action=initializeUpload`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
+      'X-Restli-Protocol-Version': '2.0.0', // Required for LinkedIn API
     },
     body: JSON.stringify({
-      registerUploadRequest: {
-        owner: `urn:li:person:${accountsId}`,
-        recipes: ['urn:li:digitalmediaRecipe:feedshare-video'],
-        serviceRelationships: [
-          {
-            relationshipType: 'OWNER',
-            identifier: 'urn:li:userGeneratedContent',
-          },
-        ],
+      initializeUploadRequest: {
+        owner: `urn:li:person:${accountsId}`, // Use `urn:li:organization:<org-id>` for organizations
+        fileSizeBytes: fileSizeBytes, // Add file size
+        uploadCaptions: true,
+        uploadThumbnail: false,
       },
     }),
   });
@@ -446,44 +451,94 @@ const registerVideoUpload = async (accountsId: any, token: any, videoUrl: string
   const data = await response.json();
   console.log("Registered video upload:", data);
 
-  if (data.value && data.value.asset) {
+  if (data.value && data.value.uploadInstructions) {
     return {
-      asset: data.value.asset,
-      uploadUrl: data.value.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl,
+      asset: data.value.video,
+      uploadUrl: data.value.uploadInstructions[0].uploadUrl, // Use the first upload URL
     };
   } else {
     console.error("Failed to register video:", data);
     return null;
   }
 };
+const splitVideoFile = async (videoBlob: Blob) => {
+  const chunkSize = 4 * 1024 * 1024; // 4MB
+  const chunks = [];
+  let start = 0;
 
+  while (start < videoBlob.size) {
+    const end = Math.min(start + chunkSize, videoBlob.size);
+    const chunk = videoBlob.slice(start, end);
+    chunks.push(chunk);
+    start = end;
+  }
+
+  return chunks;
+};
 const uploadVideo = async (uploadUrl: string, token: string, videoUrl: string) => {
   console.log("Uploading video to LinkedIn...");
   console.log("uploadUrl", uploadUrl);
   console.log("videoUrl", videoUrl);
-  const videoResponse = await fetch(videoUrl); // Fetch video file from URL
+
+  // Fetch the video file
+  const videoResponse = await fetch(videoUrl);
   if (!videoResponse.ok) {
     throw new Error(`Failed to fetch video: ${videoResponse.statusText}`);
   }
-  const videoArrayBuffer = await videoResponse.arrayBuffer();
+  const videoBlob = await videoResponse.blob();
 
-  const uploadResponse = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'video/mp4', // Ensure this matches your video type
-    },
-    body: videoArrayBuffer,
-  });
+  // Split the video file into 4MB chunks
+  const chunks = await splitVideoFile(videoBlob);
 
-  if (!uploadResponse.ok) {
-    throw new Error(`Failed to upload video: ${uploadResponse.statusText}`);
+  // Upload each chunk
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const chunkUploadUrl = `${uploadUrl}&partNumber=${i + 1}`; // Add part number to the URL
+
+    const uploadResponse = await fetch(chunkUploadUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'video/mp4', // Ensure this matches your video type
+      },
+      body: chunk,
+    });
+
+    if (!uploadResponse.ok) {
+      throw new Error(`Failed to upload video chunk ${i + 1}: ${uploadResponse.statusText}`);
+    }
+
+    console.log(`Uploaded chunk ${i + 1} of ${chunks.length}`);
   }
 
   console.log("Video uploaded successfully.");
   return true;
 };
 
+const finalizeVideoUpload = async (token: string, asset: string, chunks: Blob[]) => {
+  console.log("Finalizing video upload...");
+
+  const response = await fetch(`https://api.linkedin.com/rest/videos?action=finalizeUpload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+      'X-Restli-Protocol-Version': '2.0.0', // Required for LinkedIn API
+    },
+    body: JSON.stringify({
+      finalizeUploadRequest: {
+        video: asset, // Asset ID from step 1
+        uploadToken: "", // Optional, if provided
+        uploadedPartIds: Array.from({ length: chunks.length }, (_, i) => i + 1), // Array of part numbers
+      },
+    }),
+  });
+
+  const data = await response.json();
+  console.log("Finalized video upload:", data);
+
+  return data;
+};
 const publishVideoPost = async (accountsId: any, token: any, asset: string, formData: any) => {
   console.log("Publishing video post...");
 
@@ -492,9 +547,10 @@ const publishVideoPost = async (accountsId: any, token: any, asset: string, form
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
+      'X-Restli-Protocol-Version': '2.0.0', // Required for LinkedIn API
     },
     body: JSON.stringify({
-      author: `urn:li:person:${accountsId}`,
+      author: `urn:li:person:${accountsId}`, // Use `urn:li:organization:<org-id>` for organizations
       lifecycleState: 'PUBLISHED',
       specificContent: {
         'com.linkedin.ugc.ShareContent': {
@@ -508,7 +564,7 @@ const publishVideoPost = async (accountsId: any, token: any, asset: string, form
               description: {
                 text: formData.description,
               },
-              media: `urn:li:digitalmediaAsset:${asset}`, // Asset ID from step1
+              media: asset, // Use the asset ID from step 1
             },
           ],
         },
@@ -559,24 +615,34 @@ export const processJob = async (job: any) => {
           } 
           else if (job.data.mediaType === 'video') {
             console.log("Inside LinkedIn video upload");
-            
+          
             // Step 1: Register Video Upload
             const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.image);
             if (!videoData) {
               console.error("Failed to register video upload.");
               return;
             }
-        
+          
             // Step 2: Upload Video
+            const chunks = await splitVideoFile(await (await fetch(job.data.formData.image)).blob());
             const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.image);
             if (!uploadSuccess) {
               console.error("Failed to upload video.");
               return;
             }
-        
-            // Step 3: Publish Video Post
+          
+            // Step 3: Finalize Video Upload
+            const finalizeResponse = await finalizeVideoUpload(data?.token, videoData.asset, chunks);
+            if (!finalizeResponse) {
+              console.error("Failed to finalize video upload.");
+              return;
+            }
+          
+            console.log("Video upload and finalization successful!");
+          
+            // Step 4: Publish Video Post (Optional)
             const videoPostResponse = await publishVideoPost(data?.accountsId, data?.token, videoData.asset, job.data.formData);
-            
+          
             if (videoPostResponse) {
               console.log("Video post successful!");
             } else {
