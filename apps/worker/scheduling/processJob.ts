@@ -545,7 +545,7 @@ export const processJob = async (job: any) => {
         if (platform.name.toLowerCase() === 'linkedin') {
           const data = await getToken(user, job.data.formData.platforms);
           console.log("mediaType", job.data.mediaType);
-          if (job.data.formData.mediaType === 'image') {
+          if (job.data.mediaType === 'image') {
             console.log("Inside LinkedIn image upload");
             const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image);
             const step2Res = await step2(step1Res, data?.token, job.data.formData, data?.accountsId, job.data.formData.image);
@@ -556,7 +556,7 @@ export const processJob = async (job: any) => {
               console.error('Failed to upload image.');
             }
           } 
-          else if (job.data.formData.mediaType === 'video') {
+          else if (job.data.mediaType === 'video') {
             console.log("Inside LinkedIn video upload");
             
             // Step 1: Register Video Upload
