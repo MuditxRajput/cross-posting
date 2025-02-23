@@ -459,7 +459,8 @@ const registerVideoUpload = async (accountsId: any, token: any, videoUrl: string
 
 const uploadVideo = async (uploadUrl: string, token: string, videoUrl: string) => {
   console.log("Uploading video to LinkedIn...");
-
+  console.log("uploadUrl", uploadUrl);
+  console.log("videoUrl", videoUrl);
   const videoResponse = await fetch(videoUrl); // Fetch video file from URL
   if (!videoResponse.ok) {
     throw new Error(`Failed to fetch video: ${videoResponse.statusText}`);
