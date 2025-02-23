@@ -78,6 +78,6 @@ worker.on('error', (err) => {
   console.error('❌ Worker encountered an error:', err);
 });
 
-worker.on('stalled', (jobId) => {
-  console.warn(`⚠️ Job ${jobId} is stalled!`);
-});
+// worker.on('stalled', (jobId) => {
+//   console.warn(`⚠️ Job ${jobId} is stalled!`);
+// });

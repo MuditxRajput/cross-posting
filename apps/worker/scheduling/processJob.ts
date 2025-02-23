@@ -420,6 +420,110 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any, 
     return { success: false };
   }
 };
+const registerVideoUpload = async (accountsId: any, token: any, videoUrl: string) => {
+  console.log("Inside registerVideoUpload", accountsId, token, videoUrl);
+
+  const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      registerUploadRequest: {
+        owner: `urn:li:person:${accountsId}`,
+        recipes: ['urn:li:digitalmediaRecipe:feedshare-video'],
+        serviceRelationships: [
+          {
+            relationshipType: 'OWNER',
+            identifier: 'urn:li:userGeneratedContent',
+          },
+        ],
+      },
+    }),
+  });
+
+  const data = await response.json();
+  console.log("Registered video upload:", data);
+
+  if (data.value && data.value.asset) {
+    return {
+      asset: data.value.asset,
+      uploadUrl: data.value.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl,
+    };
+  } else {
+    console.error("Failed to register video:", data);
+    return null;
+  }
+};
+
+const uploadVideo = async (uploadUrl: string, token: string, videoUrl: string) => {
+  console.log("Uploading video to LinkedIn...");
+
+  const videoResponse = await fetch(videoUrl); // Fetch video file from URL
+  if (!videoResponse.ok) {
+    throw new Error(`Failed to fetch video: ${videoResponse.statusText}`);
+  }
+  const videoArrayBuffer = await videoResponse.arrayBuffer();
+
+  const uploadResponse = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'video/mp4', // Ensure this matches your video type
+    },
+    body: videoArrayBuffer,
+  });
+
+  if (!uploadResponse.ok) {
+    throw new Error(`Failed to upload video: ${uploadResponse.statusText}`);
+  }
+
+  console.log("Video uploaded successfully.");
+  return true;
+};
+
+const publishVideoPost = async (accountsId: any, token: any, asset: string, formData: any) => {
+  console.log("Publishing video post...");
+
+  const postResponse = await fetch(`https://api.linkedin.com/v2/ugcPosts`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      author: `urn:li:person:${accountsId}`,
+      lifecycleState: 'PUBLISHED',
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: {
+            text: formData.description,
+          },
+          shareMediaCategory: 'VIDEO',
+          media: [
+            {
+              status: 'READY',
+              description: {
+                text: formData.description,
+              },
+              media: `urn:li:digitalmediaAsset:${asset}`, // Asset ID from step1
+            },
+          ],
+        },
+      },
+      visibility: {
+        'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+      },
+    }),
+  });
+
+  const postData = await postResponse.json();
+  console.log('Video post response:', postData);
+
+  return postData;
+};
+
 // Main job processor
 export const processJob = async (job: any) => {
   console.log(`Starting job ${job.id}`, JSON.stringify(job.data, null, 2));
@@ -439,22 +543,48 @@ export const processJob = async (job: any) => {
             throw new Error('Invalid Instagram data');
           }
         }
-         if(platform.name.toLowerCase() === 'linkedin')
-        {
-          console.log("inside linkdln")
+        if (platform.name.toLowerCase() === 'linkedin') {
           const data = await getToken(user, job.data.formData.platforms);
-          const step1Res =  await step1(data?.accountsId, data?.token,job.data.formData.image);
-          const step2Res = await step2(step1Res, data?.token, job.data.formData,data?.accountsId,job.data.formData.image);
-          if (step2Res) {
-            const resLinkdln = step2Res;
-            if (resLinkdln) {
-              console.log("Post Sucess");
+        
+          if (job.data.formData.mediaType === 'image') {
+            console.log("Inside LinkedIn image upload");
+            const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image);
+            const step2Res = await step2(step1Res, data?.token, job.data.formData, data?.accountsId, job.data.formData.image);
+            
+            if (step2Res?.success) {
+              console.log("Image post successful!");
+            } else {
+              console.error('Failed to upload image.');
             }
-          } else {
-            console.error('step2Res is undefined');
+          } 
+          else if (job.data.formData.mediaType === 'video') {
+            console.log("Inside LinkedIn video upload");
+            
+            // Step 1: Register Video Upload
+            const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.video);
+            if (!videoData) {
+              console.error("Failed to register video upload.");
+              return;
+            }
+        
+            // Step 2: Upload Video
+            const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.video);
+            if (!uploadSuccess) {
+              console.error("Failed to upload video.");
+              return;
+            }
+        
+            // Step 3: Publish Video Post
+            const videoPostResponse = await publishVideoPost(data?.accountsId, data?.token, videoData.asset, job.data.formData);
+            
+            if (videoPostResponse) {
+              console.log("Video post successful!");
+            } else {
+              console.error("Failed to publish video post.");
+            }
           }
-         
         }
+        
           console.log(`Completed job ${job.id} successfully`);
       }
     
