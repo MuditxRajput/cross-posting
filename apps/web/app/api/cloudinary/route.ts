@@ -34,7 +34,7 @@ export async function POST(req: any) {
     const { image, fileType, aspectRatio } = await req.json();
     const resourceType = fileType === "video" ? "video" : "image";
     const defaultAspectRatio = fileType === "video" ? "16:9" : "16:9";
-
+      
     // Normalize the aspect ratio
     const normalizedAspectRatio = normalizeAspectRatio(aspectRatio || defaultAspectRatio);
     console.log("Normalized Aspect Ratio:", normalizedAspectRatio);
@@ -47,15 +47,26 @@ export async function POST(req: any) {
         gravity: "auto", // Center the cropping on important content
       },
     ];
-
+     console.log("Transformations:", transformations);
     // Upload function
     const uploadCloudinary = async (image: any) => {
-      return await cloudinary.uploader.upload(image, {
-        folder: "uploads",
-        resource_type: resourceType,
-        transformation: transformations,
-      });
+      if (resourceType === "video") {
+        return await cloudinary.uploader.upload_large(image, {
+          folder: "uploads",
+          resource_type: "video",
+          chunk_size: 6000000, // 6MB chunk size
+        });
+      } else {
+        return await cloudinary.uploader.upload(image, {
+          folder: "uploads",
+          resource_type: "image",
+          transformation: transformations,
+        });
+      }
     };
+    console.log("Resource Type:", resourceType);
+    console.log(uploadCloudinary);
+    
 
     // Handle multiple or single image uploads
     const uploadedImages = [];

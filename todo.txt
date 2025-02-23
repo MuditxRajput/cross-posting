@@ -1,4 +1,0 @@
-1. coorect the getIgToken as there might be more than one account in instagram like ek se zada account hoe ek he image ko post karne ke liye to hume 
-sabke token chaeye then ek ek kr ke post karna padega 
-same for lindkln vese ek se zada lindkln hota nhi as condtion hum le lete h 
-post on the youtube
