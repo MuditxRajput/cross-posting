@@ -532,7 +532,7 @@ export const processJob = async (job: any) => {
     if (!user) throw new Error(`User ${job.data.email} not found`);
     for (const platform of job.data.formData.platforms) {
       // console.log(`Processing ${platform.name.toLowerCase()} platform ->>>`);
-      console.log("mediaType", job.data.formData.mediaType);
+      console.log("mediaType", job.data.mediaType);
       if (platform.name.toLowerCase() === 'instagram') {
         console.log("inside instagram");
           const igData = await getIgId(job.data.email, job.data.formData.platforms);
@@ -544,7 +544,7 @@ export const processJob = async (job: any) => {
         }
         if (platform.name.toLowerCase() === 'linkedin') {
           const data = await getToken(user, job.data.formData.platforms);
-          console.log("mediaType", job.data.formData.mediaType);
+          console.log("mediaType", job.data.mediaType);
           if (job.data.formData.mediaType === 'image') {
             console.log("Inside LinkedIn image upload");
             const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image);
