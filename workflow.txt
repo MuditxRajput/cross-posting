@@ -1,2 +1,6 @@
 1. test the linkdln coursal , github pr daal di h bss ec2 me ja kr start kr de..
 ec2 me git pull kr ke new pm2 bana lena then pm2 start kr de
+
+
+important points
+image and video in chunks 

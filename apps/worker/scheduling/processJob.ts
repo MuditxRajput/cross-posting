@@ -43,7 +43,7 @@ const postInstagram = async (
 ) => {
   try {
     console.log(`Starting Instagram post for ${igId}`);
-    
+    console.log("media - type", mediaType);
     if (mediaType === 'image') {
       return await handleImagePost(igId, token, formData);
     }
@@ -146,13 +146,19 @@ const postCarousel = async (igId: string, token: string, formData: any) => {
 
 // Video handling
 const handleVideoPost = async (igId: string, token: string, formData: any) => {
-  if (!formData.image?.[0]) throw new Error('No video URL provided');
-  
-  const mediaPayload = `video_url=${formData.image[0]}&caption=${encodeURIComponent(formData.description)}`;
-  
+  if (!formData.image?.[0]) throw new Error("No video URL provided");
+
+  const mediaPayload = new FormData();
+  mediaPayload.append("video_url", formData.image[0]);
+  mediaPayload.append("caption", formData.description);
+
   const createRes = await fetch(
-    `https://graph.facebook.com/v21.0/${igId}/media?${mediaPayload}`,
-    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    `https://graph.facebook.com/latest/${igId}/media`,
+    { 
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: mediaPayload
+    }
   );
 
   if (!createRes.ok) {
@@ -165,10 +171,13 @@ const handleVideoPost = async (igId: string, token: string, formData: any) => {
 
   // Wait for video processing
   await waitForVideoProcessing(id, token);
-  
+
   const publishRes = await fetch(
-    `https://graph.facebook.com/v21.0/${igId}/media_publish?creation_id=${id}`,
-    { method: 'POST', headers: { Authorization: `Bearer ${token}` } }
+    `https://graph.facebook.com/latest/${igId}/media_publish?creation_id=${id}`,
+    {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }
   );
 
   if (!publishRes.ok) {
@@ -178,6 +187,7 @@ const handleVideoPost = async (igId: string, token: string, formData: any) => {
 
   console.log(`Published video ${id}`);
 };
+
 
 const waitForVideoProcessing = async (containerId: string, token: string) => {
   const maxAttempts = 30;
