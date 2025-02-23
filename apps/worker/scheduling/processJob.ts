@@ -526,14 +526,13 @@ const publishVideoPost = async (accountsId: any, token: any, asset: string, form
 
 // Main job processor
 export const processJob = async (job: any) => {
-  console.log(`Starting job ${job.id}`, JSON.stringify(job.data, null, 2));
+  
   try {
     const user = await User.findOne({ email: job.data.email });
     if (!user) throw new Error(`User ${job.data.email} not found`);
-      console.log(job.data.formData.platforms);
     for (const platform of job.data.formData.platforms) {
       // console.log(`Processing ${platform.name.toLowerCase()} platform ->>>`);
-      
+      console.log("mediaType", job.data.formData.mediaType);
       if (platform.name.toLowerCase() === 'instagram') {
         console.log("inside instagram");
           const igData = await getIgId(job.data.email, job.data.formData.platforms);
@@ -545,6 +544,7 @@ export const processJob = async (job: any) => {
         }
         if (platform.name.toLowerCase() === 'linkedin') {
           const data = await getToken(user, job.data.formData.platforms);
+          console.log("mediaType", job.data.formData.mediaType);
           if (job.data.formData.mediaType === 'image') {
             console.log("Inside LinkedIn image upload");
             const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image);
