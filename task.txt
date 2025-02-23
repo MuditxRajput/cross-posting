@@ -1,6 +1,0 @@
-1. single image ke liye ho gaya
-2. curosal image ka karna h 
-   - cloudinary pr upload karo 2-3 images
-   - url lao sabka as an array
-   - then schedule karo
-   - worker me formdata.image array aaega to looping karni h
