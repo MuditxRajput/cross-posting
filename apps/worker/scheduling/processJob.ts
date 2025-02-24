@@ -307,100 +307,93 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
   }
 };
 
-const step1 = async (accountsId:any, token:any, images:any, mediaType:any) => {
-  const assets = [];
-
+const step1 = async (accountsId:any, token:any, mediaUrl:any, mediaType:any) => {
   // Validate mediaType
-  const validMediaTypes = ['IMAGE', 'VIDEO', 'CAROUSEL'];
+  const validMediaTypes = ['IMAGE', 'VIDEO'];
   if (!validMediaTypes.includes(mediaType.toUpperCase())) {
     throw new Error(`Invalid mediaType: ${mediaType}. Must be one of ${validMediaTypes.join(', ')}`);
   }
 
-  for (const image of images) {
-    const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+  // Register the upload
+  const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      registerUploadRequest: {
+        owner: `urn:li:person:${accountsId}`,
+        recipes: [`urn:li:digitalmediaRecipe:feedshare-${mediaType}`],
+        serviceRelationships: [
+          {
+            relationshipType: 'OWNER',
+            identifier: 'urn:li:userGeneratedContent',
+          },
+        ],
       },
-      body: JSON.stringify({
-        registerUploadRequest: {
-          owner: `urn:li:person:${accountsId}`,
-          recipes: [`urn:li:digitalmediaRecipe:feedshare-${mediaType}`],
-          serviceRelationships: [
-            {
-              relationshipType: 'OWNER',
-              identifier: 'urn:li:userGeneratedContent',
-            },
-          ],
-        },
-      }),
-    });
+    }),
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Failed to register upload: ${errorData.message || response.statusText}`);
-    }
-
-    const data = await response.json();
-    console.log("Registered asset for image:", image, data);
-
-    if (data.value && data.value.asset) {
-      assets.push(data.value);
-    } else {
-      console.error("Failed to register asset for image:", image, data);
-    }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(`Failed to register upload: ${errorData.message || response.statusText}`);
   }
 
-  return assets;
+  const data = await response.json();
+  console.log("Registered asset for media:", mediaUrl, data);
+
+  if (data.value && data.value.asset) {
+    return data.value; // Return the asset
+  } else {
+    throw new Error("Failed to register asset:", data);
+  }
 };
 
-const step2 = async (assets:any, token:any, formData:any, accountsId:any, images:any, mediaType:any) => {
-  for (let i = 0; i < assets.length; i++) {
-    const asset = assets[i];
-    const imageUrl = images[i];
+const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUrl:any, mediaType:any) => {
+  const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
+  console.log("Upload URL:", url);
 
-    const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
-    console.log("Upload URL:", url);
-
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
-    }
-
-    const imageArrayBuffer = await imageResponse.arrayBuffer();
-    const fileType = imageUrl.split('.').pop().toLowerCase();
-    const contentType = fileType === 'mp4' ? 'video/mp4' : `image/${fileType}`;
-
-    const uploadHeaders: { [key: string]: string } = {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': contentType,
-    };
-
-    if (mediaType.toUpperCase() === 'VIDEO') {
-      uploadHeaders['media-type-family'] = 'VIDEO';
-    }
-
-    const uploadResponse = await fetch(url, {
-      method: 'PUT',
-      headers: uploadHeaders,
-      body: imageArrayBuffer,
-    });
-
-    console.log("Upload response status:", uploadResponse.status);
-    console.log("Upload response headers:", uploadResponse.headers);
-
-    if (!uploadResponse.ok) {
-      throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
-    }
-
-    console.log("Uploaded image:", imageUrl);
+  // Fetch the media file
+  const mediaResponse = await fetch(mediaUrl);
+  if (!mediaResponse.ok) {
+    throw new Error(`Failed to fetch media: ${mediaResponse.statusText}`);
   }
 
-  // Wait for assets to be processed
+  const mediaArrayBuffer = await mediaResponse.arrayBuffer();
+  const fileType = mediaUrl.split('.').pop().toLowerCase();
+  const contentType = fileType === 'mp4' ? 'video/mp4' : `image/${fileType}`;
+
+  const uploadHeaders: { [key: string]: string } = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': contentType,
+  };
+
+  if (mediaType.toUpperCase() === 'VIDEO') {
+    uploadHeaders['media-type-family'] = 'VIDEO';
+  }
+
+  // Upload the media file
+  const uploadResponse = await fetch(url, {
+    method: 'PUT',
+    headers: uploadHeaders,
+    body: mediaArrayBuffer,
+  });
+
+  console.log("Upload response status:", uploadResponse.status);
+  console.log("Upload response headers:", uploadResponse.headers);
+
+  if (!uploadResponse.ok) {
+    throw new Error(`Failed to upload media: ${uploadResponse.statusText}`);
+  }
+
+  console.log("Uploaded media:", mediaUrl);
+
+  // Wait for the asset to be processed
   await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
   try {
+    // Create the post
     const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`, {
       method: 'POST',
       headers: {
@@ -415,15 +408,17 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
             shareCommentary: {
               text: formData.description,
             },
-            shareMediaCategory: images.length > 1 ? 'CAROUSEL' : `${mediaType}`.toUpperCase(),
-            media: assets.map((asset:any, index:any) => ({
-              status: 'READY',
-              description: {
-                text: formData.description,
+            shareMediaCategory: `${mediaType}`.toUpperCase(), // Set to IMAGE or VIDEO
+            media: [
+              {
+                status: 'READY',
+                description: {
+                  text: formData.description,
+                },
+                media: `urn:li:digitalmediaAsset:${asset.asset}`,
+                originalUrl: mediaUrl, // Use the media URL
               },
-              media: `urn:li:digitalmediaAsset:${asset.asset}`,
-              originalUrl: images[index], // Use the correct image URL for each asset
-            })),
+            ],
           },
         },
         visibility: {
@@ -439,7 +434,7 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
       return { success: true };
     }
   } catch (error) {
-    console.error('Error posting carousel:', error);
+    console.error('Error posting media:', error);
     return { success: false };
   }
 };
