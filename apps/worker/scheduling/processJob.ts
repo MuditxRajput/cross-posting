@@ -415,8 +415,8 @@ const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUr
                 description: {
                   text: formData.description,
                 },
-                media: `urn:li:digitalmediaAsset:${asset.asset}`,
-                originalUrl: mediaUrl, // Use the media URL
+                media: `${asset.asset}`,
+                // originalUrl: mediaUrl, // Use the media URL
               },
             ],
           },
