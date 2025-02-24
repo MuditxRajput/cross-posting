@@ -618,7 +618,7 @@ export const processJob = async (job: any) => {
         if (platform.name.toLowerCase() === 'linkedin') {
           const data = await getToken(user, job.data.formData.platforms);
           console.log("mediaType", job.data.mediaType);
-          if (job.data.mediaType === 'image') {
+          // if (job.data.mediaType === 'image') {
             console.log("Inside LinkedIn image upload");
             const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image,job.data.mediaType);
             const step2Res = await step2(step1Res, data?.token, job.data.formData, data?.accountsId, job.data.formData.image,job.data.mediaType);
@@ -628,43 +628,43 @@ export const processJob = async (job: any) => {
             } else {
               console.error('Failed to upload image.');
             }
-          } 
-          else if (job.data.mediaType === 'video') {
-            console.log("Inside LinkedIn video upload");
+          // } 
+          // else if (job.data.mediaType === 'video') {
+          //   console.log("Inside LinkedIn video upload");
           
-            // Step 1: Register Video Upload
-            const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.image);
-            if (!videoData) {
-              console.error("Failed to register video upload.");
-              return;
-            }
+          //   // Step 1: Register Video Upload
+          //   const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.image);
+          //   if (!videoData) {
+          //     console.error("Failed to register video upload.");
+          //     return;
+          //   }
           
-            // Step 2: Upload Video
-            const chunks = await splitVideoFile(await (await fetch(job.data.formData.image)).blob());
-            const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.image);
-            if (!uploadSuccess) {
-              console.error("Failed to upload video.");
-              return;
-            }
+          //   // Step 2: Upload Video
+          //   const chunks = await splitVideoFile(await (await fetch(job.data.formData.image)).blob());
+          //   const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.image);
+          //   if (!uploadSuccess) {
+          //     console.error("Failed to upload video.");
+          //     return;
+          //   }
           
-            // Step 3: Finalize Video Upload
-            const finalizeResponse = await finalizeVideoUpload(data?.token, videoData.asset, chunks);
-            if (!finalizeResponse) {
-              console.error("Failed to finalize video upload.");
-              return;
-            }
+          //   // Step 3: Finalize Video Upload
+          //   const finalizeResponse = await finalizeVideoUpload(data?.token, videoData.asset, chunks);
+          //   if (!finalizeResponse) {
+          //     console.error("Failed to finalize video upload.");
+          //     return;
+          //   }
           
-            console.log("Video upload and finalization successful!");
+          //   console.log("Video upload and finalization successful!");
           
-            // Step 4: Publish Video Post (Optional)
-            const videoPostResponse = await publishVideoPost(data?.accountsId, data?.token, videoData.asset, job.data.formData);
+          //   // Step 4: Publish Video Post (Optional)
+          //   const videoPostResponse = await publishVideoPost(data?.accountsId, data?.token, videoData.asset, job.data.formData);
           
-            if (videoPostResponse) {
-              console.log("Video post successful!");
-            } else {
-              console.error("Failed to publish video post.");
-            }
-          }
+          //   if (videoPostResponse) {
+          //     console.log("Video post successful!");
+          //   } else {
+          //     console.error("Failed to publish video post.");
+          //   }
+          // }
         }
         
           console.log(`Completed job ${job.id} successfully`);
