@@ -360,8 +360,9 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
     const asset = assets[i];
     const imageUrl = images[i];
 
-    const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;4
-    console.log("uploaded url ", url);
+    const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
+    console.log("Upload URL:", url);
+
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
@@ -386,12 +387,18 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
       body: imageArrayBuffer,
     });
 
+    console.log("Upload response status:", uploadResponse.status);
+    console.log("Upload response headers:", uploadResponse.headers);
+
     if (!uploadResponse.ok) {
       throw new Error(`Failed to upload image: ${uploadResponse.statusText}`);
     }
 
     console.log("Uploaded image:", imageUrl);
   }
+
+  // Wait for assets to be processed
+  await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
   try {
     const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`, {
@@ -409,13 +416,13 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
               text: formData.description,
             },
             shareMediaCategory: images.length > 1 ? 'CAROUSEL' : `${mediaType}`.toUpperCase(),
-            media: assets.map((asset: any, index: number) => ({
+            media: assets.map((asset:any, index:any) => ({
               status: 'READY',
               description: {
                 text: formData.description,
               },
               media: `urn:li:digitalmediaAsset:${asset.asset}`,
-              originalUrl: images[index],
+              originalUrl: images[index], // Use the correct image URL for each asset
             })),
           },
         },
