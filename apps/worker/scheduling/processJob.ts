@@ -309,7 +309,6 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
 
 const step1 = async (accountsId:any, token:any, images:any, mediaType:any) => {
   const assets = [];
-  console.log("Inside step1", accountsId, token, images);
 
   // Validate mediaType
   const validMediaTypes = ['IMAGE', 'VIDEO', 'CAROUSEL'];
@@ -347,7 +346,7 @@ const step1 = async (accountsId:any, token:any, images:any, mediaType:any) => {
     console.log("Registered asset for image:", image, data);
 
     if (data.value && data.value.asset) {
-      assets.push(data.value.asset);
+      assets.push(data.value);
     } else {
       console.error("Failed to register asset for image:", image, data);
     }
@@ -361,7 +360,8 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
     const asset = assets[i];
     const imageUrl = images[i];
 
-    const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
+    const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;4
+    console.log("uploaded url ", url);
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
