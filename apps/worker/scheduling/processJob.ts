@@ -416,7 +416,7 @@ const step2 = async (assets:any, token:any, formData:any, accountsId:any, images
               text: formData.description,
             },
             shareMediaCategory: images.length > 1 ? 'CAROUSEL' : `${mediaType}`.toUpperCase(),
-            media: assets.map((asset:any, index:any) => ({
+            media: assets.map((asset, index) => ({
               status: 'READY',
               description: {
                 text: formData.description,
