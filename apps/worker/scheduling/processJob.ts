@@ -341,7 +341,7 @@ const step1 = async (accountsId:any, token:any, mediaUrl:any, mediaType:any) => 
   }
 
   const data = await response.json();
-  console.log("Registered asset for media:", mediaUrl, data);
+  // console.log("Registered asset for media:", mediaUrl, data);
 
   if (data.value && data.value.asset) {
     return data.value; // Return the asset
@@ -353,7 +353,7 @@ const step1 = async (accountsId:any, token:any, mediaUrl:any, mediaType:any) => 
 const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUrl:any, mediaType:any) => {
   const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
   console.log("Upload URL:", url);
-
+  console.log("Assest",asset);
   // Fetch the media file
   const mediaResponse = await fetch(mediaUrl);
   if (!mediaResponse.ok) {
@@ -361,9 +361,6 @@ const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUr
   }
 
   const mediaArrayBuffer = await mediaResponse.arrayBuffer();
-  // const fileType = mediaUrl.split('.').pop().toLowerCase();
-  // const contentType = fileType === 'mp4' ? 'video/mp4' : `image/${fileType}`;
-
   const uploadHeaders: { [key: string]: string } = {
     'Authorization': `Bearer ${token}`,
     // 'Content-Type': contentType,
@@ -375,22 +372,19 @@ const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUr
 
   // Upload the media file
   const uploadResponse = await fetch(url, {
-    method: 'PUT',
+    method: 'POST',
     headers: uploadHeaders,
     body: mediaArrayBuffer,
   });
-
-  console.log("Upload response status:", uploadResponse.status);
-  console.log("Upload response headers:", uploadResponse.headers);
 
   if (!uploadResponse.ok) {
     throw new Error(`Failed to upload media: ${uploadResponse.statusText}`);
   }
 
   console.log("Uploaded media:", mediaUrl);
-
+  console.log("assest->>>",asset.asset);
   // Wait for the asset to be processed
-  await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
+  // await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
   try {
     // Create the post
