@@ -361,12 +361,12 @@ const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUr
   }
 
   const mediaArrayBuffer = await mediaResponse.arrayBuffer();
-  const fileType = mediaUrl.split('.').pop().toLowerCase();
-  const contentType = fileType === 'mp4' ? 'video/mp4' : `image/${fileType}`;
+  // const fileType = mediaUrl.split('.').pop().toLowerCase();
+  // const contentType = fileType === 'mp4' ? 'video/mp4' : `image/${fileType}`;
 
   const uploadHeaders: { [key: string]: string } = {
     'Authorization': `Bearer ${token}`,
-    'Content-Type': contentType,
+    // 'Content-Type': contentType,
   };
 
   if (mediaType.toUpperCase() === 'VIDEO') {
