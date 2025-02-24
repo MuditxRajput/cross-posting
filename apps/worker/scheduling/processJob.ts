@@ -307,9 +307,15 @@ const getToken = async (existedUser: any, platforms: { name: string; account: st
   }
 };
 
-const step1 = async (accountsId: any, token: any, images: string[]) => {
+const step1 = async (accountsId:any, token:any, images:any, mediaType:any) => {
   const assets = [];
-  console.log("inside step1", accountsId, token, images);
+  console.log("Inside step1", accountsId, token, images);
+
+  // Validate mediaType
+  const validMediaTypes = ['IMAGE', 'VIDEO', 'CAROUSEL'];
+  if (!validMediaTypes.includes(mediaType.toUpperCase())) {
+    throw new Error(`Invalid mediaType: ${mediaType}. Must be one of ${validMediaTypes.join(', ')}`);
+  }
 
   for (const image of images) {
     const response = await fetch(`https://api.linkedin.com/v2/assets?action=registerUpload`, {
@@ -321,51 +327,62 @@ const step1 = async (accountsId: any, token: any, images: string[]) => {
       body: JSON.stringify({
         registerUploadRequest: {
           owner: `urn:li:person:${accountsId}`,
-          recipes: ['urn:li:digitalmediaRecipe:feedshare-image'],
+          recipes: [`urn:li:digitalmediaRecipe:feedshare-${mediaType}`],
           serviceRelationships: [
             {
               relationshipType: 'OWNER',
               identifier: 'urn:li:userGeneratedContent',
             },
           ],
-          // Include the image URL in the request
-          mediaUrl: image, // Add this line
         },
       }),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`Failed to register upload: ${errorData.message || response.statusText}`);
+    }
 
     const data = await response.json();
     console.log("Registered asset for image:", image, data);
 
     if (data.value && data.value.asset) {
-      assets.push(data.value.asset); // Collect the asset for each image
+      assets.push(data.value.asset);
     } else {
       console.error("Failed to register asset for image:", image, data);
     }
   }
 
-  return assets; // Return an array of assets
+  return assets;
 };
-const step2 = async (assets: any[], token: any, formData: any, accountsId: any, images: string[]) => {
-  // Upload each image
+
+const step2 = async (assets:any, token:any, formData:any, accountsId:any, images:any, mediaType:any) => {
   for (let i = 0; i < assets.length; i++) {
     const asset = assets[i];
-    const imageUrl = images[i]; // Get the corresponding image URL
+    const imageUrl = images[i];
 
     const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
-    const imageResponse = await fetch(imageUrl); // Fetch the image from the URL
+    const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {
       throw new Error(`Failed to fetch image: ${imageResponse.statusText}`);
     }
+
     const imageArrayBuffer = await imageResponse.arrayBuffer();
+    const fileType = imageUrl.split('.').pop().toLowerCase();
+    const contentType = fileType === 'mp4' ? 'video/mp4' : `image/${fileType}`;
+
+    const uploadHeaders: { [key: string]: string } = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': contentType,
+    };
+
+    if (mediaType.toUpperCase() === 'VIDEO') {
+      uploadHeaders['media-type-family'] = 'VIDEO';
+    }
 
     const uploadResponse = await fetch(url, {
       method: 'PUT',
-      headers: {
-        'media-type-family': 'STILLIMAGE',
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'image/png', // Adjust based on the image type
-      },
+      headers: uploadHeaders,
       body: imageArrayBuffer,
     });
 
@@ -376,7 +393,6 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any, 
     console.log("Uploaded image:", imageUrl);
   }
 
-  // Post the carousel
   try {
     const post = await fetch(`https://api.linkedin.com/v2/ugcPosts`, {
       method: 'POST',
@@ -392,14 +408,14 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any, 
             shareCommentary: {
               text: formData.description,
             },
-            shareMediaCategory: 'CAROUSEL', // Use CAROUSEL for multiple images
-            media: assets.map((asset, index) => ({
+            shareMediaCategory: images.length > 1 ? 'CAROUSEL' : `${mediaType}`.toUpperCase(),
+            media: assets.map((asset: any, index: number) => ({
               status: 'READY',
               description: {
                 text: formData.description,
               },
-              media: `urn:li:digitalmediaAsset:${asset.asset}`, // Use the asset ID
-              originalUrl: images[index], // Include the original image URL
+              media: `urn:li:digitalmediaAsset:${asset.asset}`,
+              originalUrl: images[index],
             })),
           },
         },
@@ -410,7 +426,7 @@ const step2 = async (assets: any[], token: any, formData: any, accountsId: any, 
     });
 
     const postData = await post.json();
-    console.log('This is the post data', postData);
+    console.log('Post data:', postData);
 
     if (postData) {
       return { success: true };
@@ -604,8 +620,8 @@ export const processJob = async (job: any) => {
           console.log("mediaType", job.data.mediaType);
           if (job.data.mediaType === 'image') {
             console.log("Inside LinkedIn image upload");
-            const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image);
-            const step2Res = await step2(step1Res, data?.token, job.data.formData, data?.accountsId, job.data.formData.image);
+            const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image,job.data.mediaType);
+            const step2Res = await step2(step1Res, data?.token, job.data.formData, data?.accountsId, job.data.formData.image,job.data.mediaType);
             
             if (step2Res?.success) {
               console.log("Image post successful!");
