@@ -13,7 +13,6 @@ const SocialConnection = () => {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  // Fetch account details from Redux
   const youtube = useSelector((state: RootState) => state.social.youtube);
   const instagram = useSelector((state: RootState) => state.social.instagram);
   const linkedln = useSelector((state: RootState) => state.social.linkedIn);
@@ -24,7 +23,7 @@ const SocialConnection = () => {
     { name: "Facebook", icon: <FaFacebook />, color: "bg-gradient-to-r from-blue-600 to-blue-400", account: facebook },
     { name: "YouTube", icon: <IoLogoYoutube />, color: "bg-gradient-to-r from-red-600 to-red-400", account: youtube },
     { name: "LinkedIn", icon: <ImLinkedin />, color: "bg-gradient-to-r from-blue-800 to-blue-600", account: linkedln },
-    { name: "Pinterest", icon: <FaPinterest />, color: "bg-gradient-to-r from-red-700 to-red-500", account: null }, // Provide an empty array for Pinterest
+    { name: "Pinterest", icon: <FaPinterest />, color: "bg-gradient-to-r from-red-700 to-red-500", account: null },
   ];
 
   const apiHandler = async (name: string) => {
@@ -34,16 +33,12 @@ const SocialConnection = () => {
     } else if (name === "LinkedIn") {
       window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID}&redirect_uri=https://cross-posting-web.vercel.app/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
     } else {
-      console.log("Connecting to", name);
       try {
         const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         });
         const data = await res.json();
-        console.log("Data:", data);
         if (data.authUrl) {
           window.open(data.authUrl);
         } else {
@@ -63,28 +58,33 @@ const SocialConnection = () => {
   };
 
   return (
-    <div className="p-4 md:p-8 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl border border-gray-100 h-full">
-      <p className="text-xl md:text-2xl font-bold text-gray-800 mb-6 md:mb-8 text-center">Connect Your Social Handles</p>
-      <div className="flex flex-col gap-4 md:gap-6">
+    <div className="p-4 sm:p-6 md:p-8 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-lg border border-gray-100 w-full max-w-3xl mx-auto">
+      <p className="text-lg sm:text-xl md:text-2xl font-bold text-gray-800 mb-4 sm:mb-6 text-center">
+        Connect Your Social Handles
+      </p>
+      <div className="flex flex-col gap-4">
         {connectionDetails.map((val, index) => (
-          <div key={index} className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+          <div key={index} className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
             <div
-              className="flex cursor-pointer items-center w-full md:w-[250px] gap-4 bg-white rounded-xl p-3 md:p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              className="flex items-center justify-between w-full sm:w-[280px] p-3 sm:p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
               onClick={() => apiHandler(val.name)}
             >
-              <div className={`text-white rounded-xl p-2 md:p-3 ${val.color}`}>{val.icon}</div>
-              <Button children={val.name} className="text-gray-800 font-semibold text-base md:text-lg" appName={val.name} />
-              <span className="ml-auto text-gray-400 text-xl md:text-2xl hover:text-black font-bold">+</span>
+              <div className={`text-white rounded-lg p-2 sm:p-3 ${val.color}`}>
+                {val.icon}
+              </div>
+              <Button children={val.name} className="text-gray-800 font-semibold text-sm sm:text-base" appName={val.name} />
+              <span className="text-gray-500 text-xl sm:text-2xl hover:text-black font-bold">+</span>
             </div>
-            <span className="text-gray-600 text-sm md:text-base">
+
+            <div className="flex flex-wrap gap-2 text-gray-600 text-xs sm:text-sm">
               {val.account && val.account.length > 0 ? (
                 val.account
                   .filter((val) => val !== null)
                   .map((social, idx) => (
-                    <div key={idx} className="bg-gray-200 text-black rounded-full px-2 md:px-3 py-1 inline-flex items-center gap-2">
+                    <div key={idx} className="bg-gray-200 text-black rounded-full px-2 py-1 flex items-center gap-2">
                       {social}
                       <span
-                        className="text-black hover:text-red-500 cursor-pointer text-base md:text-lg"
+                        className="text-black hover:text-red-500 cursor-pointer text-base sm:text-lg"
                         onClick={() => removeAccount(social, val.name)}
                       >
                         ×
@@ -96,7 +96,7 @@ const SocialConnection = () => {
               ) : (
                 <span className="text-gray-500">Not Connected</span>
               )}
-            </span>
+            </div>
           </div>
         ))}
       </div>

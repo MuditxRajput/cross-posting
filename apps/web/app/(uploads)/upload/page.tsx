@@ -69,7 +69,7 @@ const UploadPage = () => {
 
       {/* Upload Section */}
       <div className="w-full sm:w-3/4 flex flex-col gap-5">
-        {totalAccount <= 1 && (
+        {totalAccount> 1 ? null : (
           <div className="flex flex-col sm:flex-row bg-green-400 justify-between px-4 py-3 sm:py-4 rounded-lg gap-3 sm:gap-5 items-center text-center sm:text-left">
             <p className="text-gray-900 font-semibold text-base sm:text-lg">
               Connect your social media accounts to start posting
