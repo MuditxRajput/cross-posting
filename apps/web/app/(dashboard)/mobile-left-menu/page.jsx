@@ -1,3 +1,4 @@
+"use client"
 import { setLeftPanel } from "@/store/slices/social-account";
 import { useDispatch, useSelector } from "react-redux";
 
