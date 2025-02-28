@@ -21,7 +21,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-, "app/facebooksdk-tsx", "app/services/cloundinary.js", "app/components/paymentCard/page.tsx"  ],
+, "app/facebooksdk-tsx", "app/services/cloundinary.js", "app/components/paymentCard/page.tsx",
+"app/(dashboard)/mobile-left-menu/page.jsx"  ],
   "exclude": ["node_modules"],
   "references": [
     { "path": "../../packages/database" }

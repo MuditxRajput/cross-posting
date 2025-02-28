@@ -1,12 +1,13 @@
 "use client"
 import { useSession } from 'next-auth/react';
 import Signup from './(authPages)/signUp/page';
-import Dashboard from './(dashboard)/dashboard/page';
+
+import UploadPage from './(uploads)/upload/page';
 const page = () => {
   const session = useSession();
   if(session.status==="authenticated")
   {
-    return <Dashboard/>
+     return <UploadPage/>
   }
   else if(session.status==="unauthenticated")
   {

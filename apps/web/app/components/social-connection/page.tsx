@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { removeFacebook, removeInstagram, removeLinkedIn, removeYoutube } from "@/store/slices/social-account";
 import { RootState } from "@/store/store";
 import { Button } from "@repo/ui/button";
@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 const SocialConnection = () => {
   const router = useRouter();
   const dispatch = useDispatch();
-  
+
   // Fetch account details from Redux
   const youtube = useSelector((state: RootState) => state.social.youtube);
   const instagram = useSelector((state: RootState) => state.social.instagram);
@@ -36,14 +36,12 @@ const SocialConnection = () => {
     } else {
       console.log("Connecting to", name);
       try {
-        const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`
-      , {
+        const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-        }
-      );
+        });
         const data = await res.json();
         console.log("Data:", data);
         if (data.authUrl) {
@@ -55,7 +53,6 @@ const SocialConnection = () => {
         console.error("Error initiating social connection:", error);
       }
     }
-    
   };
 
   const removeAccount = (social: string, name: string) => {
@@ -66,28 +63,28 @@ const SocialConnection = () => {
   };
 
   return (
-    <div className="p-8 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl border border-gray-100">
-      <p className="text-2xl font-bold text-gray-800 mb-8 text-center">Connect Your Social Handles</p>
-      <div className="flex flex-col gap-6">
+    <div className="p-4 md:p-8 bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-2xl border border-gray-100 h-full">
+      <p className="text-xl md:text-2xl font-bold text-gray-800 mb-6 md:mb-8 text-center">Connect Your Social Handles</p>
+      <div className="flex flex-col gap-4 md:gap-6">
         {connectionDetails.map((val, index) => (
-          <div key={index} className="flex items-center gap-6">
+          <div key={index} className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
             <div
-              className="flex cursor-pointer items-center w-[250px] gap-4 bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300"
+              className="flex cursor-pointer items-center w-full md:w-[250px] gap-4 bg-white rounded-xl p-3 md:p-4 shadow-md hover:shadow-lg transition-all duration-300"
               onClick={() => apiHandler(val.name)}
             >
-              <div className={`text-white rounded-xl p-3 ${val.color}`}>{val.icon}</div>
-              <Button children={val.name} className="text-gray-800 font-semibold text-lg" appName={val.name} />
-              <span className="ml-auto text-gray-400 text-2xl hover:text-black font-bold">+</span>
+              <div className={`text-white rounded-xl p-2 md:p-3 ${val.color}`}>{val.icon}</div>
+              <Button children={val.name} className="text-gray-800 font-semibold text-base md:text-lg" appName={val.name} />
+              <span className="ml-auto text-gray-400 text-xl md:text-2xl hover:text-black font-bold">+</span>
             </div>
-            <span className="text-gray-600">
+            <span className="text-gray-600 text-sm md:text-base">
               {val.account && val.account.length > 0 ? (
                 val.account
                   .filter((val) => val !== null)
                   .map((social, idx) => (
-                    <div key={idx} className="bg-gray-200 text-black rounded-full px-3 py-1 inline-flex items-center gap-2">
+                    <div key={idx} className="bg-gray-200 text-black rounded-full px-2 md:px-3 py-1 inline-flex items-center gap-2">
                       {social}
                       <span
-                        className="text-black hover:text-red-500 cursor-pointer text-lg"
+                        className="text-black hover:text-red-500 cursor-pointer text-base md:text-lg"
                         onClick={() => removeAccount(social, val.name)}
                       >
                         ×

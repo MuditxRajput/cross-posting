@@ -1,9 +1,11 @@
 import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
+import { getServerSession } from "next-auth";
 import localFont from "next/font/local";
 import FacebookSDK from "./facebooksdk";
 import "./globals.css";
 import { Providers } from "./provider";
+import { authOptions } from "./services/lib/auth";
 import Header from "./ui/header/page";
 // import { Toaster } from "@/components/ui/toaster"
 const geistSans = localFont({
@@ -25,18 +27,17 @@ export default    function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
+const session = getServerSession(authOptions);
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-          <Providers>
-          <Header/>
-          <FacebookSDK/>
-          {children}
-          <Toaster />
-          </Providers>
-          <Toaster />
-
+          <Providers  >
+            <Header/>
+              <FacebookSDK/>
+                {children}
+                <Toaster />
+                <Toaster />
+                </Providers>
       </body>
     </html>
   );

@@ -1,8 +1,8 @@
 // lib/authOptions.ts
+import { dbConnection } from "@database/database";
 import { User } from "@database/models/user.model";
-import GoogleProvider from "next-auth/providers/google";
-import { dbConnection } from "../../../../packages/database";
 import { NextAuthOptions } from "next-auth";
+import GoogleProvider from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
@@ -53,7 +53,7 @@ export const authOptions: NextAuthOptions = {
       if (url.includes('/auth/signin')) {
         return `${baseUrl}/login`;
       } else {
-        return `${baseUrl}/dashboard`;
+        return `${baseUrl}/upload`;
       }
     },
   },

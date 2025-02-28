@@ -624,43 +624,6 @@ export const processJob = async (job: any) => {
             } else {
               console.error('Failed to upload image.');
             }
-          // } 
-          // else if (job.data.mediaType === 'video') {
-          //   console.log("Inside LinkedIn video upload");
-          
-          //   // Step 1: Register Video Upload
-          //   const videoData = await registerVideoUpload(data?.accountsId, data?.token, job.data.formData.image);
-          //   if (!videoData) {
-          //     console.error("Failed to register video upload.");
-          //     return;
-          //   }
-          
-          //   // Step 2: Upload Video
-          //   const chunks = await splitVideoFile(await (await fetch(job.data.formData.image)).blob());
-          //   const uploadSuccess = await uploadVideo(videoData.uploadUrl, data?.token, job.data.formData.image);
-          //   if (!uploadSuccess) {
-          //     console.error("Failed to upload video.");
-          //     return;
-          //   }
-          
-          //   // Step 3: Finalize Video Upload
-          //   const finalizeResponse = await finalizeVideoUpload(data?.token, videoData.asset, chunks);
-          //   if (!finalizeResponse) {
-          //     console.error("Failed to finalize video upload.");
-          //     return;
-          //   }
-          
-          //   console.log("Video upload and finalization successful!");
-          
-          //   // Step 4: Publish Video Post (Optional)
-          //   const videoPostResponse = await publishVideoPost(data?.accountsId, data?.token, videoData.asset, job.data.formData);
-          
-          //   if (videoPostResponse) {
-          //     console.log("Video post successful!");
-          //   } else {
-          //     console.error("Failed to publish video post.");
-          //   }
-          // }
         }
         
           console.log(`Completed job ${job.id} successfully`);
