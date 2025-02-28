@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,7 +111,7 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
             title: 'Success',
             description: 'Post scheduled successfully!',
           });
-          window.location.href ='./';
+          window.location.href = './';
         } else {
           if (res.error) {
             toast({
@@ -134,25 +134,22 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
 
   const saveToCloudinary = async (image: any, aspectRatio: string, updatedFormData: FormData) => {
     try {
-     const cycleCheckingResponse =  await fetch('https://cross-posting-web.vercel.app/api/reduceCycle', {
+      const cycleCheckingResponse = await fetch('https://cross-posting-web.vercel.app/api/reduceCycle', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       const cycleCheckingData = await cycleCheckingResponse.json();
-      if(!cycleCheckingData.success)
-      {
+      if (!cycleCheckingData.success) {
         toast({
           title: 'Out of free tokens',
         });
         // redirect to payments card page..
         window.location.href = './';
-        
       }
     } catch (error) {
       console.log('Error', error);
-      
     }
     try {
       const fileType = image[0]?.src?.startsWith('data:image') ? 'image' : 'video';
@@ -177,17 +174,16 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
         });
 
         const val1 = await resp.json();
-        if (val1.success)
-          {
-             setLoading(false);
-             // api for reduce the cycle ..
-             await fetch('https://cross-posting-web.vercel.app/api/reduceCycle', {
-               method: 'POST',
-               headers: {
-                 'Content-Type': 'application/json',
-               }, 
-             });
-          }
+        if (val1.success) {
+          setLoading(false);
+          // api for reduce the cycle ..
+          await fetch('https://cross-posting-web.vercel.app/api/reduceCycle', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+        }
 
         return val1;
       } else {
@@ -263,11 +259,9 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
             </p>
             <p>
               <strong>Scheduled Time:</strong>{' '}
-              {
-                formData.dateTime
-                  ? format(new Date(formData.dateTime), 'dd-MM-yyyy HH:mm') // Use `new Date` to parse the date
-                  : 'Not Set'
-              }
+              {formData.dateTime
+                ? format(new Date(formData.dateTime), 'dd-MM-yyyy HH:mm') // Use `new Date` to parse the date
+                : 'Not Set'}
             </p>
           </div>
         );
@@ -277,28 +271,33 @@ const StepForm = ({ image, aspectRatio }: StepFormProps) => {
   };
 
   return (
-    <div className="w-full mx-auto p-10 bg-white rounded-lg shadow-md">
+    <div className="w-full mx-auto p-4 md:p-10 bg-white rounded-lg shadow-md">
       <ProgressBar steps={steps} currentStep={currentStep} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold mb-5 mt-16">{steps[currentStep - 1]?.title}</h2>
+          <h2 className="text-lg md:text-xl font-semibold mb-3 md:mb-5 mt-8 md:mt-16">
+            {steps[currentStep - 1]?.title}
+          </h2>
           {renderStepContent()}
         </div>
-        <div className="flex justify-between">
+        <div className="flex flex-col md:flex-row justify-between gap-4">
           <Button
             type="button"
             onClick={() => setCurrentStep(currentStep - 1)}
             disabled={currentStep === 1}
             variant="outline"
+            className="w-full md:w-auto"
           >
             Previous
           </Button>
           {loading ? (
-            <Button>
+            <Button className="w-full md:w-auto">
               <ThreeDot />
             </Button>
           ) : (
-            <Button type="submit">{currentStep === steps.length ? 'Submit' : 'Next'}</Button>
+            <Button type="submit" className="w-full md:w-auto">
+              {currentStep === steps.length ? 'Submit' : 'Next'}
+            </Button>
           )}
         </div>
       </form>

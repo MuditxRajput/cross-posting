@@ -1,4 +1,4 @@
-import { authOptions } from "@/app/lib/auth";
+import { authOptions } from "@/app/services/lib/auth";
 import { User } from "@database/models/user.model";
 import { getServerSession } from "next-auth";
 export async function POST(res:any)
