@@ -15,7 +15,9 @@ const UploadPage = () => {
         method: "GET"
       });
       const data = await res.json(); 
-      totalAccount = data.connectedaccount.length;
+      console.log("data", data.connectedPlatform);
+      totalAccount = data.connectedPlatform.length;
+      console.log("total account", totalAccount);
       if (data.success && data.connectedaccount.length > 1) {
         data.connectedaccount.slice(1).forEach((acc: any) => {
           switch (acc.socialName) {
@@ -66,7 +68,6 @@ const UploadPage = () => {
       <div className="hidden sm:block ">
         <LeftPanel />
       </div>
-
       {/* Upload Section */}
       <div className="w-full sm:w-3/4 flex flex-col gap-5">
         {totalAccount> 1 ? null : (
