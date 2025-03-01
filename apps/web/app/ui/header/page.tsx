@@ -18,12 +18,12 @@ const Header = () => {
       <div className="container  flex justify-between items-center px-2 ">
         {/* Logo */}
         <div className=" font-bold text-gray-800 ">
-          <Image src="/logo.png" alt="Logo" width={100} height={80} className=" w-24 h-10" />
+          <Image src="/logo.png" alt="Logo" width={100} height={80} className=" w-24 h-10 cursor-pointer" onClick={()=>window.location.href="./"} />
         </div>
 
         {/* Navigation Links */}
         <div className=" gap-8 hidden sm:flex ">
-          <Link href="/" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
+          <Link href="./" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
              Home
           </Link>
           <Link href="/pricing" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
