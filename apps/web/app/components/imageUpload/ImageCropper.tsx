@@ -12,7 +12,7 @@ interface ImageCropperProps {
 const ImageCropper: React.FC<ImageCropperProps> = ({ src, onCropComplete, onCancel }) => {
   const [crop, setCrop] = useState<Crop>({ unit: '%', width: 30, height: 30, x: 0, y: 0 });
   const [imageRef, setImageRef] = useState<HTMLImageElement | null>(null);
-  const [scale, setScale] = useState<number>(1); // New state for scaling the image
+  const [scale, setScale] = useState<number>(1); // State for scaling the image
 
   const getCroppedImg = (image: HTMLImageElement, crop: Crop): Promise<string> => {
     const canvas = document.createElement('canvas');
@@ -20,24 +20,36 @@ const ImageCropper: React.FC<ImageCropperProps> = ({ src, onCropComplete, onCanc
     const scaleY = image.naturalHeight / image.height;
     const pixelRatio = window.devicePixelRatio;
 
-    canvas.width = crop.width * pixelRatio * scaleX;
-    canvas.height = crop.height * pixelRatio * scaleY;
+    // Set canvas dimensions to the desired size (e.g., 1080x1080 for Instagram)
+    const targetWidth = 1080;
+    const targetHeight = 1080;
+    canvas.width = targetWidth * pixelRatio;
+    canvas.height = targetHeight * pixelRatio;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) {
       return Promise.reject(new Error('Could not get canvas context'));
     }
 
+    // Fill canvas with white background
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Calculate scaled dimensions
+    const scaledWidth = crop.width * scaleX * scale;
+    const scaledHeight = crop.height * scaleY * scale;
+
+    // Draw the cropped image on the canvas
     ctx.drawImage(
       image,
       crop.x * scaleX,
       crop.y * scaleY,
       crop.width * scaleX,
       crop.height * scaleY,
-      0,
-      0,
-      crop.width * scaleX * pixelRatio,
-      crop.height * scaleY * pixelRatio
+      (canvas.width / 2 - (scaledWidth * pixelRatio) / 2), // Center horizontally
+      (canvas.height / 2 - (scaledHeight * pixelRatio) / 2), // Center vertically
+      scaledWidth * pixelRatio,
+      scaledHeight * pixelRatio
     );
 
     return new Promise((resolve) => {

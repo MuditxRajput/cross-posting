@@ -10,12 +10,14 @@ interface ImagePreviewProps {
 const ImagePreview: React.FC<ImagePreviewProps> = ({ images, single, onEdit }) => {
   return (
     <div className="relative group">
-      {/* Image */}
-      <img
-        src={images[0]}
-        alt="Preview"
-        className="w-full h-auto rounded-xl shadow-lg transition-transform transform group-hover:scale-105"
-      />
+      {/* Image Container */}
+      <div className="w-full h-96 overflow-hidden rounded-xl shadow-lg"> {/* Fixed height */}
+        <img
+          src={images[0]}
+          alt="Preview"
+          className="w-full h-full object-cover transition-transform transform group-hover:scale-105" /* Ensure image fits */
+        />
+      </div>
 
       {/* Edit Button */}
       <button
