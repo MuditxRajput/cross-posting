@@ -1,13 +1,13 @@
 "use client";
 import LeftPanel from "@/app/(dashboard)/leftpanel/page";
 import { reduceCycle, setInstagram, setLinkedIn, setYoutube } from "@/store/slices/social-account";
-import { useEffect } from "react";
+import { useEffect,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Upload from "../../components/imageUpload/Upload";
 
 const UploadPage = () => {
   const dispatch = useDispatch();
-  let totalAccount = 0;
+  const[totalAccount, setTotalAccount] = useState(0);
 
   useEffect(() => {
     const getaccounts = async () => {
@@ -16,8 +16,9 @@ const UploadPage = () => {
       });
       const data = await res.json(); 
       console.log("data", data.connectedPlatform);
-      totalAccount = data.connectedPlatform.length;
-      console.log("total account", totalAccount);
+      setTotalAccount(data.connectedPlatform.length);
+      // totalAccount = data.connectedPlatform.length;
+      // console.log("total account", totalAccount);
       if (data.success && data.connectedaccount.length > 1) {
         data.connectedaccount.slice(1).forEach((acc: any) => {
           switch (acc.socialName) {
