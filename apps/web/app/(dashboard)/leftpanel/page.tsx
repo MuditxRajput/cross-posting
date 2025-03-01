@@ -63,7 +63,7 @@ const LeftPanel = () => {
 
         {/* Configuration Section */}
         <p className="text-lg font-semibold text-gray-700 mb-4">Configuration</p>
-        <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 w-full">
+        <button onClick={()=>window.location.href ="../dashboard"} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-white text-gray-700 hover:bg-gray-50 transition-all duration-200 w-full">
           <MdSettings className="text-xl" />
           Connect Social Media
         </button>
