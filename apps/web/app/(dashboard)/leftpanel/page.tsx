@@ -84,7 +84,7 @@ const LeftPanel = () => {
         <hr className="my-6 border-gray-200" />
 
         {/* Plan Section */}
-        <p className="text-lg font-semibold text-gray-700 mb-4">Plan</p>
+        <p className="text-lg font-semibold text-gray-700 mb-4" >Plan</p>
         <button className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-green-400 to-blue-400 text-white hover:shadow-lg transition-all duration-200 w-full">
           <MdTrendingUp className="text-xl" />
           Get Plan
