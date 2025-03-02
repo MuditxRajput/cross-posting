@@ -40,6 +40,7 @@ const Signup = () => {
                 if(val.success)
                 {
                   toast({ description: "User is registered",})
+                  window.location.href = './login';
                 }
                 else{
                   toast(val.msg);
