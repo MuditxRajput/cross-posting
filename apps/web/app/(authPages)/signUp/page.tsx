@@ -25,7 +25,7 @@ const Signup = () => {
         e.preventDefault();
         const submitData=async()=>{
             try {
-                const response = await fetch(`http://localhost:3000/api/signup`,
+                const response = await fetch(`https://cross-posting-web.vercel.app/api/signup`,
                   {
                     method:"POST",
                     headers:{
