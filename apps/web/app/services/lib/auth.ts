@@ -1,7 +1,9 @@
 // lib/authOptions.ts
 import { dbConnection } from "@database/database";
 import { User } from "@database/models/user.model";
+import bcrypt from "bcryptjs";
 import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 export const authOptions: NextAuthOptions = {
@@ -11,6 +13,39 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID || "",
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
     }),
+    CredentialsProvider({
+      name : "Credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      authorize: async (credentials, req) => {
+        if (!credentials) {
+          return null;
+        }
+        await dbConnection();
+      console.log(credentials);
+        const user = await User.findOne({ email: credentials.email }).lean();
+        console.log(user);
+        if(!user)
+        {
+          throw new Error("No user found");
+        }
+        const isValid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        )
+        if (!isValid) {
+          throw new Error("Invalid password");
+        }
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+        } ;
+      
+      },
+    })
   ],
   callbacks: {
     async signIn({ user, account }) {
