@@ -352,8 +352,7 @@ const step1 = async (accountsId:any, token:any, mediaUrl:any, mediaType:any) => 
 
 const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUrl:any, mediaType:any) => {
   const url = asset.uploadMechanism['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest'].uploadUrl;
-  console.log("Upload URL:", url);
-  console.log("Assest",asset);
+
   // Fetch the media file
   const mediaResponse = await fetch(mediaUrl);
   if (!mediaResponse.ok) {
@@ -381,8 +380,7 @@ const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUr
     throw new Error(`Failed to upload media: ${uploadResponse.statusText}`);
   }
 
-  console.log("Uploaded media:", mediaUrl);
-  console.log("assest->>>",asset.asset);
+
   // Wait for the asset to be processed
   // await new Promise(resolve => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
@@ -433,7 +431,7 @@ const step2 = async (asset:any, token:any, formData:any, accountsId:any, mediaUr
   }
 };
 const registerVideoUpload = async (accountsId: any, token: any, videoUrl: string) => {
-  console.log("Inside registerVideoUpload", accountsId, token, videoUrl);
+
 
   // Fetch the video file to get its size
   const videoResponse = await fetch(videoUrl);
@@ -461,7 +459,8 @@ const registerVideoUpload = async (accountsId: any, token: any, videoUrl: string
   });
 
   const data = await response.json();
-  console.log("Registered video upload:", data);
+
+  
 
   if (data.value && data.value.uploadInstructions) {
     return {
@@ -488,9 +487,8 @@ const splitVideoFile = async (videoBlob: Blob) => {
   return chunks;
 };
 const uploadVideo = async (uploadUrl: string, token: string, videoUrl: string) => {
-  console.log("Uploading video to LinkedIn...");
-  console.log("uploadUrl", uploadUrl);
-  console.log("videoUrl", videoUrl);
+
+  
 
   // Fetch the video file
   const videoResponse = await fetch(videoUrl);
@@ -520,7 +518,8 @@ const uploadVideo = async (uploadUrl: string, token: string, videoUrl: string) =
       throw new Error(`Failed to upload video chunk ${i + 1}: ${uploadResponse.statusText}`);
     }
 
-    console.log(`Uploaded chunk ${i + 1} of ${chunks.length}`);
+    
+    
   }
 
   console.log("Video uploaded successfully.");
@@ -547,7 +546,8 @@ const finalizeVideoUpload = async (token: string, asset: string, chunks: Blob[])
   });
 
   const data = await response.json();
-  console.log("Finalized video upload:", data);
+
+  
 
   return data;
 };
@@ -601,9 +601,9 @@ export const processJob = async (job: any) => {
     if (!user) throw new Error(`User ${job.data.email} not found`);
     for (const platform of job.data.formData.platforms) {
       // console.log(`Processing ${platform.name.toLowerCase()} platform ->>>`);
-      console.log("mediaType", job.data.mediaType);
+      
       if (platform.name.toLowerCase() === 'instagram') {
-        console.log("inside instagram");
+      
           const igData = await getIgId(job.data.email, job.data.formData.platforms);
           if (igData.igId && igData.token) {
             await postInstagram(igData.igId, igData.token, job.data.formData, job.data.mediaType);
@@ -613,9 +613,9 @@ export const processJob = async (job: any) => {
         }
         if (platform.name.toLowerCase() === 'linkedin') {
           const data = await getToken(user, job.data.formData.platforms);
-          console.log("mediaType", job.data.mediaType);
+          
           // if (job.data.mediaType === 'image') {
-            console.log("Inside LinkedIn image upload");
+          
             const step1Res = await step1(data?.accountsId, data?.token, job.data.formData.image,job.data.mediaType);
             const step2Res = await step2(step1Res, data?.token, job.data.formData, data?.accountsId, job.data.formData.image,job.data.mediaType);
             
