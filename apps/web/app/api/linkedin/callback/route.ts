@@ -9,8 +9,7 @@ export async function GET(request: NextRequest) {
     const session = await getServerSession(authOptions);
     const { searchParams } = new URL(request.url); // Use the request.url to create a new URL object
 
-    console.log("Request URL:", request.url); // Debugging: Log the request URL
-    console.log("Search Params:", searchParams.toString()); // Debugging: Log the search params
+
 
     const code = searchParams.get("code");
 

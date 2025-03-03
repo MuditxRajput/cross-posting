@@ -16,12 +16,12 @@ const PostMessageListner = () => {
             const { type, platform, accountName } = event.data || {};
 
             if (type === "YOUTUBE_AUTH_SUCCESS") {
-                console.log("Dispatching YouTube account name:", accountName);
+              
                 dispatch(setYoutube(accountName));
                 router.push('/dashboard');
             }
              else if (type === "LINKEDIN_AUTH_SUCCESS") {
-                console.log("Dispatching LinkedIn account name:", accountName);
+            
                 dispatch(setLinkedIn(accountName));
                 router.push('/dashboard');
             }
