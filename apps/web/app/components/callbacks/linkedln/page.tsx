@@ -19,7 +19,6 @@ let code = url.get('code');
         body: JSON.stringify({code}),
       })
       const val = await res.json();
-      console.log("this is the val",val);
       
     } catch (error) {
       console.log("error",error);

@@ -9,11 +9,9 @@ const oauth2Client = new OAuth2Client(
 );
 
 export async function POST() {
-  console.log("YouTube OAuth callback initiated");
 
-  // Log environment variables for debugging
-  console.log("Client ID:", process.env.YOUTUBE_CLIENT_ID);
-  console.log("Client Secret:", process.env.YOUTUBE_CLIENT_SECRET);
+
+
   //  return NextResponse.json({message: "Hello", status: 200, id : process.env.YOUTUBE_CLIENT_ID , secret : process.env.YOUTUBE_CLIENT_SECRET});
    
   try {
@@ -29,7 +27,7 @@ export async function POST() {
       prompt: "consent"
     });
 
-    console.log("Generated Auth URL:", authUrl);
+  
     return NextResponse.json({ authUrl });
   } catch (error) {
     console.error("Error generating auth URL:", error);

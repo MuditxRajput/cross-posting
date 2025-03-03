@@ -9,7 +9,6 @@ const Header = () => {
   const dispatch = useDispatch();
   const { data: session, status } = useSession();
   const leftPanelIsOpen = useSelector((state: { social: { leftpanel: boolean } }) => state.social.leftpanel);
-  console.log(leftPanelIsOpen);
   return (
     <div className="bg-white shadow-sm top-0 left-0 right-0 z-50 flex justify-center items-center">
       <div className="flex justify-center items-center sm:hidden px-1 ">

@@ -1,12 +1,13 @@
 "use client";
 import LeftPanel from "@/app/(dashboard)/leftpanel/page";
 import { reduceCycle, setInstagram, setLinkedIn, setYoutube } from "@/store/slices/social-account";
-import { useEffect,useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Upload from "../../components/imageUpload/Upload";
-
 const UploadPage = () => {
   const dispatch = useDispatch();
+  const router = useRouter();
   const[totalAccount, setTotalAccount] = useState(0);
 
   useEffect(() => {
@@ -15,7 +16,6 @@ const UploadPage = () => {
         method: "GET"
       });
       const data = await res.json(); 
-      console.log("data", data.connectedPlatform);
       setTotalAccount(data.connectedPlatform.length);
       // totalAccount = data.connectedPlatform.length;
       // console.log("total account", totalAccount);
@@ -82,6 +82,9 @@ const UploadPage = () => {
           </div>
         )}
         <Upload />
+        <div className="flex justify-end  ">
+          <button className ="bg-green-400 px-1 py-2 rounded-md text-black cursor-pointer font-semibold" onClick={()=>router.push('../dashboard')} >connect more account</button>
+        </div>
       </div>
     </div>
   );

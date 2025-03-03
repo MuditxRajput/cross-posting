@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
         const { email, password, name } = userData;
 
         const existedEmail = await User.findOne({ email: email });
-        console.log("Existed email:", existedEmail); // Log the found user
+
 
         if (existedEmail) {
             return NextResponse.json({ msg: "User already exists", success: false });

@@ -37,7 +37,7 @@ export async function POST(req: any) {
       
     // Normalize the aspect ratio
     const normalizedAspectRatio = normalizeAspectRatio(aspectRatio || defaultAspectRatio);
-    console.log("Normalized Aspect Ratio:", normalizedAspectRatio);
+
 
     // Transformations to handle aspect ratio and resizing
     const transformations = [
@@ -47,7 +47,7 @@ export async function POST(req: any) {
         gravity: "auto", // Center the cropping on important content
       },
     ];
-     console.log("Transformations:", transformations);
+
     // Upload function
     const uploadCloudinary = async (image: any) => {
       if (resourceType === "video") {
@@ -64,8 +64,7 @@ export async function POST(req: any) {
         });
       }
     };
-    console.log("Resource Type:", resourceType);
-    console.log(uploadCloudinary);
+
     
 
     // Handle multiple or single image uploads
@@ -80,12 +79,11 @@ export async function POST(req: any) {
       uploadedImages.push(uploadResult.url);
     }
 
-    console.log("Uploaded Images:", uploadedImages);
     return new Response(JSON.stringify({ status: 200, uploadedImages, success: true }), {
       status: 200,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+
     return new Response(JSON.stringify({ msg: error || "Upload failed" }), {
       status: 500,
     });

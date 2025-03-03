@@ -27,7 +27,6 @@ const SocialConnection = () => {
   ];
 
   const apiHandler = async (name: string) => {
-    console.log("Connecting to", name);
     if (name === "Instagram") {
       router.push(`https://www.facebook.com/v21.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_FB_CLIENT_ID}&display=page&redirect_uri=https://cross-posting-web.vercel.app/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`);
     } else if (name === "LinkedIn") {
