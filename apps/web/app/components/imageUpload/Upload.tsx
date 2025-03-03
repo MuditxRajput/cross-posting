@@ -17,7 +17,7 @@ export default function Upload() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [aspectRatio, setAspectRatio] = useState<string | null>(null); // State for aspect ratio
+  const [aspectRatio, setAspectRatio] = useState<string | null>(null); 
 
   // Validate video aspect ratio for Instagram Reels
   const validateVideoAspectRatio = (file: File): Promise<boolean> => {
@@ -84,8 +84,27 @@ export default function Upload() {
 
     // Calculate aspect ratio from crop dimensions
     if (crop.width && crop.height) {
-      const aspectRatioValue = crop.width / crop.height;
-      setAspectRatio(`${crop.width}:${crop.height}`); // Set aspect ratio dynamically
+      // Format as string like "1:1" or "4:5"
+      let ratioWidth = crop.width;
+      let ratioHeight = crop.height;
+      
+      // Try to reduce to common formats
+      const ratio = ratioWidth / ratioHeight;
+      if (Math.abs(ratio - 1) < 0.05) {
+        // Square 1:1
+        ratioWidth = 1;
+        ratioHeight = 1;
+      } else if (Math.abs(ratio - 4/5) < 0.05) {
+        // Portrait 4:5
+        ratioWidth = 4;
+        ratioHeight = 5;
+      } else if (Math.abs(ratio - 16/9) < 0.05) {
+        // Landscape 16:9
+        ratioWidth = 16;
+        ratioHeight = 9;
+      }
+      
+      setAspectRatio(`${ratioWidth}:${ratioHeight}`);
     }
   };
 
@@ -130,7 +149,7 @@ export default function Upload() {
       {editingIndex !== null && media[editingIndex]?.type === 'image' && (
         <ImageCropper
           src={media[editingIndex].src}
-          onCropComplete={(croppedImage, crop) => handleSaveEdit(croppedImage, editingIndex, crop)} // Pass crop data
+          onCropComplete={(croppedImage, crop) => handleSaveEdit(croppedImage, editingIndex, crop)}
           onCancel={handleCancelEdit}
         />
       )}
@@ -148,7 +167,7 @@ export default function Upload() {
                 />
               </div>
               <div className="w-full md:w-1/2">
-                <StepForm image={media} aspectRatio={aspectRatio || ''} /> {/* Pass aspect ratio */}
+                <StepForm image={media} aspectRatio={aspectRatio || ''} />
               </div>
             </>
           ) : (
@@ -159,7 +178,7 @@ export default function Upload() {
                 className="w-full md:w-60 max-w-md rounded shadow"
               />
               <div className="w-full md:w-1/2">
-                <StepForm image={media} aspectRatio={aspectRatio || ''} /> {/* Pass aspect ratio */}
+                <StepForm image={media} aspectRatio={aspectRatio || ''} />
               </div>
             </>
           )}
@@ -173,7 +192,7 @@ export default function Upload() {
             />
           </div>
           <div className="w-full md:w-1/2">
-            <StepForm image={media} aspectRatio={aspectRatio || ''} /> {/* Pass aspect ratio */}
+            <StepForm image={media} aspectRatio={aspectRatio || ''} />
           </div>
         </div>
       ) : null}
