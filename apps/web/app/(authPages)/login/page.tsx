@@ -3,7 +3,7 @@ import { useToast } from "@/hooks/use-toast";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FaGoogle } from "react-icons/fa";
-const page = () => {
+const Login = () => {
   const router = useRouter();
   const { toast } = useToast()
  const onSubmit =async(e:any)=>{
@@ -97,4 +97,4 @@ const page = () => {
      );
 }
 
-export default page
+export default Login

@@ -8,11 +8,10 @@ export async function POST(req: NextRequest) {
         await dbConnection();
         const userData = await req.json();
         const { email, password, name } = userData;
-
         const existedEmail = await User.findOne({ email: email });
-
-
+        // console.log("existed",existedEmail);
         if (existedEmail) {
+            console.log("yes inside");
             return NextResponse.json({ msg: "User already exists", success: false });
         }
 
@@ -30,6 +29,6 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
         console.error("Error during signup:", error); // Log error
-        return NextResponse.json({ msg: "Internal Server Error", success: false, error });
+        return NextResponse.json({ msg: "Check credentials", success: false, error });
     }
 }

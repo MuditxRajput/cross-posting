@@ -25,7 +25,8 @@ const Signup = () => {
         e.preventDefault();
         const submitData=async()=>{
             try {
-                const response = await fetch(`https://cross-posting-web.vercel.app/api/signup`,
+                // const response = await fetch(`https://cross-posting-web.vercel.app/api/signup`,
+                const response = await fetch(`http://localhost:3000/api/signup`,
                   {
                     method:"POST",
                     headers:{
@@ -43,7 +44,10 @@ const Signup = () => {
                   window.location.href = './login';
                 }
                 else{
-                  toast(val.msg);
+                  toast({
+                    description: val.msg,
+                  });
+                  console.log(val.msg);
                 }
 
 
