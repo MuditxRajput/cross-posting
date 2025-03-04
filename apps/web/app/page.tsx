@@ -1,7 +1,7 @@
 "use client"
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from 'next-auth/react';
-import Signup from './(authPages)/signUp/page';
+import Login from "./(authPages)/login/page";
 import UploadPage from './(uploads)/upload/page';
 const page = () => {
   const session = useSession();
@@ -11,7 +11,7 @@ const page = () => {
   }
   else if(session.status==="unauthenticated")
   {
-      return <Signup/>
+      return <Login/>
   }
   return (
     <>
