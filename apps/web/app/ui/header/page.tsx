@@ -25,9 +25,9 @@ const Header = () => {
           <Link href="./" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
              Home
           </Link>
-          <Link href="../payment-card" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
+          {/* <Link href="../payment-card" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
             Pricing
-          </Link>
+          </Link> */}
           {/* <Link href="/contact" className="text-gray-700 hover:text-blue-500 transition-colors duration-200">
             Contact Us
           </Link> */}
