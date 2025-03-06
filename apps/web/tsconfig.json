@@ -22,7 +22,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
 , "app/facebooksdk-tsx", "app/services/cloundinary.js", "app/components/paymentCard/page.tsx",
-"app/(dashboard)/mobile-left-menu/page.jsx"  ],
+"app/(dashboard)/mobile-left-menu/page.jsx", "app/api/order/route.js", "app/api/orders/[orderID]/capture/route.js"  ],
   "exclude": ["node_modules"],
   "references": [
     { "path": "../../packages/database" }
