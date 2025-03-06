@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@mui/material": "^6.4.0",
+    "@paypal/checkout-server-sdk": "^1.0.3",
+    "@paypal/paypal-server-sdk": "^0.6.1",
+    "@paypal/react-paypal-js": "^8.8.2",
     "@pqina/pintura": "^8.91.5",
     "@radix-ui/react-alert-dialog": "^1.1.4",
     "@radix-ui/react-checkbox": "^1.1.3",
