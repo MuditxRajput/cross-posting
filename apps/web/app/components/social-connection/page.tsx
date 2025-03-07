@@ -9,10 +9,9 @@ import { IoLogoYoutube } from "react-icons/io5";
 import { RiInstagramFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
 
-const SocialConnection = () => {
+const SocialConnection = ({warning,platform}:any) => {
   const router = useRouter();
   const dispatch = useDispatch();
-
   const youtube = useSelector((state: RootState) => state.social.youtube);
   const instagram = useSelector((state: RootState) => state.social.instagram);
   const linkedln = useSelector((state: RootState) => state.social.linkedIn);
@@ -25,30 +24,33 @@ const SocialConnection = () => {
     { name: "LinkedIn", icon: <ImLinkedin />, color: "bg-gradient-to-r from-blue-800 to-blue-600", account: linkedln },
     { name: "Pinterest", icon: <FaPinterest />, color: "bg-gradient-to-r from-red-700 to-red-500", account: null },
   ];
-
-  const apiHandler = async (name: string) => {
-    if (name === "Instagram") {
-      router.push(`https://www.facebook.com/v21.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_FB_CLIENT_ID}&display=page&redirect_uri=https://cross-posting-web.vercel.app/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`);
-    } else if (name === "LinkedIn") {
-      window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID}&redirect_uri=https://cross-posting-web.vercel.app/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
-    } else {
-      try {
-        const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-        });
-        const data = await res.json();
-        if (data.authUrl) {
-          window.open(data.authUrl);
-        } else {
-          console.error("No auth URL received");
-        }
-      } catch (error) {
-        console.error("Error initiating social connection:", error);
-      }
-    }
-  };
-
+   
+  // const apiHandler = async (name: string) => {
+  //   if (name === "Instagram") {
+  //     router.push(`https://www.facebook.com/v21.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_FB_CLIENT_ID}&display=page&redirect_uri=https://cross-posting-web.vercel.app/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`);
+  //   } else if (name === "LinkedIn") {
+  //     window.open(`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID}&redirect_uri=https://cross-posting-web.vercel.app/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`);
+  //   } else {
+  //     try {
+  //       const res = await fetch(`https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //       });
+  //       const data = await res.json();
+  //       if (data.authUrl) {
+  //         window.open(data.authUrl);
+  //       } else {
+  //         console.error("No auth URL received");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error initiating social connection:", error);
+  //     }
+  //   }
+  // };
+  const warningHandler=(name:String)=>{
+      platform(name);
+      warning(true);
+  }
   const removeAccount = (social: string, name: string) => {
     if (name === "Instagram") dispatch(removeInstagram(social));
     else if (name === "YouTube") dispatch(removeYoutube(social));
@@ -66,7 +68,9 @@ const SocialConnection = () => {
           <div key={index} className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 w-full">
             <div
               className="flex items-center justify-between w-full sm:w-[280px] p-3 sm:p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-              onClick={() => apiHandler(val.name)}
+              // onClick={() => apiHandler(val.name)}
+              // onClick={()=>warning(true)}
+              onClick={()=>warningHandler(val.name)}
             >
               <div className={`text-white rounded-lg p-2 sm:p-3 ${val.color}`}>
                 {val.icon}
