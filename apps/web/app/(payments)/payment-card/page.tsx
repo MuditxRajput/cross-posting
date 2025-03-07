@@ -27,7 +27,7 @@ const PaymentCards = () => {
             style={{ layout: "vertical", color: "gold", shape: "rect", label: "paypal" }}
             createOrder={async () => {
               try {
-                const response = await fetch("https://cross-posting-web.vercel.app/api/order", {
+                const response = await fetch("/api/order", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ amount: { currency_code: "USD", value: "10.00" } }), // ✅ Correctly using USD
@@ -50,7 +50,7 @@ const PaymentCards = () => {
               try {
                 console.log("Approving payment for Order ID:", data.orderID);
                 console.log("data=>>>",data);
-                const response = await fetch(`https://cross-posting-web.vercel.app/api/orders/${data.orderID}/capture`, {
+                const response = await fetch(`/api/orders/${data.orderID}/capture`, {
                   method: "POST", // Use POST instead of PUT
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ orderID: data.orderID }),
