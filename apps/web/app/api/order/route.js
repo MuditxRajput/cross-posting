@@ -9,8 +9,8 @@ import { NextResponse } from "next/server";
 // Initialize PayPal client
 const client = new Client({
     clientCredentialsAuthCredentials: {
-        oAuthClientId: process.env.PAYPAL_CLIENT_ID || "",
-        oAuthClientSecret: process.env.PAYPAL_CLIENT_SECRET || "",
+        oAuthClientId: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "",
+        oAuthClientSecret: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_SECRET || "",
     },
     timeout: 0,
     environment: Environment.Live,
@@ -58,6 +58,7 @@ const createOrder = async (amount) => {
 
 // Next.js API route
 export async function POST(req) {
+    console.log("inside the orders")
     try {
         const data = await req.json();
         const { amount } = data;
