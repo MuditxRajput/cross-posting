@@ -9,16 +9,15 @@ const UploadPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const[totalAccount, setTotalAccount] = useState(0);
-
+  const[isPremium , setIsPremium] = useState(false);
   useEffect(() => {
     const getaccounts = async () => {
       const res = await fetch(`https://cross-posting-web.vercel.app/api/getaccount`, {
         method: "GET"
       });
       const data = await res.json(); 
+      setIsPremium(data.premium);
       setTotalAccount(data.connectedPlatform.length);
-      // totalAccount = data.connectedPlatform.length;
-      // console.log("total account", totalAccount);
       if (data.success && data.connectedaccount.length > 1) {
         data.connectedaccount.slice(1).forEach((acc: any) => {
           switch (acc.socialName) {
@@ -37,16 +36,18 @@ const UploadPage = () => {
         });
         dispatch(reduceCycle(data.cycle));
       }
+      else{
+        window.location.href ="../../error";
+      }
     };
     getaccounts();
   }, []);
-
   const cycle = useSelector((state: { social: { cycle: any } }) => state.social.cycle);
 
   return (
     <div className="relative bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen flex flex-col sm:flex-row gap-6 p-4 sm:p-6">
       {/* Modal for Free Credit Over */}
-      {cycle <= 0 && (
+      {!isPremium && cycle <= 0 && isPremium !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4">
           <div className="bg-white p-6 sm:p-8 rounded-xl shadow-2xl text-center max-w-md w-full">
             <h2 className="text-xl sm:text-2xl font-bold mb-3 text-gray-800">Free Credit is Over ❗</h2>

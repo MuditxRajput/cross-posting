@@ -3,7 +3,7 @@ import { setLeftPanel } from "@/store/slices/social-account";
 import { useDispatch, useSelector } from "react-redux";
 
 const MobileMenu = () => {
-  const list = ["Home", "Connect account"];
+  const list = ["Home", "Connect account","Pricing"];
   const dispatch = useDispatch();
   const mobileMenuState = useSelector((state)=>state.social?.leftpanel);
   const handler=(e)=>{
@@ -12,9 +12,9 @@ const MobileMenu = () => {
       dispatch(setLeftPanel(!mobileMenuState));
       window.location.href="/"
     }
-    // else if( text==="Pricing"){
-    //   window.location.href="/pricing"
-    // }
+    else if( text==="Pricing"){
+      window.location.href="/payment-card"
+    }
     else if(text ==='Connect account')
     {
       dispatch(setLeftPanel(!mobileMenuState));

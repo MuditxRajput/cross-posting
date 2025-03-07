@@ -32,6 +32,9 @@ const Dashboard = () => {
         });
         dispatch(reduceCycle(data.cycle));
       }
+      else{
+        window.location.href ="../../error";
+      }
     };
     getaccounts();
   }, [dispatch]);
