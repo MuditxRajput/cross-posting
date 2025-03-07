@@ -36,9 +36,7 @@ const UploadPage = () => {
         });
         dispatch(reduceCycle(data.cycle));
       }
-      else{
-        window.location.href ="../../error";
-      }
+      
     };
     getaccounts();
   }, []);
