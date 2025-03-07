@@ -74,7 +74,30 @@ export async function GET(request: NextRequest) {
     );
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return new NextResponse(
+        `
+        <html>
+          <body>
+            <script>
+              if (window.opener) {
+                window.opener.postMessage(
+                  { 
+                    type: 'LINKEDIN_AUTH_ERROR',
+                    error: 'User not found. Please log in first.'
+                  }, 
+                  '*'
+                );
+                window.close();
+              } else {
+                window.location.href = '/login?error=User not found';
+              }
+            </script>
+            <p>User not found. Please log in first.</p>
+          </body>
+        </html>
+        `,
+        { headers: { "Content-Type": "text/html" } }
+      );
     }
 
     // Close popup with success message
