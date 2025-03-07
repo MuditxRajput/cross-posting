@@ -7,7 +7,8 @@ const PaymentCards = () => {
   const { toast } = useToast();
 
   // PayPal client ID (replace with your own)
-  const paypalClientId = process.env.PAYPAL_CLIENT_ID || "";
+  // const paypalClientId = "AcQOkCwvFdpyOBH072WZIXV4kAbxw7AqQpFW7wP-n-3jdShOadiuJ7S0P7UzxaGdLn_8mwUa5PWSXLAQ";
+  const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
 
   return (
     <div className="flex justify-center items-center p-6">
