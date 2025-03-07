@@ -7,6 +7,7 @@ const RightPanel = () => {
   const router = useRouter();
   const [warning, setWarning] = useState(false);
   const [platform, setPlatform] = useState(null);
+  console.log(platform)
   interface MessageDescription {
     title: string;
     description?: JSX.Element | string;
@@ -65,6 +66,16 @@ const RightPanel = () => {
         },
       ],
     },
+    YouTube: {
+      title:
+        "Connect to a Youtube account to upload and schedule Youtube shorts",
+      description: [
+        {
+          title:
+            "Google account must be associate with a Youtube channel",
+        },
+      ],
+    },
   };
 
   useEffect(() => {
@@ -77,6 +88,7 @@ const RightPanel = () => {
   }, [platform]);
 
   const apiHandler = async (name: string) => {
+    console.log("name",name);
     if (name === "Instagram") {
       router.push(
         `https://www.facebook.com/v21.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_FB_CLIENT_ID}&display=page&redirect_uri=https://cross-posting-web.vercel.app/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`
@@ -87,6 +99,7 @@ const RightPanel = () => {
       );
     } else {
       try {
+        console.log("inside api..")
         const res = await fetch(
           `https://cross-posting-web.vercel.app/api/${name.toLowerCase()}/connect`,
           {

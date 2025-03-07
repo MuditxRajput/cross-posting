@@ -29,7 +29,7 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <section className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-gray-800 text-center mb-4">Login</h1>
+        <h1 className="text-2xl font-bold text-gray-800 text-center mb-4">Sign up using Google</h1>
         <form className="space-y-4" onSubmit={onSubmit}>
           <input type="email" name="email" placeholder="Email" required className="input-style" />
           <input type="password" name="password" placeholder="Password" required className="input-style" />
