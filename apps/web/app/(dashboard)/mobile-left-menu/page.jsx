@@ -12,9 +12,9 @@ const MobileMenu = () => {
       dispatch(setLeftPanel(!mobileMenuState));
       window.location.href="/"
     }
-    // else if( text==="Pricing"){
-    //   window.location.href="/pricing"
-    // }
+    else if( text==="Pricing"){
+      window.location.href="/payment-card"
+    }
     else if(text ==='Connect account')
     {
       dispatch(setLeftPanel(!mobileMenuState));

@@ -15,7 +15,8 @@ interface UserDocument extends Document {
   password: string;
   connectedPlatform?: string[];
   socialAccounts?: SocialAccount[];
-  cycle :Number
+  cycle: Number;
+  premium?: Boolean;
 }
 
 const userSchema = new mongoose.Schema<UserDocument>(
@@ -48,6 +49,10 @@ const userSchema = new mongoose.Schema<UserDocument>(
         expiresIn: { type: Date },
       },
     ],
+    premium : {
+      type : Boolean,
+      default : false,
+    }
    
   },
   { timestamps: true }

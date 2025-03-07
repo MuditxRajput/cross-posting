@@ -1,3 +1,5 @@
+import { authOptions } from "@/app/services/lib/auth";
+import { User } from "@database/database";
 import {
   ApiError,
   Client,
@@ -5,6 +7,7 @@ import {
   LogLevel,
   OrdersController,
 } from "@paypal/paypal-server-sdk";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
 // Initialize PayPal client
@@ -73,7 +76,13 @@ export async function POST(req, { params }) {
     }
 
     const result = await captureOrder(orderID);
-    console.log("Capture result:", result);
+   const session = await getServerSession(authOptions);
+       const email = session?.user?.email;
+    await User.findOneAndUpdate(
+      {email},
+      {$set :{premium:true}},
+      {new : true}
+    );
     
     return NextResponse.json(
         { jsonResponse: result.jsonResponse, msg: "Order captured successfully" },
