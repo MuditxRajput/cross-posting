@@ -5,20 +5,28 @@ import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 
 const PaymentCards = () => {
   const { toast } = useToast();
-
-  // PayPal client ID (replace with your own)
-  // const paypalClientId = "AcQOkCwvFdpyOBH072WZIXV4kAbxw7AqQpFW7wP-n-3jdShOadiuJ7S0P7UzxaGdLn_8mwUa5PWSXLAQ";
   const paypalClientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
 
   return (
-    <div className="flex justify-center items-center p-6">
-      <div className="w-[300px] border rounded-lg shadow-lg p-6">
-        <h2 className="text-xl font-bold mb-4">One-Time Payment</h2>
-        <p className="text-3xl font-bold mb-4">$10.00</p>
-        <ul className="mb-4 space-y-2">
-          <li>✅ Feature 1</li>
-          <li>✅ Feature 2</li>
-          <li>✅ Feature 3</li>
+    <div className="flex justify-center items-center min-h-screen bg-gradient-to-b from-blue-100 to-blue-50 p-6">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 text-center">
+        <h2 className="text-2xl font-bold text-gray-800 mb-3">Premium Access</h2>
+        <p className="text-4xl font-extrabold text-blue-600 mb-4">$10.00</p>
+        <p className="text-gray-500 mb-6">One-time payment, no hidden fees.</p>
+
+        <ul className="mb-6 text-gray-700 space-y-3 text-left">
+          <li className="flex items-center">
+            ✅ <span className="ml-2">Lifetime free credits</span>
+          </li>
+          <li className="flex items-center">
+            ✅ <span className="ml-2">Post unlimited content</span>
+          </li>
+          <li className="flex items-center">
+            ✅ <span className="ml-2">Share across multiple platforms</span>
+          </li>
+          <li className="flex items-center">
+            ✅ <span className="ml-2">Boost audience reach effortlessly</span>
+          </li>
         </ul>
 
         {/* PayPal Button */}
@@ -30,12 +38,12 @@ const PaymentCards = () => {
                 const response = await fetch("/api/order", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ amount: { currency_code: "USD", value: "10.00" } }), // ✅ Correctly using USD
+                  body: JSON.stringify({ amount: { currency_code: "USD", value: "10.00" } }),
                 });
-            
+
                 const orderData = await response.json();
                 console.log("Order Data:", orderData);
-            
+
                 if (orderData.jsonResponse.id) {
                   return orderData.jsonResponse.id;
                 } else {
@@ -46,12 +54,12 @@ const PaymentCards = () => {
                 toast({ title: "Error", description: "Failed to create PayPal order." });
               }
             }}
-            onApprove={async (data, actions) => {
+            onApprove={async (data) => {
               try {
                 console.log("Approving payment for Order ID:", data.orderID);
-                console.log("data=>>>",data);
+
                 const response = await fetch(`/api/orders/${data.orderID}/capture`, {
-                  method: "POST", // Use POST instead of PUT
+                  method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({ orderID: data.orderID }),
                 });

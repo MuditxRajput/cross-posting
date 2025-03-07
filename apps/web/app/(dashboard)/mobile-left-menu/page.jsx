@@ -3,7 +3,7 @@ import { setLeftPanel } from "@/store/slices/social-account";
 import { useDispatch, useSelector } from "react-redux";
 
 const MobileMenu = () => {
-  const list = ["Home", "Connect account"];
+  const list = ["Home", "Connect account","Pricing"];
   const dispatch = useDispatch();
   const mobileMenuState = useSelector((state)=>state.social?.leftpanel);
   const handler=(e)=>{
