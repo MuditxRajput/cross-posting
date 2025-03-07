@@ -1,6 +1,5 @@
 "use client"
 import SocialConnection from "@/app/components/social-connection/page";
-import SocialConnection from "@/app/components/social-connection/page";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaExclamationCircle } from "react-icons/fa";
