@@ -14,7 +14,7 @@ const client = new Client({
       oAuthClientSecret: process.env.NEXT_PUBLIC_PAYPAL_CLIENT_SECRET || "",
   },
   timeout: 0,
-  environment: Environment.Live,
+  environment: Environment.Production,
   logging: {
       logLevel: LogLevel.Info,
       logRequest: { logBody: true },
