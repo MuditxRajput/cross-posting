@@ -29,6 +29,7 @@
     "@repo/ui": "*",
     "@types/bcryptjs": "^2.4.6",
     "@types/react-filepond": "^5.0.5",
+    "@vercel/analytics": "^1.5.0",
     "axios": "^1.7.7",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.2",

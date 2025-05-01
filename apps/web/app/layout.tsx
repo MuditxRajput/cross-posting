@@ -8,6 +8,7 @@ import { Providers } from "./provider";
 import { authOptions } from "./services/lib/auth";
 import Header from "./ui/header/page";
 // import { Toaster } from "@/components/ui/toaster"
+import { Analytics } from "@vercel/analytics/react";
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -31,11 +32,11 @@ const session = getServerSession(authOptions);
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
+        <Analytics />
           <Providers  >
             <Header/>
               <FacebookSDK/>
                 {children}
-                <Toaster />
                 <Toaster />
                 </Providers>
       </body>
