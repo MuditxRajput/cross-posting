@@ -76,6 +76,26 @@ const RightPanel = () => {
         },
       ],
     },
+    Pinterest: {
+      title:
+        "Connect to a Pinterest account to upload and schedule Pinterest posts",
+      description: [
+        {
+          title:
+            "Google account must be associate with a Pinterest account",
+        },
+      ],
+    },
+    Reddit: {
+      title:
+        "Connect to a Reddit account to upload and schedule Reddit posts",
+      description: [
+        {
+          title:
+            "Google account must be associate with a Reddit account",
+        },
+      ],
+    },
   };
 
   useEffect(() => {
@@ -88,7 +108,6 @@ const RightPanel = () => {
   }, [platform]);
 
   const apiHandler = async (name: string) => {
-    console.log("name",name);
     if (name === "Instagram") {
       router.push(
         `https://www.facebook.com/v21.0/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_FB_CLIENT_ID}&display=page&redirect_uri=https://cross-posting-web.vercel.app/components/callbacks/instagram-callback&response_type=token&scope=instagram_basic,instagram_content_publish,instagram_manage_comments,instagram_manage_insights,pages_show_list,pages_read_engagement`
@@ -97,7 +116,18 @@ const RightPanel = () => {
       window.open(
         `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID}&redirect_uri=https://cross-posting-web.vercel.app/api/linkedin/callback&state=foobar&scope=openid%20profile%20w_member_social%20email`
       );
-    } else {
+    }
+    else if (name === "Pinterest") {
+      window.open(
+        `https://www.pinterest.com/oauth/?client_id=${process.env.NEXT_PUBLIC_PINTEREST_CLIENT_ID}&response_type=token&redirect_uri=https://cross-posting-web.vercel.app/components/callbacks/pinterest-callback`
+      );
+    }
+    else if (name === "Reddit") {
+      window.open(
+        `https://www.reddit.com/api/v1/authorize?client_id=${process.env.NEXT_PUBLIC_REDDIT_CLIENT_ID}&response_type=code&state=foobar&redirect_uri=https://cross-posting-web.vercel.app/api/reddit/callback&duration=permanent&scope=identity,edit,flair,history,modconfig,modflair,modlog,modposts,modwiki,mysubreddits,privatemessages,read,report,save,submit,subscribe,vote,wikiedit,wikiread`
+      );
+    }
+    else {
       try {
         console.log("inside api..")
         const res = await fetch(

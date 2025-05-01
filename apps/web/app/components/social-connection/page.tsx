@@ -8,7 +8,7 @@ import { ImLinkedin } from "react-icons/im";
 import { IoLogoYoutube } from "react-icons/io5";
 import { RiInstagramFill } from "react-icons/ri";
 import { useDispatch, useSelector } from "react-redux";
-
+import { FaReddit } from "react-icons/fa";
 const SocialConnection = ({warning,platform}:any) => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -23,6 +23,7 @@ const SocialConnection = ({warning,platform}:any) => {
     { name: "YouTube", icon: <IoLogoYoutube />, color: "bg-gradient-to-r from-red-600 to-red-400", account: youtube },
     { name: "LinkedIn", icon: <ImLinkedin />, color: "bg-gradient-to-r from-blue-800 to-blue-600", account: linkedln },
     { name: "Pinterest", icon: <FaPinterest />, color: "bg-gradient-to-r from-red-700 to-red-500", account: null },
+    { name: "Reddit", icon: <FaReddit />, color: "bg-gradient-to-r from-orange-600 to-orange-400", account: null },
   ];
    
   // const apiHandler = async (name: string) => {
