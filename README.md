@@ -28,7 +28,6 @@
 | **AWS Lambda** | Serverless posting engine |
 | **AWS EC2** | Hosting backend services |
 
-## ⚙️ Architecture
 
 ## 🚧 Project Status
 
@@ -37,9 +36,8 @@
 🛠️ Upcoming: Multi-platform integration (Instagram, Twitter, LinkedIn), analytics dashboard, notifications
 
 ## 📸 Screenshots
+<img width="1901" height="863" alt="image" src="https://github.com/user-attachments/assets/3d627618-42b6-4f32-8f77-1724051df49e" />
 
-> _Include screenshots here_  
-> For example: Home page, Create Post UI, Scheduled Posts List
 
 ## 🚀 How to Run Locally
 
