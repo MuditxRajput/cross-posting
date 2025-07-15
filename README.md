@@ -59,13 +59,5 @@ npm install
 npm run dev
 npm run test
 ```
----
 
-### ✅ Tips for Making it Even Better:
-- Add **GIFs or short videos** showing how the scheduler works.
-- Add **badges** like: `Build Passing`, `MIT License`, `Vercel Deployed`, etc.
-- Consider a `CONTRIBUTING.md` if you want others to help.
-- If you built APIs, consider adding an **API reference** section.
-
----
 
