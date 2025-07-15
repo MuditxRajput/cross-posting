@@ -1,81 +1,73 @@
-# Turborepo starter
+# 🚀 Post Target - Social Media Post Scheduler
 
-This is an official starter Turborepo.
+[Live Demo](http://cross-posting-web.vercel.app/) | Made with ❤️ using Next.js, Node.js, MongoDB, BullMQ, AWS Lambda, EC2
 
-## Using this example
+## 📌 Overview
 
-Run the following command:
+**Post Target** is a full-stack social media post scheduling platform that allows users to compose, schedule, and publish content across multiple social media platforms. Whether you're a content creator, marketer, or business, Post Target simplifies your posting workflow with automation and precision.
 
-```sh
-npx create-turbo@latest
+## ✨ Features
+
+- 📝 Create & edit posts with rich text and media
+- 📅 Schedule posts for future dates/times
+- 🔄 Cross-post to multiple platforms
+- ⚙️ Background job processing using BullMQ
+- ☁️ Serverless execution with AWS Lambda
+- 🖥️ Scalable deployment using AWS EC2
+- 🔒 User authentication and role-based access
+- 📊 Analytics-ready architecture
+
+## 🛠️ Tech Stack
+
+| Technology | Role |
+|------------|------|
+| **Next.js** | Frontend (React-based SSR) |
+| **Node.js** | Backend API |
+| **MongoDB** | Database for user & post data |
+| **BullMQ** | Job queue for scheduling posts |
+| **AWS Lambda** | Serverless posting engine |
+| **AWS EC2** | Hosting backend services |
+
+## ⚙️ Architecture
+
+## 🚧 Project Status
+
+✅ MVP Completed  
+🚀 Currently supports post scheduling and background execution  
+🛠️ Upcoming: Multi-platform integration (Instagram, Twitter, LinkedIn), analytics dashboard, notifications
+
+## 📸 Screenshots
+
+> _Include screenshots here_  
+> For example: Home page, Create Post UI, Scheduled Posts List
+
+## 🚀 How to Run Locally
+
+```bash
+# Clone the repository
+git clone https://github.com/your-username/post-target.git
+cd post-target
+
+# Install dependencies
+npm install
+
+# Create a .env file with the following variables:
+# MONGODB_URI=...
+# REDIS_URL=...
+# AWS_LAMBDA_ARN=...
+# (Add all required secrets)
+
+# Run the development server
+npm run dev
+npm run test
 ```
+---
 
-## What's inside?
+### ✅ Tips for Making it Even Better:
+- Add **GIFs or short videos** showing how the scheduler works.
+- Add **badges** like: `Build Passing`, `MIT License`, `Vercel Deployed`, etc.
+- Consider a `CONTRIBUTING.md` if you want others to help.
+- If you built APIs, consider adding an **API reference** section.
 
-This Turborepo includes the following packages/apps:
+---
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm dev
-```
-
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
